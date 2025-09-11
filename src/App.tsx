@@ -24,6 +24,10 @@ import { NotFound } from './pages/NotFound';
 import SuccessStoriesPage from './pages/SuccessStoriesPage';
 import BusinessIdeasPage from './pages/BusinessIdeasPage';
 
+// Import des pages de guides
+import GuidesHub from './pages/GuidesHub';
+import GuideDigitalDetox from './pages/GuideDigitalDetox';
+
 // Page de test simple
 const TestPage = () => {
   return (
@@ -58,6 +62,10 @@ function App() {
                 {/* Nouvelles routes */}
                 <Route path="/success-stories" element={<SuccessStoriesPage />} />
                 <Route path="/business-ideas" element={<BusinessIdeasPage />} />
+                
+                {/* Routes des guides */}
+                <Route path="/guides" element={<GuidesHub />} />
+                <Route path="/guides/maitrise-digitale" element={<GuideDigitalDetox />} />
                 
                 {/* Route de test */}
                 <Route path="/test" element={<TestPage />} />
