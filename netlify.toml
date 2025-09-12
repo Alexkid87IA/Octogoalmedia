@@ -6,6 +6,15 @@
 [[edge_functions]]
   path = "/*"
   function = "meta-tags"
+  
+# Force l'Edge Function sur toutes les routes
+[[edge_functions]]
+  path = "/guides/*"
+  function = "meta-tags"
+  
+[[edge_functions]]
+  path = "/article/*"
+  function = "meta-tags"
 
 # Headers pour améliorer le cache et la sécurité
 [[headers]]
