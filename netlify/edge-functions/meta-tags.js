@@ -2,35 +2,51 @@
 // Edge Function pour Netlify (Deno runtime)
 
 // Configuration Sanity
-const SANITY_PROJECT_ID = 'fns9m6wr';
+const SANITY_PROJECT_ID = 'z9wsynas'; // Corrigé avec le bon project ID
 const SANITY_DATASET = 'production';
 const SANITY_API_VERSION = '2024-01-01';
 
 // Fonction pour récupérer les données d'un article depuis Sanity
 async function fetchArticleFromSanity(slug) {
   try {
+    // Requête pour récupérer l'article avec tous les champs possibles
     const query = encodeURIComponent(`
-      *[_type == "post" && slug.current == "${slug}"][0]{
+      *[_type == "Article" && slug.current == "${slug}"][0]{
         title,
         excerpt,
         description,
-        mainImage {
-          asset-> {
-            url
-          }
-        },
+        summary,
+        "imageUrl": mainImage.asset->url,
+        "imageDirect": mainImage.asset.url,
+        "imageRef": mainImage.asset._ref,
+        mainImage,
+        image,
+        coverImage,
+        featuredImage,
         publishedAt,
         author-> {
           name
+        },
+        categories[]-> {
+          title
         }
       }
     `);
     
     const url = `https://${SANITY_PROJECT_ID}.api.sanity.io/v${SANITY_API_VERSION}/data/query/${SANITY_DATASET}?query=${query}`;
-    
     const response = await fetch(url);
     const data = await response.json();
     
+    console.log(`Article trouvé pour ${slug}:`, data.result ? 'Oui' : 'Non');
+    if (data.result) {
+      console.log('Données image de l\'article:', {
+        imageUrl: data.result.imageUrl,
+        imageDirect: data.result.imageDirect,
+        imageRef: data.result.imageRef,
+        mainImage: data.result.mainImage,
+        image: data.result.image
+      });
+    }
     return data.result;
   } catch (error) {
     console.error('Erreur Sanity:', error);
@@ -42,17 +58,25 @@ export default async (request, context) => {
   const url = new URL(request.url);
   const userAgent = request.headers.get('user-agent') || '';
   
+  // Log pour debug
+  console.log('User-Agent reçu:', userAgent);
+  console.log('URL demandée:', url.pathname);
+  
   // Liste des bots de réseaux sociaux
   const socialBots = [
     'facebookexternalhit',
     'facebookcatalog',
     'linkedinbot',
+    'linkedin',
     'whatsapp',
     'twitterbot',
     'slackbot',
     'discordbot',
     'telegrambot',
-    'pinterest'
+    'pinterest',
+    'skypeuripreview',
+    'outbrain',
+    'vkshare'
   ];
   
   // Vérifier si c'est un bot social
@@ -60,15 +84,18 @@ export default async (request, context) => {
     userAgent.toLowerCase().includes(bot)
   );
   
-  // Si ce n'est pas un bot ET pas une page HTML, continuer normalement
+  console.log('Est un bot social?', isSocialBot);
+  
+  // Récupérer la réponse originale
   const response = await context.next();
   const contentType = response.headers.get('content-type') || '';
   
+  // Si ce n'est pas du HTML, on ne modifie rien
   if (!contentType.includes('text/html')) {
     return response;
   }
   
-  // Pour les bots sociaux, on force les meta tags
+  // Si ce n'est pas un bot social, on ne modifie rien
   if (!isSocialBot) {
     return response;
   }
@@ -80,7 +107,7 @@ export default async (request, context) => {
   let description = 'Développez votre potentiel avec High Value Media. Coaching personnalisé et stratégies digitales.';
   let image = 'https://highvalue.media/LOGO_HV_MEDIA.svg';
   
-  // Pages spécifiques
+  // Pages spécifiques statiques
   if (path === '/guides/maitrise-digitale' || path === '/guides/maitrise-digitale/') {
     title = 'Guide Maîtrise Digitale Complète - High Value Media';
     description = 'Découvrez comment reprendre le contrôle de votre vie numérique avec notre guide complet sur la maîtrise digitale.';
@@ -107,7 +134,7 @@ export default async (request, context) => {
     const article = await fetchArticleFromSanity(slug);
     
     if (article && article.title) {
-      // Nettoyer et formater le titre (fix pour les accents)
+      // Utiliser les vraies données de Sanity
       title = `${article.title} - High Value Media`;
       
       // Chercher la description dans plusieurs champs possibles
@@ -152,22 +179,21 @@ export default async (request, context) => {
           image += '?w=1200&h=630&fit=crop&auto=format';
         }
       } else {
-        // Si vraiment aucune image n'est trouvée, utiliser une belle image par défaut
-        // Spécifique à cet article
-        if (slug === 's-inspirer-des-meilleurs-sans-se-trahir-la-methode') {
-          image = 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200&h=630&fit=crop&q=80';
-        } else {
-          // Image par défaut générique mais professionnelle
-          image = 'https://images.unsplash.com/photo-1553877522-43269d4ea984?w=1200&h=630&fit=crop&q=80';
-        }
+        // Image par défaut si aucune image trouvée
+        image = 'https://images.unsplash.com/photo-1553877522-43269d4ea984?w=1200&h=630&fit=crop&q=80';
       }
       
       console.log(`Image finale pour ${slug}: ${image}`);
       
     } else {
-      // Fallback amélioré si l'article n'est pas trouvé dans Sanity
-      // Base de données locale des articles populaires
+      // Fallback si l'article n'est pas trouvé dans Sanity
+      // Base de données locale pour les articles les plus importants
       const articleDatabase = {
+        'tiktok-shop': {
+          title: 'TikTok Shop : scroll, clique, achète - le e-commerce secoué',
+          description: 'En à peine deux ans, l\'onglet Shop de TikTok a transformé un réflexe de swipe en tunnel d\'achat. Découvrez cette révolution du e-commerce.',
+          image: 'https://images.unsplash.com/photo-1611162618071-b39a2ec055fb?w=1200&h=630&fit=crop'
+        },
         'sleep-streaming': {
           title: 'Sleep Streaming : Gagner de l\'Argent en Dormant',
           description: 'Découvrez comment des créateurs gagnent jusqu\'à 15 000$ par mois en dormant devant leur caméra.',
@@ -177,6 +203,11 @@ export default async (request, context) => {
           title: 'S\'inspirer des Meilleurs Sans Se Trahir : La Méthode',
           description: 'Comment s\'inspirer des leaders tout en restant authentique. Guide pratique pour entrepreneurs.',
           image: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200&h=630&fit=crop'
+        },
+        'luis-soriano': {
+          title: 'Luis Soriano : Stratégies et Insights pour Entrepreneurs',
+          description: 'Article exclusif sur Luis Soriano. Découvrez ses stratégies pour réussir dans l\'entrepreneuriat moderne.',
+          image: 'https://images.unsplash.com/photo-1556761175-b413da4baf72?w=1200&h=630&fit=crop'
         },
         'comment-devenir-riche': {
           title: 'Comment Devenir Riche en 2025 : Guide Complet',
@@ -255,13 +286,13 @@ export default async (request, context) => {
   modifiedHtml = updateMetaTag(modifiedHtml, 'property', 'og:image:width', '1200');
   modifiedHtml = updateMetaTag(modifiedHtml, 'property', 'og:image:height', '630');
   modifiedHtml = updateMetaTag(modifiedHtml, 'property', 'og:locale', 'fr_FR');
+  modifiedHtml = updateMetaTag(modifiedHtml, 'property', 'og:image:alt', title);
+  
+  // Twitter Card tags
   modifiedHtml = updateMetaTag(modifiedHtml, 'name', 'twitter:card', 'summary_large_image');
   modifiedHtml = updateMetaTag(modifiedHtml, 'name', 'twitter:title', title);
   modifiedHtml = updateMetaTag(modifiedHtml, 'name', 'twitter:description', description);
   modifiedHtml = updateMetaTag(modifiedHtml, 'name', 'twitter:image', image);
-  
-  // Ajouter le tag LinkedIn spécifique
-  modifiedHtml = updateMetaTag(modifiedHtml, 'property', 'og:image:alt', title);
   
   // Retourner la réponse modifiée avec headers appropriés
   return new Response(modifiedHtml, {
