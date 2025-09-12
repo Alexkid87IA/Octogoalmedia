@@ -2,27 +2,52 @@
 // Edge Function pour Netlify (Deno runtime)
 
 export default async (request, context) => {
-  // Récupérer la réponse originale
-  const response = await context.next();
+  const url = new URL(request.url);
+  const userAgent = request.headers.get('user-agent') || '';
   
-  // Ne traiter que les pages HTML
+  // Liste des bots de réseaux sociaux
+  const socialBots = [
+    'facebookexternalhit',
+    'facebookcatalog',
+    'linkedinbot',
+    'whatsapp',
+    'twitterbot',
+    'slackbot',
+    'discordbot',
+    'telegrambot',
+    'pinterest'
+  ];
+  
+  // Vérifier si c'est un bot social
+  const isSocialBot = socialBots.some(bot => 
+    userAgent.toLowerCase().includes(bot)
+  );
+  
+  // Si ce n'est pas un bot ET pas une page HTML, continuer normalement
+  const response = await context.next();
   const contentType = response.headers.get('content-type') || '';
+  
   if (!contentType.includes('text/html')) {
     return response;
   }
   
-  // Récupérer l'URL
-  const url = new URL(request.url);
+  // Pour les bots sociaux, on force les meta tags
+  if (!isSocialBot) {
+    return response;
+  }
+  
   const path = url.pathname;
   
   // Déterminer les meta tags selon la page
   let title = 'High Value Media - Coaching & Stratégie Digitale';
   let description = 'Développez votre potentiel avec High Value Media. Coaching personnalisé et stratégies digitales.';
+  let image = 'https://highvalue.media/LOGO_HV_MEDIA.svg';
   
   // Pages spécifiques
   if (path === '/guides/maitrise-digitale' || path === '/guides/maitrise-digitale/') {
-    title = 'Guide : Maîtrise Digitale Complète - High Value Media';
-    description = 'Apprenez à maîtriser tous les aspects du digital pour transformer votre business.';
+    title = 'Guide Maîtrise Digitale Complète - High Value Media';
+    description = 'Découvrez comment reprendre le contrôle de votre vie numérique avec notre guide complet sur la maîtrise digitale.';
+    image = 'https://26.staticbtf.eno.do/v1/57-default/3f8dd22f1c8fc2e00a6a725e2b8e2793/media.jpg';
   } else if (path === '/guides' || path === '/guides/') {
     title = 'Guides Pratiques - High Value Media';
     description = 'Découvrez nos guides pour maîtriser le digital et développer votre business.';
@@ -40,44 +65,66 @@ export default async (request, context) => {
   // Pour les articles dynamiques
   if (path.startsWith('/article/')) {
     const slug = path.replace('/article/', '').replace('/', '');
-    title = `Article : ${slug.replace(/-/g, ' ')} - High Value Media`;
-    description = `Lisez notre article sur ${slug.replace(/-/g, ' ')} et découvrez nos insights exclusifs.`;
+    const formattedSlug = slug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    title = `${formattedSlug} - High Value Media`;
+    description = `Lisez notre article sur ${formattedSlug.toLowerCase()} et découvrez nos insights exclusifs.`;
   }
   
   // Récupérer le HTML
   const html = await response.text();
   
-  // Remplacer le title et ajouter les meta tags
-  let modifiedHtml = html.replace(
-    /<title>.*?<\/title>/,
+  // IMPORTANT: Nettoyer TOUS les meta tags existants avant d'ajouter les nouveaux
+  let modifiedHtml = html;
+  
+  // Remplacer le title existant
+  modifiedHtml = modifiedHtml.replace(
+    /<title>.*?<\/title>/gi,
     `<title>${title}</title>`
   );
   
-  // Ajouter/remplacer les meta tags Open Graph
-  const metaTags = `
-    <meta name="description" content="${description}">
-    <meta property="og:title" content="${title}">
-    <meta property="og:description" content="${description}">
-    <meta property="og:url" content="${url.href}">
-    <meta property="og:type" content="website">
-    <meta property="og:site_name" content="High Value Media">
-    <meta property="og:image" content="https://highvalue.media/LOGO_HV_MEDIA.svg">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="${title}">
-    <meta name="twitter:description" content="${description}">
-    <meta name="twitter:image" content="https://highvalue.media/LOGO_HV_MEDIA.svg">
-  `;
+  // Si pas de title, l'ajouter
+  if (!modifiedHtml.includes('<title>')) {
+    modifiedHtml = modifiedHtml.replace(
+      '</head>',
+      `<title>${title}</title></head>`
+    );
+  }
   
-  // Injecter les meta tags juste après <head>
-  modifiedHtml = modifiedHtml.replace(
-    '<head>',
-    `<head>${metaTags}`
-  );
+  // Fonction pour remplacer ou ajouter un meta tag
+  function updateMetaTag(html, attribute, value, content) {
+    const regex = new RegExp(`<meta\\s+${attribute}="${value}"[^>]*>`, 'gi');
+    const newTag = `<meta ${attribute}="${value}" content="${content}">`;
+    
+    if (regex.test(html)) {
+      return html.replace(regex, newTag);
+    } else {
+      return html.replace('</head>', `${newTag}\n</head>`);
+    }
+  }
   
-  // Retourner la réponse modifiée
+  // Mettre à jour tous les meta tags
+  modifiedHtml = updateMetaTag(modifiedHtml, 'name', 'description', description);
+  modifiedHtml = updateMetaTag(modifiedHtml, 'property', 'og:title', title);
+  modifiedHtml = updateMetaTag(modifiedHtml, 'property', 'og:description', description);
+  modifiedHtml = updateMetaTag(modifiedHtml, 'property', 'og:url', url.href);
+  modifiedHtml = updateMetaTag(modifiedHtml, 'property', 'og:type', 'website');
+  modifiedHtml = updateMetaTag(modifiedHtml, 'property', 'og:site_name', 'High Value Media');
+  modifiedHtml = updateMetaTag(modifiedHtml, 'property', 'og:image', image);
+  modifiedHtml = updateMetaTag(modifiedHtml, 'property', 'og:image:width', '1200');
+  modifiedHtml = updateMetaTag(modifiedHtml, 'property', 'og:image:height', '630');
+  modifiedHtml = updateMetaTag(modifiedHtml, 'name', 'twitter:card', 'summary_large_image');
+  modifiedHtml = updateMetaTag(modifiedHtml, 'name', 'twitter:title', title);
+  modifiedHtml = updateMetaTag(modifiedHtml, 'name', 'twitter:description', description);
+  modifiedHtml = updateMetaTag(modifiedHtml, 'name', 'twitter:image', image);
+  
+  // Retourner la réponse modifiée avec headers appropriés
   return new Response(modifiedHtml, {
     status: response.status,
-    headers: response.headers
+    headers: {
+      ...response.headers,
+      'content-type': 'text/html; charset=utf-8',
+      'cache-control': 'no-cache, no-store, must-revalidate'
+    }
   });
 };
 

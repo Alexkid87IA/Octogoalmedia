@@ -2,18 +2,12 @@
   command = "npm run build"
   publish = "dist"
 
-# Configuration des Edge Functions
+[build.environment]
+  NODE_VERSION = "18"
+
+# Configuration de l'Edge Function (une seule déclaration suffit)
 [[edge_functions]]
   path = "/*"
-  function = "meta-tags"
-  
-# Force l'Edge Function sur toutes les routes
-[[edge_functions]]
-  path = "/guides/*"
-  function = "meta-tags"
-  
-[[edge_functions]]
-  path = "/article/*"
   function = "meta-tags"
 
 # Headers pour améliorer le cache et la sécurité
@@ -23,6 +17,12 @@
     X-Frame-Options = "DENY"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
+
+# Headers spéciaux pour index.html (pas de cache pour les bots)
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
 
 # Cache des assets statiques
 [[headers]]
