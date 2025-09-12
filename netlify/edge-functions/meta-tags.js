@@ -155,21 +155,14 @@ export default async (request, context) => {
       } else if (article.mainImage?.asset?.url) {
         articleImage = article.mainImage.asset.url;
       } else if (article.mainImage?.asset?._ref) {
-        // Construire l'URL depuis la référence
+        // Construire l'URL depuis la référence Sanity
         const ref = article.mainImage.asset._ref;
-        const [, id, dimensions, format] = ref.split('-');
+        // Format: image-{id}-{dimensions}-{format}
+        const parts = ref.replace('image-', '').split('-');
+        const id = parts[0];
+        const dimensions = parts[1];
+        const format = parts[2];
         articleImage = `https://cdn.sanity.io/images/${SANITY_PROJECT_ID}/${SANITY_DATASET}/${id}-${dimensions}.${format}`;
-      } else if (article.imageRef) {
-        // Autre format de référence
-        const ref = article.imageRef;
-        const [, id, dimensions, format] = ref.split('-');
-        articleImage = `https://cdn.sanity.io/images/${SANITY_PROJECT_ID}/${SANITY_DATASET}/${id}-${dimensions}.${format}`;
-      } else if (article.image?.asset?.url) {
-        articleImage = article.image.asset.url;
-      } else if (article.coverImage?.asset?.url) {
-        articleImage = article.coverImage.asset.url;
-      } else if (article.featuredImage?.asset?.url) {
-        articleImage = article.featuredImage.asset.url;
       }
       
       if (articleImage) {
@@ -192,7 +185,7 @@ export default async (request, context) => {
         'tiktok-shop': {
           title: 'TikTok Shop : scroll, clique, achète - le e-commerce secoué',
           description: 'En à peine deux ans, l\'onglet Shop de TikTok a transformé un réflexe de swipe en tunnel d\'achat. Découvrez cette révolution du e-commerce.',
-          image: 'https://images.unsplash.com/photo-1611162618071-b39a2ec055fb?w=1200&h=630&fit=crop'
+          image: 'https://images.unsplash.com/photo-1611162618071-b39a2ec055fb?w=1200&h=630&fit=crop' // Image TikTok pertinente
         },
         'sleep-streaming': {
           title: 'Sleep Streaming : Gagner de l\'Argent en Dormant',
