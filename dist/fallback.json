@@ -1,0 +1,26 @@
+{
+  "title": "Roger Ormières",
+  "message": "Une erreur est survenue lors du chargement de la page",
+  "action": {
+    "text": "Recharger la page",
+    "url": "/"
+  },
+  "links": [
+    {
+      "text": "Accueil",
+      "url": "/"
+    },
+    {
+      "text": "Articles",
+      "url": "/articles"
+    },
+    {
+      "text": "Podcasts",
+      "url": "/podcasts"
+    },
+    {
+      "text": "Émissions",
+      "url": "/emissions"
+    }
+  ]
+}
