@@ -1,6 +1,43 @@
 // netlify/edge-functions/meta-tags.js
 // Edge Function pour Netlify (Deno runtime)
 
+// Configuration Sanity
+const SANITY_PROJECT_ID = 'fns9m6wr';
+const SANITY_DATASET = 'production';
+const SANITY_API_VERSION = '2024-01-01';
+
+// Fonction pour récupérer les données d'un article depuis Sanity
+async function fetchArticleFromSanity(slug) {
+  try {
+    const query = encodeURIComponent(`
+      *[_type == "post" && slug.current == "${slug}"][0]{
+        title,
+        excerpt,
+        description,
+        mainImage {
+          asset-> {
+            url
+          }
+        },
+        publishedAt,
+        author-> {
+          name
+        }
+      }
+    `);
+    
+    const url = `https://${SANITY_PROJECT_ID}.api.sanity.io/v${SANITY_API_VERSION}/data/query/${SANITY_DATASET}?query=${query}`;
+    
+    const response = await fetch(url);
+    const data = await response.json();
+    
+    return data.result;
+  } catch (error) {
+    console.error('Erreur Sanity:', error);
+    return null;
+  }
+}
+
 export default async (request, context) => {
   const url = new URL(request.url);
   const userAgent = request.headers.get('user-agent') || '';
@@ -62,12 +99,39 @@ export default async (request, context) => {
     description = 'Rejoignez une communauté exclusive d\'entrepreneurs ambitieux.';
   }
   
-  // Pour les articles dynamiques
+  // Pour les articles dynamiques - RÉCUPÉRER DEPUIS SANITY
   if (path.startsWith('/article/')) {
     const slug = path.replace('/article/', '').replace('/', '');
+    
+    // Essayer de récupérer les données depuis Sanity
+    const article = await fetchArticleFromSanity(slug);
+    
+    if (article) {
+      title = `${article.title} - High Value Media`;
+      description = article.excerpt || article.description || `Lisez notre article sur ${article.title}`;
+      
+      // Utiliser l'image de l'article si disponible
+      if (article.mainImage?.asset?.url) {
+        image = article.mainImage.asset.url;
+        // Ajouter les paramètres d'optimisation Sanity si ce n'est pas déjà fait
+        if (!image.includes('?')) {
+          image += '?w=1200&h=630&fit=crop&auto=format';
+        }
+      }
+    } else {
+      // Fallback si l'article n'est pas trouvé
+      const formattedSlug = slug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+      title = `${formattedSlug} - High Value Media`;
+      description = `Lisez notre article sur ${formattedSlug.toLowerCase()} et découvrez nos insights exclusifs.`;
+    }
+  }
+  
+  // Pour les émissions
+  if (path.startsWith('/emission/')) {
+    const slug = path.replace('/emission/', '').replace('/', '');
     const formattedSlug = slug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-    title = `${formattedSlug} - High Value Media`;
-    description = `Lisez notre article sur ${formattedSlug.toLowerCase()} et découvrez nos insights exclusifs.`;
+    title = `Émission : ${formattedSlug} - High Value Media`;
+    description = `Regardez notre émission ${formattedSlug.toLowerCase()} avec des invités exclusifs.`;
   }
   
   // Récupérer le HTML
@@ -107,15 +171,19 @@ export default async (request, context) => {
   modifiedHtml = updateMetaTag(modifiedHtml, 'property', 'og:title', title);
   modifiedHtml = updateMetaTag(modifiedHtml, 'property', 'og:description', description);
   modifiedHtml = updateMetaTag(modifiedHtml, 'property', 'og:url', url.href);
-  modifiedHtml = updateMetaTag(modifiedHtml, 'property', 'og:type', 'website');
+  modifiedHtml = updateMetaTag(modifiedHtml, 'property', 'og:type', path.startsWith('/article/') ? 'article' : 'website');
   modifiedHtml = updateMetaTag(modifiedHtml, 'property', 'og:site_name', 'High Value Media');
   modifiedHtml = updateMetaTag(modifiedHtml, 'property', 'og:image', image);
   modifiedHtml = updateMetaTag(modifiedHtml, 'property', 'og:image:width', '1200');
   modifiedHtml = updateMetaTag(modifiedHtml, 'property', 'og:image:height', '630');
+  modifiedHtml = updateMetaTag(modifiedHtml, 'property', 'og:locale', 'fr_FR');
   modifiedHtml = updateMetaTag(modifiedHtml, 'name', 'twitter:card', 'summary_large_image');
   modifiedHtml = updateMetaTag(modifiedHtml, 'name', 'twitter:title', title);
   modifiedHtml = updateMetaTag(modifiedHtml, 'name', 'twitter:description', description);
   modifiedHtml = updateMetaTag(modifiedHtml, 'name', 'twitter:image', image);
+  
+  // Ajouter le tag LinkedIn spécifique
+  modifiedHtml = updateMetaTag(modifiedHtml, 'property', 'og:image:alt', title);
   
   // Retourner la réponse modifiée avec headers appropriés
   return new Response(modifiedHtml, {
@@ -123,7 +191,8 @@ export default async (request, context) => {
     headers: {
       ...response.headers,
       'content-type': 'text/html; charset=utf-8',
-      'cache-control': 'no-cache, no-store, must-revalidate'
+      'cache-control': 'no-cache, no-store, must-revalidate',
+      'x-robots-tag': 'all'
     }
   });
 };
