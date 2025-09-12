@@ -3,7 +3,7 @@ import { Menu, X, ChevronDown, Bell, Search, ArrowRight, Clock, TrendingUp } fro
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
 import { useScrollDirection } from '../../hooks/useScrollDirection';
-// import { getAllArticles } from '../../utils/sanityAPI';
+import { useData } from '../../context/DataContext';
 
 // Import de tous les logos
 import logoMedia from '../../assets/logos/LOGO_HV_MEDIA.svg';
@@ -11,32 +11,6 @@ import logoBusiness from '../../assets/logos/LOGO_HV_BUSINESS.svg';
 import logoMental from '../../assets/logos/LOGO_HV_PSYCHO.svg';
 import logoSociety from '../../assets/logos/LOGO_HV_SOCIETY.svg';
 import logoStory from '../../assets/logos/LOGO_HV_STORY.svg';
-import { useData } from '../context/DataContext';
-
-// Mock articles pour fallback
-const mockRecentArticles = [
-  {
-    _id: '1',
-    title: "Comment développer un mindset d'exception",
-    slug: { current: 'mindset-exception' },
-    publishedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // Il y a 2h
-    categories: [{ title: 'Mental' }]
-  },
-  {
-    _id: '2',
-    title: "Les 5 stratégies de croissance des licornes",
-    slug: { current: 'strategies-croissance' },
-    publishedAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(), // Il y a 5h
-    categories: [{ title: 'Business' }]
-  },
-  {
-    _id: '3',
-    title: "L'art du pivot entrepreneurial",
-    slug: { current: 'art-du-pivot' },
-    publishedAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // Hier
-    categories: [{ title: 'Story' }]
-  }
-];
 
 export const ResponsiveNavbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -44,11 +18,13 @@ export const ResponsiveNavbar = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [recentArticles, setRecentArticles] = useState(mockRecentArticles);
-  const [hasNewArticles, setHasNewArticles] = useState(true);
+  const [hasNewArticles, setHasNewArticles] = useState(false);
   const location = useLocation();
   const { visible } = useScrollDirection();
   const { scrollY } = useScroll();
+  
+  // Récupération des vrais articles depuis le contexte
+  const { recentArticles, featuredArticles } = useData();
   
   // Effet de transparence basé sur le scroll
   const navbarBackground = useTransform(
@@ -69,32 +45,21 @@ export const ResponsiveNavbar = () => {
     return logoMedia;
   };
 
-  // Charger les articles récents
+  // Vérifier s'il y a de nouveaux articles (moins de 24h)
   useEffect(() => {
-    const fetchRecentArticles = async () => {
-      try {
-//         const articles = await getAllArticles(); - Using DataContext
-        if (articles && articles.length > 0) {
-          setRecentArticles(articles.slice(0, 3));
-          // Vérifier s'il y a de nouveaux articles (moins de 24h)
-          const hasNew = articles.some(article => {
-            const publishDate = new Date(article.publishedAt);
-            const now = new Date();
-            const diffHours = (now.getTime() - publishDate.getTime()) / (1000 * 60 * 60);
-            return diffHours < 24;
-          });
-          setHasNewArticles(hasNew);
-        }
-      } catch (error) {
-        console.error('Erreur lors de la récupération des articles:', error);
-      }
-    };
-
-    fetchRecentArticles();
-    // Rafraîchir toutes les 5 minutes
-    const interval = setInterval(fetchRecentArticles, 5 * 60 * 1000);
-    return () => clearInterval(interval);
-  }, []);
+    const allArticles = [...(recentArticles || []), ...(featuredArticles || [])];
+    
+    if (allArticles.length > 0) {
+      const hasNew = allArticles.some(article => {
+        if (!article.publishedAt) return false;
+        const publishDate = new Date(article.publishedAt);
+        const now = new Date();
+        const diffHours = (now.getTime() - publishDate.getTime()) / (1000 * 60 * 60);
+        return diffHours < 24;
+      });
+      setHasNewArticles(hasNew);
+    }
+  }, [recentArticles, featuredArticles]);
 
   // Fonction pour formater le temps
   const formatTimeAgo = (date: string) => {
@@ -118,6 +83,48 @@ export const ResponsiveNavbar = () => {
       'Mindset': 'bg-purple-500'
     };
     return colors[category] || 'bg-gray-500';
+  };
+
+  // Obtenir les 3 articles les plus récents pour les notifications
+  const getNotificationArticles = () => {
+    const allArticles = [...(recentArticles || []), ...(featuredArticles || [])];
+    
+    const sortedArticles = allArticles
+      .filter(article => article.publishedAt)
+      .sort((a, b) => {
+        const dateA = new Date(a.publishedAt).getTime();
+        const dateB = new Date(b.publishedAt).getTime();
+        return dateB - dateA;
+      })
+      .slice(0, 3);
+    
+    if (sortedArticles.length === 0) {
+      return [
+        {
+          _id: '1',
+          title: "Comment développer un mindset d'exception",
+          slug: { current: 'mindset-exception' },
+          publishedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+          categories: [{ title: 'Mental' }]
+        },
+        {
+          _id: '2',
+          title: "Les 5 stratégies de croissance des licornes",
+          slug: { current: 'strategies-croissance' },
+          publishedAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
+          categories: [{ title: 'Business' }]
+        },
+        {
+          _id: '3',
+          title: "L'art du pivot entrepreneurial",
+          slug: { current: 'art-du-pivot' },
+          publishedAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+          categories: [{ title: 'Story' }]
+        }
+      ];
+    }
+    
+    return sortedArticles;
   };
 
   // Navigation avec sous-catégories
@@ -178,9 +185,9 @@ export const ResponsiveNavbar = () => {
 
   const specialItems = [
     { 
-      label: 'Le Club', 
-      path: '/club',
-      isNew: true
+      label: 'Guides', 
+      path: '/guides',
+      isPremium: true
     },
     { 
       label: 'Podcasts', 
@@ -226,12 +233,14 @@ export const ResponsiveNavbar = () => {
 
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 1024); // lg breakpoint
+      setIsMobile(window.innerWidth < 1024);
     };
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  const notificationArticles = getNotificationArticles();
 
   return (
     <>
@@ -257,12 +266,11 @@ export const ResponsiveNavbar = () => {
         {/* Ligne de gradient en haut */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
         
-        {/* Contenu principal avec styles spécifiques mobile */}
+        {/* Contenu principal */}
         <div className="relative">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            {/* Container avec flexbox robuste et hauteur fixe */}
             <div className="relative flex items-center justify-between h-20" style={{ width: '100%' }}>
-              {/* Logo avec positionnement fixe sur mobile */}
+              {/* Logo */}
               <Link 
                 to="/" 
                 className="relative group z-20 flex-shrink-0 flex items-center"
@@ -273,9 +281,7 @@ export const ResponsiveNavbar = () => {
                   whileTap={{ scale: 0.95 }}
                   className="relative"
                 >
-                  {/* Effet de lueur */}
                   <div className="absolute inset-0 bg-white/20 blur-2xl scale-150 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  
                   <img 
                     src={getCurrentLogo()}
                     alt="High Value Media"
@@ -287,7 +293,8 @@ export const ResponsiveNavbar = () => {
               {/* Desktop Navigation */}
               <div className="hidden lg:flex items-center flex-1 justify-center px-8">
                 <div className="flex items-center space-x-1 relative">
-                  {menuItems.map((item, index) => {
+                  {/* Menu principal */}
+                  {menuItems.map((item) => {
                     const isActive = location.pathname.includes(item.slug);
                     const gradient = getGradientByColor(item.color);
                     
@@ -310,7 +317,6 @@ export const ResponsiveNavbar = () => {
                             activeDropdown === item.slug ? 'rotate-180' : ''
                           }`} />
                           
-                          {/* Indicateur actif */}
                           {isActive && (
                             <motion.div
                               layoutId="navbar-active"
@@ -323,7 +329,7 @@ export const ResponsiveNavbar = () => {
                     );
                   })}
 
-                  {/* Dropdown - POSITION FIXE EN DEHORS DE LA BOUCLE */}
+                  {/* Dropdown */}
                   <AnimatePresence>
                     {activeDropdown && (
                       <motion.div
@@ -346,13 +352,9 @@ export const ResponsiveNavbar = () => {
                           
                           return (
                             <div className="relative">
-                              {/* Flèche avec gradient */}
                               <div className={`absolute -top-2 left-12 w-4 h-4 bg-gradient-to-br ${gradient} rotate-45 rounded-sm`} />
-                              
-                              {/* Container principal avec gradient border */}
                               <div className="relative rounded-2xl p-[1px] bg-gradient-to-br from-white/20 to-white/5">
                                 <div className="bg-black/95 backdrop-blur-2xl rounded-2xl p-6">
-                                  {/* Header de la catégorie */}
                                   <div className="mb-5">
                                     <div className={`text-xs font-bold uppercase tracking-wider text-transparent bg-clip-text bg-gradient-to-r ${gradient} mb-2`}>
                                       Explorer {item.label}
@@ -360,7 +362,6 @@ export const ResponsiveNavbar = () => {
                                     <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
                                   </div>
                                   
-                                  {/* Grid des sous-catégories */}
                                   <div className="grid grid-cols-2 gap-2">
                                     {item.subcategories.slice(0, 4).map((sub, idx) => (
                                       <Link
@@ -372,28 +373,22 @@ export const ResponsiveNavbar = () => {
                                           whileHover={{ scale: 1.02, x: 3 }}
                                           className="relative p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.05] hover:border-white/10 transition-all duration-300"
                                         >
-                                          {/* Numéro stylisé avec couleur plus visible */}
                                           <div className={`absolute top-3 right-3 text-3xl font-black bg-gradient-to-br ${gradient} bg-clip-text text-transparent`}>
                                             {(idx + 1).toString().padStart(2, '0')}
                                           </div>
-                                          
-                                          {/* Contenu */}
                                           <div className="relative z-10">
-                                            <h4 className="text-white font-medium text-sm mb-1 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:${gradient} transition-all">
+                                            <h4 className="text-white font-medium text-sm mb-1">
                                               {sub.label}
                                             </h4>
                                             <p className="text-xs text-gray-500 group-hover:text-gray-400 transition-colors">
                                               Découvrir les articles →
                                             </p>
                                           </div>
-                                          
-                                          {/* Hover effect gradient */}
                                           <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-5 rounded-xl transition-opacity`} />
                                         </motion.div>
                                       </Link>
                                     ))}
                                     
-                                    {/* 5ème élément pour Business (Finance) */}
                                     {item.subcategories.length === 5 && (
                                       <Link
                                         to={item.subcategories[4].path}
@@ -420,7 +415,6 @@ export const ResponsiveNavbar = () => {
                                     )}
                                   </div>
                                   
-                                  {/* Footer avec stats */}
                                   <div className="mt-5 pt-5 border-t border-white/5">
                                     <div className="flex items-center justify-between">
                                       <div className="flex items-center gap-6">
@@ -466,12 +460,20 @@ export const ResponsiveNavbar = () => {
                           NEW
                         </span>
                       )}
+                      {item.isPremium && (
+                        <span className="px-2 py-0.5 text-[10px] font-bold bg-gradient-to-r from-purple-500 to-violet-600 text-white rounded-full flex items-center gap-0.5">
+                          <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                          </svg>
+                          PRO
+                        </span>
+                      )}
                     </Link>
                   ))}
                 </div>
               </div>
 
-              {/* Actions à droite - Desktop uniquement */}
+              {/* Actions à droite - Desktop */}
               <div className="hidden lg:flex items-center gap-3">
                 {/* Search Button */}
                 <motion.button
@@ -483,7 +485,7 @@ export const ResponsiveNavbar = () => {
                   <Search className="w-4 h-4 text-gray-300" />
                 </motion.button>
 
-                {/* Notification avec dropdown d'articles récents - AJOUT */}
+                {/* Notifications */}
                 <div className="relative">
                   <motion.button
                     whileHover={{ scale: 1.05 }}
@@ -497,7 +499,7 @@ export const ResponsiveNavbar = () => {
                     )}
                   </motion.button>
 
-                  {/* Dropdown des articles récents - AJOUT */}
+                  {/* Dropdown notifications */}
                   <AnimatePresence>
                     {showNotifications && (
                       <motion.div
@@ -509,7 +511,6 @@ export const ResponsiveNavbar = () => {
                       >
                         <div className="relative rounded-2xl p-[1px] bg-gradient-to-br from-white/20 to-white/5">
                           <div className="bg-black/95 backdrop-blur-2xl rounded-2xl overflow-hidden">
-                            {/* Header */}
                             <div className="p-4 border-b border-white/10">
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
@@ -527,38 +528,32 @@ export const ResponsiveNavbar = () => {
                               </div>
                             </div>
 
-                            {/* Liste des articles */}
                             <div className="max-h-[400px] overflow-y-auto">
-                              {recentArticles.map((article, index) => (
+                              {notificationArticles.map((article, index) => (
                                 <Link
                                   key={article._id}
-                                  to={`/article/${article.slug.current}`}
+                                  to={`/article/${article.slug?.current || article.slug}`}
                                   onClick={() => setShowNotifications(false)}
                                   className="block p-4 hover:bg-white/5 transition-all border-b border-white/5 last:border-0"
                                 >
                                   <div className="flex items-start gap-3">
-                                    {/* Timestamp */}
                                     <div className="flex-shrink-0 text-xs text-gray-500 min-w-[60px]">
                                       {formatTimeAgo(article.publishedAt)}
                                     </div>
                                     
-                                    {/* Contenu */}
                                     <div className="flex-grow">
-                                      {/* Catégorie */}
                                       {article.categories?.[0] && (
                                         <span className={`inline-block px-2 py-0.5 text-[10px] font-bold uppercase rounded ${getCategoryColor(article.categories[0].title)} text-white mb-2`}>
                                           {article.categories[0].title}
                                         </span>
                                       )}
                                       
-                                      {/* Titre */}
                                       <h4 className="text-sm font-medium text-white hover:text-cyan-400 transition-colors line-clamp-2">
                                         {article.title}
                                       </h4>
                                     </div>
 
-                                    {/* Indicateur nouveau */}
-                                    {index === 0 && (
+                                    {index === 0 && hasNewArticles && (
                                       <span className="flex-shrink-0 px-2 py-0.5 bg-cyan-400 text-black text-[10px] font-bold rounded">
                                         NEW
                                       </span>
@@ -568,7 +563,6 @@ export const ResponsiveNavbar = () => {
                               ))}
                             </div>
 
-                            {/* Footer */}
                             <div className="p-4 border-t border-white/10">
                               <Link
                                 to="/articles"
@@ -588,10 +582,8 @@ export const ResponsiveNavbar = () => {
                   </AnimatePresence>
                 </div>
 
-                {/* CTA Principal ULTRA PREMIUM */}
-                <motion.div
-                  className="relative"
-                >
+                {/* CTA Principal */}
+                <motion.div className="relative">
                   <Link
                     to="/create-with-roger"
                     className="relative block group"
@@ -601,17 +593,13 @@ export const ResponsiveNavbar = () => {
                       whileTap={{ scale: 0.99 }}
                       className="relative"
                     >
-                      {/* Bouton principal ULTRA PREMIUM */}
                       <div className="relative px-8 py-3 overflow-hidden">
-                        {/* Fond avec effet de verre dépoli */}
                         <div className="absolute inset-0 bg-gradient-to-r from-white/[0.01] via-white/[0.03] to-white/[0.01] backdrop-blur-xl rounded-full" />
                         
-                        {/* Bordure fine premium */}
                         <div className="absolute inset-0 rounded-full p-[0.5px] bg-gradient-to-r from-white/0 via-white/20 to-white/0">
                           <div className="w-full h-full bg-black/80 rounded-full" />
                         </div>
                         
-                        {/* Effet de shine au hover */}
                         <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700">
                           <div 
                             className="absolute inset-0 rounded-full"
@@ -623,13 +611,11 @@ export const ResponsiveNavbar = () => {
                           />
                         </div>
                         
-                        {/* Contenu */}
                         <div className="relative flex items-center gap-4">
                           <span className="text-[13px] font-extralight text-white/90 tracking-[0.15em] uppercase">
                             Racontez votre histoire
                           </span>
                           
-                          {/* Icône premium minimaliste */}
                           <svg 
                             className="w-3 h-3 text-white/50 group-hover:text-white/80 transition-colors duration-500" 
                             fill="none" 
@@ -646,7 +632,7 @@ export const ResponsiveNavbar = () => {
                 </motion.div>
               </div>
 
-              {/* Mobile Menu Button - Fix Android définitif avec fond visible */}
+              {/* Mobile Menu Button */}
               <div className="lg:hidden absolute right-4 top-1/2 -translate-y-1/2" style={{ zIndex: 10000 }}>
                 <button
                   onClick={() => setIsOpen(!isOpen)}
@@ -692,7 +678,7 @@ export const ResponsiveNavbar = () => {
         </div>
       </motion.nav>
 
-      {/* Mobile Menu - CORRECTION: overlay et panneau */}
+      {/* Mobile Menu */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -701,7 +687,6 @@ export const ResponsiveNavbar = () => {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-40 lg:hidden"
           >
-            {/* Overlay */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -710,7 +695,6 @@ export const ResponsiveNavbar = () => {
               onClick={() => setIsOpen(false)}
             />
 
-            {/* Menu Panel - CORRECTION: largeur adaptative */}
             <motion.div
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
@@ -719,7 +703,6 @@ export const ResponsiveNavbar = () => {
               className="absolute inset-y-0 right-0 w-full sm:max-w-md bg-black/95 backdrop-blur-2xl sm:border-l sm:border-white/10"
             >
               <div className="h-full overflow-y-auto pt-24 px-6 pb-8">
-                {/* Mobile Menu Items */}
                 <div className="space-y-2">
                   {menuItems.map((item) => {
                     const isActive = location.pathname.includes(item.slug);
@@ -744,7 +727,6 @@ export const ResponsiveNavbar = () => {
                           </div>
                         </Link>
                         
-                        {/* Mobile Subcategories */}
                         <div className="pl-4 space-y-1">
                           {item.subcategories.map((sub) => (
                             <Link
@@ -761,10 +743,8 @@ export const ResponsiveNavbar = () => {
                     );
                   })}
 
-                  {/* Divider */}
                   <div className="my-4 h-px bg-white/10" />
 
-                  {/* Special Items */}
                   {specialItems.map((item) => (
                     <Link
                       key={item.path}
@@ -779,11 +759,18 @@ export const ResponsiveNavbar = () => {
                             NEW
                           </span>
                         )}
+                        {item.isPremium && (
+                          <span className="px-2 py-0.5 text-[10px] font-bold bg-gradient-to-r from-purple-500 to-violet-600 text-white rounded-full flex items-center gap-0.5">
+                            <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                            </svg>
+                            PRO
+                          </span>
+                        )}
                       </div>
                     </Link>
                   ))}
 
-                  {/* Mobile CTA ULTRA PREMIUM */}
                   <Link
                     to="/create-with-roger"
                     onClick={() => setIsOpen(false)}
@@ -793,7 +780,6 @@ export const ResponsiveNavbar = () => {
                       whileTap={{ scale: 0.98 }}
                       className="relative"
                     >
-                      {/* Bouton premium mobile */}
                       <div className="relative overflow-hidden rounded-full p-[0.5px] bg-gradient-to-r from-white/10 via-white/20 to-white/10">
                         <div className="relative w-full px-6 py-3.5 bg-black/90 backdrop-blur-xl rounded-full">
                           <div className="flex items-center justify-center gap-3">
@@ -821,7 +807,7 @@ export const ResponsiveNavbar = () => {
         )}
       </AnimatePresence>
 
-      {/* Background overlay when dropdown is open - Desktop only */}
+      {/* Background overlay when dropdown is open */}
       <AnimatePresence>
         {activeDropdown && (
           <motion.div

@@ -1,6 +1,7 @@
 // src/App.tsx
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import { ResponsiveNavbar } from './components/layout/ResponsiveNavbar';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { Analytics } from './components/common/Analytics';
@@ -39,47 +40,49 @@ const TestPage = () => {
 
 function App() {
   return (
-    <Router>
-      <DataProvider>
-        <ErrorBoundary>
-          <div className="relative min-h-screen bg-black overflow-x-hidden">
-            <ResponsiveNavbar />
-            <main className="relative z-[1]">
-              <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/articles" element={<AllArticlesPage />} />
-                <Route path="/article/:slug" element={<ArticlePageNEW />} />
-                <Route path="/emission/:slug" element={<EmissionPage />} />
-                <Route path="/rubrique/:categorySlug" element={<CategoryPage />} />
-                <Route path="/rubrique/:categorySlug/:subcategorySlug" element={<SubcategoryPage />} />
-                <Route path="/podcasts" element={<PodcastPage />} />
-                <Route path="/emissions" element={<EmissionsPage />} />
-                <Route path="/club" element={<ClubPage />} />
-                <Route path="/create-with-roger" element={<CreateWithRogerPage />} />
-                <Route path="/coaching" element={<CoachingPage />} />
-                <Route path="/about" element={<AboutPage />} />
-                
-                {/* Nouvelles routes */}
-                <Route path="/success-stories" element={<SuccessStoriesPage />} />
-                <Route path="/business-ideas" element={<BusinessIdeasPage />} />
-                
-                {/* Routes des guides */}
-                <Route path="/guides" element={<GuidesHub />} />
-                <Route path="/guides/maitrise-digitale" element={<GuideDigitalDetox />} />
-                
-                {/* Route de test */}
-                <Route path="/test" element={<TestPage />} />
-                
-                {/* Route 404 - DOIT ÊTRE EN DERNIER */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </main>
-            <Analytics />
-            <ChatWidget />
-          </div>
-        </ErrorBoundary>
-      </DataProvider>
-    </Router>
+    <HelmetProvider>
+      <Router>
+        <DataProvider>
+          <ErrorBoundary>
+            <div className="relative min-h-screen bg-black overflow-x-hidden">
+              <ResponsiveNavbar />
+              <main className="relative z-[1]">
+                <Routes>
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/articles" element={<AllArticlesPage />} />
+                  <Route path="/article/:slug" element={<ArticlePageNEW />} />
+                  <Route path="/emission/:slug" element={<EmissionPage />} />
+                  <Route path="/rubrique/:categorySlug" element={<CategoryPage />} />
+                  <Route path="/rubrique/:categorySlug/:subcategorySlug" element={<SubcategoryPage />} />
+                  <Route path="/podcasts" element={<PodcastPage />} />
+                  <Route path="/emissions" element={<EmissionsPage />} />
+                  <Route path="/club" element={<ClubPage />} />
+                  <Route path="/create-with-roger" element={<CreateWithRogerPage />} />
+                  <Route path="/coaching" element={<CoachingPage />} />
+                  <Route path="/about" element={<AboutPage />} />
+                  
+                  {/* Nouvelles routes */}
+                  <Route path="/success-stories" element={<SuccessStoriesPage />} />
+                  <Route path="/business-ideas" element={<BusinessIdeasPage />} />
+                  
+                  {/* Routes des guides */}
+                  <Route path="/guides" element={<GuidesHub />} />
+                  <Route path="/guides/maitrise-digitale" element={<GuideDigitalDetox />} />
+                  
+                  {/* Route de test */}
+                  <Route path="/test" element={<TestPage />} />
+                  
+                  {/* Route 404 - DOIT ÊTRE EN DERNIER */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </main>
+              <Analytics />
+              <ChatWidget />
+            </div>
+          </ErrorBoundary>
+        </DataProvider>
+      </Router>
+    </HelmetProvider>
   );
 }
 
