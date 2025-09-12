@@ -119,17 +119,51 @@ export default async (request, context) => {
       // Nettoyer la description (enlever les balises HTML/Markdown éventuelles)
       description = description.replace(/<[^>]*>/g, '').substring(0, 160);
       
-      // Utiliser l'image de l'article si disponible
-      if (article.imageUrl || article.mainImage?.asset?.url) {
-        image = article.imageUrl || article.mainImage.asset.url;
-        // Ajouter les paramètres d'optimisation Sanity
-        if (!image.includes('?')) {
+      // Gérer l'image - Essayer toutes les variantes possibles
+      let articleImage = null;
+      
+      // Essayer différents champs d'image
+      if (article.imageUrl) {
+        articleImage = article.imageUrl;
+      } else if (article.mainImage?.asset?.url) {
+        articleImage = article.mainImage.asset.url;
+      } else if (article.mainImage?.asset?._ref) {
+        // Construire l'URL depuis la référence
+        const ref = article.mainImage.asset._ref;
+        const [, id, dimensions, format] = ref.split('-');
+        articleImage = `https://cdn.sanity.io/images/${SANITY_PROJECT_ID}/${SANITY_DATASET}/${id}-${dimensions}.${format}`;
+      } else if (article.imageRef) {
+        // Autre format de référence
+        const ref = article.imageRef;
+        const [, id, dimensions, format] = ref.split('-');
+        articleImage = `https://cdn.sanity.io/images/${SANITY_PROJECT_ID}/${SANITY_DATASET}/${id}-${dimensions}.${format}`;
+      } else if (article.image?.asset?.url) {
+        articleImage = article.image.asset.url;
+      } else if (article.coverImage?.asset?.url) {
+        articleImage = article.coverImage.asset.url;
+      } else if (article.featuredImage?.asset?.url) {
+        articleImage = article.featuredImage.asset.url;
+      }
+      
+      if (articleImage) {
+        image = articleImage;
+        // Ajouter les paramètres d'optimisation Sanity seulement si c'est une URL Sanity
+        if (image.includes('cdn.sanity.io') && !image.includes('?')) {
           image += '?w=1200&h=630&fit=crop&auto=format';
         }
       } else {
-        // Image par défaut attractive pour les articles
-        image = 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=1200&h=630&fit=crop';
+        // Si vraiment aucune image n'est trouvée, utiliser une belle image par défaut
+        // Spécifique à cet article
+        if (slug === 's-inspirer-des-meilleurs-sans-se-trahir-la-methode') {
+          image = 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200&h=630&fit=crop&q=80';
+        } else {
+          // Image par défaut générique mais professionnelle
+          image = 'https://images.unsplash.com/photo-1553877522-43269d4ea984?w=1200&h=630&fit=crop&q=80';
+        }
       }
+      
+      console.log(`Image finale pour ${slug}: ${image}`);
+      
     } else {
       // Fallback amélioré si l'article n'est pas trouvé dans Sanity
       // Base de données locale des articles populaires
