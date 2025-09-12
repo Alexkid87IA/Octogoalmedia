@@ -106,9 +106,17 @@ export default async (request, context) => {
     // Essayer de récupérer les données depuis Sanity
     const article = await fetchArticleFromSanity(slug);
     
-    if (article) {
+    if (article && article.title) {
       title = `${article.title} - High Value Media`;
-      description = article.excerpt || article.description || `Lisez notre article sur ${article.title}`;
+      
+      // Chercher la description dans plusieurs champs possibles
+      description = article.excerpt || 
+                   article.description || 
+                   article.summary ||
+                   `${article.title} - Découvrez cet article exclusif sur High Value Media`;
+      
+      // Nettoyer la description (enlever les balises HTML/Markdown éventuelles)
+      description = description.replace(/<[^>]*>/g, '').substring(0, 160);
       
       // Utiliser l'image de l'article si disponible
       if (article.mainImage?.asset?.url) {
@@ -117,12 +125,33 @@ export default async (request, context) => {
         if (!image.includes('?')) {
           image += '?w=1200&h=630&fit=crop&auto=format';
         }
+      } else {
+        // Image par défaut pour les articles
+        image = 'https://highvalue.media/og-article-default.jpg';
       }
     } else {
-      // Fallback si l'article n'est pas trouvé
+      // Fallback amélioré si l'article n'est pas trouvé
       const formattedSlug = slug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-      title = `${formattedSlug} - High Value Media`;
-      description = `Lisez notre article sur ${formattedSlug.toLowerCase()} et découvrez nos insights exclusifs.`;
+      
+      // Titres et descriptions spécifiques pour certains articles connus
+      const articleMetaFallbacks = {
+        'sleep-streaming': {
+          title: 'Sleep Streaming : La Nouvelle Tendance Lucrative',
+          description: 'Découvrez comment des créateurs gagnent de l\'argent en dormant grâce au sleep streaming.'
+        },
+        'comment-devenir-riche': {
+          title: 'Comment Devenir Riche : Guide Complet',
+          description: 'Les stratégies éprouvées pour construire sa richesse et atteindre la liberté financière.'
+        }
+      };
+      
+      if (articleMetaFallbacks[slug]) {
+        title = `${articleMetaFallbacks[slug].title} - High Value Media`;
+        description = articleMetaFallbacks[slug].description;
+      } else {
+        title = `${formattedSlug} - High Value Media`;
+        description = `Lisez notre article sur ${formattedSlug.toLowerCase()} et découvrez nos insights exclusifs pour développer votre potentiel.`;
+      }
     }
   }
   
