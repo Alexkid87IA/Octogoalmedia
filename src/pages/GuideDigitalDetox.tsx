@@ -82,14 +82,14 @@ const GuideDigitalDetox: React.FC = () => {
         <meta property="og:description" content={guide.excerpt} />
         <meta property="og:type" content="article" />
         <meta property="og:url" content="https://highvalue.media/guides/maitrise-digitale" />
-        <meta property="og:image" content="https://images.unsplash.com/photo-1512428559087-560fa5ceab42?w=1200&h=630&fit=crop" />
+        <meta property="og:image" content="https://26.staticbtf.eno.do/v1/57-default/3f8dd22f1c8fc2e00a6a725e2b8e2793/media.jpg" />
         <meta property="og:site_name" content="High Value" />
         
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={`${guide.title} - ${guide.subtitle}`} />
         <meta name="twitter:description" content={guide.excerpt} />
-        <meta name="twitter:image" content="https://images.unsplash.com/photo-1512428559087-560fa5ceab42?w=1200&h=630&fit=crop" />
+        <meta name="twitter:image" content="https://26.staticbtf.eno.do/v1/57-default/3f8dd22f1c8fc2e00a6a725e2b8e2793/media.jpg" />
         
         {/* Auteur et date */}
         <meta name="author" content={guide.author} />
