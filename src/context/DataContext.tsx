@@ -43,6 +43,14 @@ const QUERIES = {
     }
   `,
   
+  // Derniers articles publiés (pour le widget Flash)
+  LATEST_ARTICLES: `
+    *[_type == "article"] | order(publishedAt desc)[0...20] {
+      _id, title, slug, mainImage, excerpt, publishedAt, readingTime,
+      categories[]->{_id, title, slug, color}
+    }
+  `,
+  
   // Univers éditoriaux
   UNIVERSES: `
     *[_type == "universe"] | order(_createdAt desc) {
@@ -91,6 +99,7 @@ interface DataContextType {
   // Les données
   featuredArticles: SanityArticle[];
   recentArticles: SanityArticle[];
+  latestArticles: SanityArticle[];
   universes: SanityUniverse[];
   clubFeatures: SanityClubFeature[];
   clubPricing: SanityClubPricing[];
@@ -117,6 +126,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   // États pour stocker les données
   const [featuredArticles, setFeaturedArticles] = useState<SanityArticle[]>([]);
   const [recentArticles, setRecentArticles] = useState<SanityArticle[]>([]);
+  const [latestArticles, setLatestArticles] = useState<SanityArticle[]>([]);
   const [universes, setUniverses] = useState<SanityUniverse[]>([]);
   const [clubFeatures, setClubFeatures] = useState<SanityClubFeature[]>([]);
   const [clubPricing, setClubPricing] = useState<SanityClubPricing[]>([]);
@@ -141,6 +151,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       const [
         featuredData,
         recentData,
+        latestData,
         universesData,
         featuresData,
         pricingData,
@@ -150,6 +161,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       ] = await Promise.all([
         sanityCache.fetch<SanityArticle[]>(QUERIES.FEATURED_ARTICLES),
         sanityCache.fetch<SanityArticle[]>(QUERIES.RECENT_ARTICLES),
+        sanityCache.fetch<SanityArticle[]>(QUERIES.LATEST_ARTICLES),
         sanityCache.fetch<SanityUniverse[]>(QUERIES.UNIVERSES),
         sanityCache.fetch<SanityClubFeature[]>(QUERIES.CLUB_FEATURES),
         sanityCache.fetch<SanityClubPricing[]>(QUERIES.CLUB_PRICING),
@@ -168,6 +180,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       // Mettre à jour les états avec les données reçues
       setFeaturedArticles(featuredData || []);
       setRecentArticles(finalRecentData || []);
+      setLatestArticles(latestData || []);
       setUniverses(universesData || []);
       setClubFeatures(featuresData || []);
       setClubPricing(pricingData || []);
@@ -178,6 +191,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       console.log('✅ Données chargées avec succès');
       console.log(`Articles featured: ${featuredData?.length || 0}`);
       console.log(`Articles trending: ${finalRecentData?.length || 0}`);
+      console.log(`Articles latest (Flash): ${latestData?.length || 0}`);
     } catch (err) {
       console.error('❌ Erreur lors du chargement des données:', err);
       setError('Impossible de charger les données. Veuillez réessayer.');
@@ -203,6 +217,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const value: DataContextType = {
     featuredArticles,
     recentArticles,
+    latestArticles,
     universes,
     clubFeatures,
     clubPricing,

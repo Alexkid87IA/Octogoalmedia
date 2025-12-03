@@ -5,7 +5,7 @@ import {
   Share2, ArrowRight, Clock, Sparkles, PenTool, Zap,
   TrendingUp, Hash, Users, Calendar, MessageCircle,
   BookOpen, Award, Eye, ThumbsUp, Bookmark, Instagram,
-  ChevronLeft, ChevronRight, Bell, Star
+  Bell, Star
 } from "lucide-react";
 import { SanityArticle, VerticalColors, TableOfContentsHeading } from "../../../types/article.types";
 import ArticleAuthor from "../ui/ArticleAuthor";
@@ -36,31 +36,6 @@ const ArticleSidebar: React.FC<ArticleSidebarProps> = ({
   const [popularArticles, setPopularArticles] = useState<SanityArticle[]>([]);
   const [showMoreRelated, setShowMoreRelated] = useState(false);
   const [showMoreLatest, setShowMoreLatest] = useState(false);
-  const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
-  
-  // Citations inspirantes
-  const quotes = [
-    { quote: "Le succès c'est d'aller d'échec en échec sans perdre son enthousiasme.", author: "Winston Churchill" },
-    { quote: "Dans 20 ans, vous serez plus déçu par les choses que vous n'avez pas faites que par celles que vous avez faites.", author: "Mark Twain" },
-    { quote: "La meilleure façon de prédire l'avenir est de le créer.", author: "Peter Drucker" },
-    { quote: "Le seul endroit où le succès vient avant le travail, c'est dans le dictionnaire.", author: "Vidal Sassoon" },
-    { quote: "Les opportunités ne se présentent pas, elles se créent.", author: "Chris Grosser" },
-    { quote: "L'innovation distingue les leaders des suiveurs.", author: "Steve Jobs" },
-    { quote: "Ne rêvez pas votre vie, vivez vos rêves.", author: "Anonyme" },
-    { quote: "L'échec est le fondement de la réussite.", author: "Lao Tseu" },
-    { quote: "Celui qui déplace une montagne commence par déplacer de petites pierres.", author: "Confucius" },
-    { quote: "Le succès n'est pas final, l'échec n'est pas fatal : c'est le courage de continuer qui compte.", author: "Winston Churchill" },
-    { quote: "Votre temps est limité, ne le gâchez pas en vivant la vie de quelqu'un d'autre.", author: "Steve Jobs" },
-    { quote: "La différence entre l'ordinaire et l'extraordinaire, c'est ce petit extra.", author: "Jimmy Johnson" },
-    { quote: "Les gagnants trouvent des moyens, les perdants des excuses.", author: "Franklin D. Roosevelt" },
-    { quote: "N'attendez pas. Le moment ne sera jamais parfait.", author: "Napoleon Hill" },
-    { quote: "Le futur appartient à ceux qui croient en la beauté de leurs rêves.", author: "Eleanor Roosevelt" },
-    { quote: "Soit vous courez le jour, soit le jour vous court.", author: "Jim Rohn" },
-    { quote: "Le seul impossible est celui que l'on ne tente pas.", author: "Anonyme" },
-    { quote: "Chaque expert a d'abord été un débutant.", author: "Helen Hayes" },
-    { quote: "L'action est la clé fondamentale de tout succès.", author: "Pablo Picasso" },
-    { quote: "Si vous voulez quelque chose que vous n'avez jamais eu, faites quelque chose que vous n'avez jamais fait.", author: "Thomas Jefferson" }
-  ];
   
   // Fonction pour formater la date relative
   const getRelativeTime = (date: string) => {
@@ -82,15 +57,6 @@ const ArticleSidebar: React.FC<ArticleSidebarProps> = ({
     // Simuler les articles populaires (à remplacer par un vrai appel API)
     setPopularArticles(relatedArticles.slice(0, 5));
   }, [relatedArticles]);
-
-  // Auto-rotation des citations
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentQuoteIndex((prev) => (prev + 1) % quotes.length);
-    }, 5000); // Change toutes les 5 secondes
-
-    return () => clearInterval(interval);
-  }, [quotes.length]);
 
   // Tags populaires mockés
   const popularTags = [
@@ -610,81 +576,6 @@ const ArticleSidebar: React.FC<ArticleSidebarProps> = ({
 
         {/* CTA Club Élite */}
         <ArticleCTA colors={colors} />
-
-        {/* Citation Inspirante avec Carrousel */}
-        <div className="bg-gradient-to-br from-black via-gray-900 to-black rounded-2xl p-8 border border-white/10 min-h-[350px] h-[350px] flex flex-col">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-2">
-              <Sparkles size={18} className="text-amber-400" />
-              <h3 className="text-lg font-semibold text-white">
-                Dose d'inspiration
-              </h3>
-            </div>
-            <div className="flex items-center gap-0.5 max-w-[180px] overflow-hidden">
-              {quotes.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentQuoteIndex(index)}
-                  className={`rounded-full transition-all flex-shrink-0 ${
-                    index === currentQuoteIndex 
-                      ? 'bg-amber-400 w-3 h-1.5' 
-                      : 'bg-gray-600 hover:bg-gray-500 w-1 h-1'
-                  }`}
-                  style={{ margin: '0 1px' }}
-                />
-              ))}
-            </div>
-          </div>
-          
-          <div className="flex-1 flex items-center justify-center relative px-4">
-            <div className="w-full">
-              <div className="relative">
-                {/* Guillemets décoratifs */}
-                <div className="absolute -top-6 -left-6">
-                  <span className="text-7xl text-amber-400/20 font-serif">"</span>
-                </div>
-                
-                {/* Citation avec hauteur fixe */}
-                <div className="min-h-[140px] flex flex-col justify-center">
-                  <blockquote className="text-center px-6">
-                    <p className="text-base md:text-lg text-white leading-relaxed mb-4 font-light">
-                      {quotes[currentQuoteIndex].quote}
-                    </p>
-                    <footer className="text-sm text-amber-400/90 font-medium">
-                      — {quotes[currentQuoteIndex].author}
-                    </footer>
-                  </blockquote>
-                </div>
-                
-                <div className="absolute -bottom-6 -right-6 rotate-180">
-                  <span className="text-7xl text-amber-400/20 font-serif">"</span>
-                </div>
-              </div>
-            </div>
-            
-            {/* Boutons de navigation */}
-            <button
-              onClick={() => setCurrentQuoteIndex((prev) => (prev - 1 + quotes.length) % quotes.length)}
-              className="absolute left-0 p-2 rounded-full bg-white/5 hover:bg-white/10 transition-all group"
-              aria-label="Citation précédente"
-            >
-              <ChevronLeft size={16} className="text-gray-400 group-hover:text-white" />
-            </button>
-            <button
-              onClick={() => setCurrentQuoteIndex((prev) => (prev + 1) % quotes.length)}
-              className="absolute right-0 p-2 rounded-full bg-white/5 hover:bg-white/10 transition-all group"
-              aria-label="Citation suivante"
-            >
-              <ChevronRight size={16} className="text-gray-400 group-hover:text-white" />
-            </button>
-          </div>
-          
-          <div className="text-center mt-4">
-            <p className="text-xs text-gray-500">
-              {currentQuoteIndex + 1} / {quotes.length}
-            </p>
-          </div>
-        </div>
     </div>
   );
 };

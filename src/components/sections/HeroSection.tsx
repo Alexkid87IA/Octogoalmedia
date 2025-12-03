@@ -1,17 +1,17 @@
 // src/components/sections/HeroSection.tsx
-// VERSION OPTIMISÉE - Garde le design original, optimise seulement les performances
+// VERSION AVEC WIDGET FLASH - Design sombre intégré
 
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Quote, Calendar, Clock, User, Sparkles, TrendingUp, Star, Play, Pause, Volume2, VolumeX, Share2, Heart, ChevronLeft, ChevronRight } from 'lucide-react';
-import SafeImage from '../common/SafeImage'; // Utilise SafeImage qui fonctionne
+import { motion } from 'framer-motion';
+import { ArrowRight, Calendar, Clock, Sparkles, ChevronUp, ChevronDown, Zap } from 'lucide-react';
+import SafeImage from '../common/SafeImage';
 import ErrorBoundary from '../common/ErrorBoundary';
-import { useData } from '../../context/DataContext'; // CHANGEMENT : Utilise le contexte
+import { useData } from '../../context/DataContext';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 import { SanityArticle } from '../../types/sanity';
 
-// Données mockées pour fallback (inchangées)
+// Données mockées pour fallback
 const mockFeaturedArticle: SanityArticle = {
   _id: '1',
   title: "Comment développer un mindset d'exception",
@@ -40,12 +40,9 @@ const mockRecentArticles: SanityArticle[] = [
     _id: '2',
     title: "L'art de la résilience entrepreneuriale face aux défis",
     slug: { _type: "slug", current: 'resilience-entrepreneuriale' },
-    mainImage: {
-      _type: "image",
-      asset: { _ref: 'https://picsum.photos/600/400?random=2', _type: "reference" }
-    },
+    mainImage: { _type: "image", asset: { _ref: 'https://picsum.photos/600/400?random=2', _type: "reference" } },
     excerpt: "Découvrez comment transformer les obstacles en opportunités",
-    publishedAt: "2024-03-19",
+    publishedAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
     categories: [{ _id: 'cat2', title: 'Mental', slug: { _type: "slug", current: 'mental' } }],
     readingTime: '8 min'
   },
@@ -53,38 +50,29 @@ const mockRecentArticles: SanityArticle[] = [
     _id: '3',
     title: "Comment développer son leadership authentique",
     slug: { _type: "slug", current: 'developper-leadership' },
-    mainImage: {
-      _type: "image",
-      asset: { _ref: 'https://picsum.photos/600/400?random=3', _type: "reference" }
-    },
+    mainImage: { _type: "image", asset: { _ref: 'https://picsum.photos/600/400?random=3', _type: "reference" } },
     excerpt: "Les qualités essentielles d'un leader moderne",
-    publishedAt: "2024-03-18",
-    categories: [{ _id: 'cat3', title: 'Leadership', slug: { _type: "slug", current: 'leadership' } }],
+    publishedAt: new Date(Date.now() - 1000 * 60 * 60).toISOString(),
+    categories: [{ _id: 'cat3', title: 'Business', slug: { _type: "slug", current: 'business' } }],
     readingTime: '10 min'
   },
   {
     _id: '4',
     title: "Les clés d'une communication impactante",
     slug: { _type: "slug", current: 'communication-impactante' },
-    mainImage: {
-      _type: "image",
-      asset: { _ref: 'https://picsum.photos/600/400?random=4', _type: "reference" }
-    },
+    mainImage: { _type: "image", asset: { _ref: 'https://picsum.photos/600/400?random=4', _type: "reference" } },
     excerpt: "Techniques pour captiver votre audience",
-    publishedAt: "2024-03-17",
-    categories: [{ _id: 'cat4', title: 'Skills', slug: { _type: "slug", current: 'skills' } }],
+    publishedAt: new Date(Date.now() - 1000 * 60 * 90).toISOString(),
+    categories: [{ _id: 'cat4', title: 'Story', slug: { _type: "slug", current: 'story' } }],
     readingTime: '6 min'
   },
   {
     _id: '5',
-    title: "Innovation et développement durable : le duo gagnant",
+    title: "Innovation et développement durable",
     slug: { _type: "slug", current: 'innovation-durable' },
-    mainImage: {
-      _type: "image",
-      asset: { _ref: 'https://picsum.photos/600/400?random=5', _type: "reference" }
-    },
+    mainImage: { _type: "image", asset: { _ref: 'https://picsum.photos/600/400?random=5', _type: "reference" } },
     excerpt: "Concilier croissance et responsabilité",
-    publishedAt: "2024-03-16",
+    publishedAt: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
     categories: [{ _id: 'cat5', title: 'Business', slug: { _type: "slug", current: 'business' } }],
     readingTime: '9 min'
   },
@@ -92,122 +80,132 @@ const mockRecentArticles: SanityArticle[] = [
     _id: '6',
     title: "Le pouvoir du storytelling dans le business",
     slug: { _type: "slug", current: 'pouvoir-storytelling' },
-    mainImage: {
-      _type: "image",
-      asset: { _ref: 'https://picsum.photos/600/400?random=6', _type: "reference" }
-    },
+    mainImage: { _type: "image", asset: { _ref: 'https://picsum.photos/600/400?random=6', _type: "reference" } },
     excerpt: "L'art de raconter des histoires qui marquent",
-    publishedAt: "2024-03-15",
-    categories: [{ _id: 'cat6', title: 'Marketing', slug: { _type: "slug", current: 'marketing' } }],
+    publishedAt: new Date(Date.now() - 1000 * 60 * 180).toISOString(),
+    categories: [{ _id: 'cat6', title: 'Story', slug: { _type: "slug", current: 'story' } }],
     readingTime: '7 min'
+  },
+  {
+    _id: '7',
+    title: "Les secrets des entrepreneurs à succès",
+    slug: { _type: "slug", current: 'secrets-entrepreneurs' },
+    mainImage: { _type: "image", asset: { _ref: 'https://picsum.photos/600/400?random=7', _type: "reference" } },
+    excerpt: "Ce qui différencie les leaders",
+    publishedAt: new Date(Date.now() - 1000 * 60 * 240).toISOString(),
+    categories: [{ _id: 'cat7', title: 'Mental', slug: { _type: "slug", current: 'mental' } }],
+    readingTime: '8 min'
+  },
+  {
+    _id: '8',
+    title: "Transformer sa passion en business rentable",
+    slug: { _type: "slug", current: 'passion-business' },
+    mainImage: { _type: "image", asset: { _ref: 'https://picsum.photos/600/400?random=8', _type: "reference" } },
+    excerpt: "Guide pratique pour entrepreneurs",
+    publishedAt: new Date(Date.now() - 1000 * 60 * 300).toISOString(),
+    categories: [{ _id: 'cat8', title: 'Business', slug: { _type: "slug", current: 'business' } }],
+    readingTime: '12 min'
+  },
+  {
+    _id: '9',
+    title: "L'intelligence émotionnelle au service du leadership",
+    slug: { _type: "slug", current: 'intelligence-emotionnelle' },
+    mainImage: { _type: "image", asset: { _ref: 'https://picsum.photos/600/400?random=9', _type: "reference" } },
+    excerpt: "Développer son QE pour mieux diriger",
+    publishedAt: new Date(Date.now() - 1000 * 60 * 360).toISOString(),
+    categories: [{ _id: 'cat9', title: 'Mental', slug: { _type: "slug", current: 'mental' } }],
+    readingTime: '10 min'
+  },
+  {
+    _id: '10',
+    title: "Créer une culture d'entreprise forte",
+    slug: { _type: "slug", current: 'culture-entreprise' },
+    mainImage: { _type: "image", asset: { _ref: 'https://picsum.photos/600/400?random=10', _type: "reference" } },
+    excerpt: "Les fondements d'une équipe soudée",
+    publishedAt: new Date(Date.now() - 1000 * 60 * 420).toISOString(),
+    categories: [{ _id: 'cat10', title: 'Business', slug: { _type: "slug", current: 'business' } }],
+    readingTime: '9 min'
+  },
+  {
+    _id: '11',
+    title: "Maîtriser l'art de la négociation",
+    slug: { _type: "slug", current: 'art-negociation' },
+    mainImage: { _type: "image", asset: { _ref: 'https://picsum.photos/600/400?random=11', _type: "reference" } },
+    excerpt: "Techniques avancées pour conclure",
+    publishedAt: new Date(Date.now() - 1000 * 60 * 480).toISOString(),
+    categories: [{ _id: 'cat11', title: 'Business', slug: { _type: "slug", current: 'business' } }],
+    readingTime: '11 min'
+  },
+  {
+    _id: '12',
+    title: "La productivité des top performers",
+    slug: { _type: "slug", current: 'productivite-performers' },
+    mainImage: { _type: "image", asset: { _ref: 'https://picsum.photos/600/400?random=12', _type: "reference" } },
+    excerpt: "Habitudes et routines gagnantes",
+    publishedAt: new Date(Date.now() - 1000 * 60 * 540).toISOString(),
+    categories: [{ _id: 'cat12', title: 'Mental', slug: { _type: "slug", current: 'mental' } }],
+    readingTime: '8 min'
   }
 ];
 
-const dailyQuotes = [
-  {
-    text: "Le succès n'est pas une destination, c'est un voyage constant d'apprentissage et de dépassement de soi.",
-    author: "Roger Ormières",
-    role: "Fondateur High Value",
-    avatar: "RO"
-  },
-  {
-    text: "L'excellence n'est jamais un accident. C'est toujours le résultat d'une intention élevée et d'une exécution intelligente.",
-    author: "Sarah Mitchell",
-    role: "CEO Fortune 500",
-    avatar: "SM"
-  },
-  {
-    text: "Votre mindset détermine votre plafond. Élevez vos pensées, élevez votre vie.",
-    author: "Marcus Chen",
-    role: "Serial Entrepreneur",
-    avatar: "MC"
+// Fonction pour formater l'heure de publication
+const formatPublishTime = (dateString: string | undefined): string => {
+  if (!dateString) return '';
+  
+  const date = new Date(dateString);
+  const now = new Date();
+  
+  // Si c'est aujourd'hui, afficher l'heure
+  if (date.toDateString() === now.toDateString()) {
+    return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
   }
-];
+  
+  // Sinon afficher la date courte
+  return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
+};
+
+// Couleurs par catégorie
+const categoryColors: Record<string, { text: string; gradient: string }> = {
+  'Story': { text: 'text-amber-400', gradient: 'from-amber-500 to-orange-500' },
+  'Business': { text: 'text-blue-400', gradient: 'from-blue-500 to-cyan-500' },
+  'Mental': { text: 'text-purple-400', gradient: 'from-purple-500 to-violet-500' },
+  'Society': { text: 'text-emerald-400', gradient: 'from-emerald-500 to-teal-500' },
+  'Skills': { text: 'text-cyan-400', gradient: 'from-cyan-500 to-blue-500' },
+  'Leadership': { text: 'text-orange-400', gradient: 'from-orange-500 to-red-500' },
+  'Marketing': { text: 'text-pink-400', gradient: 'from-pink-500 to-rose-500' },
+  'Mindset': { text: 'text-violet-400', gradient: 'from-violet-500 to-purple-500' }
+};
 
 export const HeroSection = () => {
-  // CHANGEMENT : Utilise le contexte global au lieu d'états locaux pour les données
-  const { featuredArticles, recentArticles, isLoading: contextLoading } = useData();
+  const { featuredArticles, recentArticles, latestArticles, isLoading: contextLoading } = useData();
   
-  // DEBUG : Voir ce qui est récupéré
-  useEffect(() => {
-    console.log('🔍 DEBUG HeroSection:');
-    console.log('Featured Articles:', featuredArticles);
-    console.log('Recent Articles:', recentArticles);
-    if (recentArticles && recentArticles.length > 0) {
-      console.log('First article mainImage:', recentArticles[0].mainImage);
-      console.log('Image ref:', recentArticles[0].mainImage?.asset?._ref);
-    }
-  }, [featuredArticles, recentArticles]);
-  
-  // Fallback sur les données mockées si pas de données du contexte
   const [featuredArticle, setFeaturedArticle] = useState<SanityArticle>(mockFeaturedArticle);
   const [displayedArticles, setDisplayedArticles] = useState<SanityArticle[]>(mockRecentArticles);
-  const [dataSource, setDataSource] = useState<'cms' | 'mock'>('mock');
+  const [flashWidgetArticles, setFlashWidgetArticles] = useState<SanityArticle[]>(mockRecentArticles);
   
-  // États pour l'UI (inchangés)
-  const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
-  const [isAutoPlay, setIsAutoPlay] = useState(true);
-  const [isMuted, setIsMuted] = useState(true);
-  const [isLiked, setIsLiked] = useState(false);
-  const [displayedText, setDisplayedText] = useState('');
-  const [isTyping, setIsTyping] = useState(true);
+  // États pour le widget Flash
+  const [scrollPosition, setScrollPosition] = useState(0);
+  const maxVisibleItems = 8;
 
-  const currentQuote = dailyQuotes[currentQuoteIndex];
-
-  // CHANGEMENT : Utilise les données du contexte quand elles sont disponibles
   useEffect(() => {
     if (!contextLoading) {
       if (featuredArticles && featuredArticles.length > 0) {
         setFeaturedArticle(featuredArticles[0]);
-        setDataSource('cms');
       }
-      
       if (recentArticles && recentArticles.length > 0) {
-        // Prendre les 6 articles les plus récents pour les tendances
+        // Articles trending pour la grille en bas
         setDisplayedArticles(recentArticles.slice(0, 6));
-        setDataSource('cms');
+      }
+      if (latestArticles && latestArticles.length > 0) {
+        // Derniers articles publiés pour le widget Flash (déjà triés par date)
+        setFlashWidgetArticles(latestArticles);
       }
     }
-  }, [contextLoading, featuredArticles, recentArticles]);
+  }, [contextLoading, featuredArticles, recentArticles, latestArticles]);
 
-  // Effet typewriter pour la citation (inchangé)
-  useEffect(() => {
-    setDisplayedText('');
-    setIsTyping(true);
-    
-    const text = currentQuote.text;
-    let currentIndex = 0;
-    
-    const interval = setInterval(() => {
-      if (currentIndex <= text.length) {
-        setDisplayedText(text.slice(0, currentIndex));
-        currentIndex++;
-      } else {
-        setIsTyping(false);
-        clearInterval(interval);
-      }
-    }, 30);
-
-    return () => clearInterval(interval);
-  }, [currentQuoteIndex, currentQuote.text]);
-
-  // Rotation automatique des citations (inchangé)
-  useEffect(() => {
-    if (isAutoPlay && !isTyping) {
-      const timeout = setTimeout(() => {
-        handleNextQuote();
-      }, 5000);
-      return () => clearTimeout(timeout);
-    }
-  }, [isAutoPlay, isTyping, currentQuoteIndex]);
-
-  const handleNextQuote = () => {
-    setCurrentQuoteIndex((prev) => (prev + 1) % dailyQuotes.length);
-  };
-
-  const handlePrevQuote = () => {
-    setCurrentQuoteIndex((prev) => (prev - 1 + dailyQuotes.length) % dailyQuotes.length);
-  };
+  const flashArticles = flashWidgetArticles.slice(scrollPosition, scrollPosition + maxVisibleItems);
+  const canScrollUp = scrollPosition > 0;
+  const canScrollDown = scrollPosition + maxVisibleItems < flashWidgetArticles.length;
 
   if (contextLoading) {
     return (
@@ -217,44 +215,31 @@ export const HeroSection = () => {
     );
   }
 
-  const categoryColors = {
-    'Story': 'from-amber-500 to-orange-500',
-    'Business': 'from-blue-500 to-cyan-500',
-    'Mental': 'from-purple-500 to-violet-500',
-    'Society': 'from-emerald-500 to-teal-500'
-  };
-
   return (
     <ErrorBoundary>
       <section className="relative min-h-screen flex items-center py-12">
-        {/* Background animé spectaculaire (inchangé sauf le nombre de particules) */}
+        {/* Background */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-black via-neutral-900 to-black" />
           
-          {/* Particules animées - CHANGEMENT : 15 au lieu de 30 */}
           <div className="absolute inset-0">
             {[...Array(15)].map((_, i) => (
               <motion.div
                 key={i}
                 className="absolute w-1 h-1 bg-blue-500/30 rounded-full"
                 initial={{ 
-                  x: Math.random() * window.innerWidth,
-                  y: Math.random() * window.innerHeight 
+                  x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1000),
+                  y: Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 800)
                 }}
                 animate={{
-                  x: Math.random() * window.innerWidth,
-                  y: Math.random() * window.innerHeight
+                  x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1000),
+                  y: Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 800)
                 }}
-                transition={{
-                  duration: 20 + Math.random() * 20,
-                  repeat: Infinity,
-                  ease: "linear"
-                }}
+                transition={{ duration: 20 + Math.random() * 20, repeat: Infinity, ease: "linear" }}
               />
             ))}
           </div>
 
-          {/* Mesh gradient (inchangé) */}
           <div className="absolute inset-0">
             <div className="absolute top-0 left-1/3 w-[600px] h-[600px] bg-blue-500/10 rounded-full blur-[120px] animate-pulse" />
             <div className="absolute bottom-0 right-1/3 w-[600px] h-[600px] bg-violet-500/10 rounded-full blur-[120px] animate-pulse animation-delay-2000" />
@@ -262,354 +247,167 @@ export const HeroSection = () => {
         </div>
 
         <div className="container relative z-10">
-          {/* Hero Principal avec Featured Article (structure inchangée) */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-16">
-            {/* Article Principal - Plus grand */}
+          {/* Hero Principal */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-16">
+            
+            {/* Article Principal */}
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8 }}
               className="lg:col-span-8"
             >
-              <Link to={`/article/${featuredArticle.slug?.current}`} className="group block relative h-full">
-                <div className="relative h-full min-h-[550px] lg:min-h-[650px] rounded-3xl overflow-hidden">
-                  {/* Utilise SafeImage */}
-                  <SafeImage
-                    source={featuredArticle.mainImage}
-                    alt={featuredArticle.title}
-                    width={1200}
-                    height={800}
-                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
-                  />
-                  
-                  {/* Overlay gradient amélioré - BEAUCOUP PLUS LÉGER */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                  <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-transparent" />
-                  
-                  {/* Vignette très subtile sur les bords */}
-                  <div className="absolute inset-0" style={{
-                    boxShadow: 'inset 0 0 100px rgba(0,0,0,0.2)'
-                  }} />
-                  
-                  {/* Badge "À LA UNE" plus élégant (inchangé) */}
-                  <motion.div
-                    initial={{ x: -100, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    transition={{ delay: 0.3 }}
-                    className="absolute top-8 left-8"
-                  >
-                    <div className="flex items-center gap-2 px-4 py-2 bg-black/60 backdrop-blur-md border border-white/20 rounded-full">
-                      <Sparkles className="w-4 h-4 text-accent-cyan animate-pulse" />
-                      <span className="text-sm font-medium text-white uppercase tracking-wider">À la une</span>
-                      <div className="w-1.5 h-1.5 bg-accent-cyan rounded-full animate-pulse" />
+              <Link to={`/article/${featuredArticle.slug?.current}`} className="group block">
+                <div className="relative rounded-2xl overflow-hidden bg-neutral-900">
+                  {/* Image avec ratio 16:9 */}
+                  <div className="relative aspect-[16/9]">
+                    <SafeImage
+                      source={featuredArticle.mainImage}
+                      alt={featuredArticle.title}
+                      width={1200}
+                      height={675}
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
+                    
+                    {/* Overlay gradient */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+                    
+                    {/* Badge À LA UNE */}
+                    <div className="absolute top-4 left-4">
+                      <div className="flex items-center gap-2 px-3 py-1.5 bg-black/50 backdrop-blur-md border border-white/10 rounded-full">
+                        <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                        <span className="text-xs font-medium text-white uppercase tracking-wider">À la une</span>
+                      </div>
                     </div>
-                  </motion.div>
-                  
-                  {/* Contenu (modifié) */}
-                  <div className="absolute inset-x-0 bottom-0 p-8 lg:p-12">
-                    {featuredArticle.categories?.[0] && (
-                      <motion.div
-                        initial={{ y: 20, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        transition={{ delay: 0.4 }}
-                        className="inline-block mb-4"
-                      >
-                        <span className={`inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r ${categoryColors[featuredArticle.categories[0].title] || 'from-gray-500 to-gray-600'} rounded-full`}>
-                          <span className="text-sm font-medium text-white">
+                    
+                    {/* Contenu en bas */}
+                    <div className="absolute inset-x-0 bottom-0 p-6">
+                      {featuredArticle.categories?.[0] && (
+                        <span className={`inline-flex items-center px-3 py-1 mb-3 bg-gradient-to-r ${categoryColors[featuredArticle.categories[0].title]?.gradient || 'from-gray-500 to-gray-600'} rounded-full`}>
+                          <span className="text-xs font-semibold text-white">
                             {featuredArticle.categories[0].title}
                           </span>
                         </span>
-                      </motion.div>
-                    )}
-                    
-                    <motion.h1
-                      initial={{ y: 30, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      transition={{ delay: 0.5 }}
-                      className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6 leading-tight"
-                    >
-                      {featuredArticle.title}
-                    </motion.h1>
-                    
-                    <motion.div
-                      initial={{ y: 30, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      transition={{ delay: 0.7 }}
-                      className="flex items-center gap-6"
-                    >
-                      <div className="flex items-center gap-2 text-gray-300">
-                        <Calendar className="w-4 h-4" />
-                        <span>{new Date(featuredArticle.publishedAt || '').toLocaleDateString('fr-FR')}</span>
+                      )}
+                      
+                      <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-white mb-3 leading-tight group-hover:text-cyan-400 transition-colors">
+                        {featuredArticle.title}
+                      </h2>
+                      
+                      <div className="flex items-center gap-4 text-sm">
+                        <div className="flex items-center gap-1.5 text-gray-300">
+                          <Calendar className="w-4 h-4" />
+                          <span>{new Date(featuredArticle.publishedAt || '').toLocaleDateString('fr-FR')}</span>
+                        </div>
+                        <span className="inline-flex items-center gap-1.5 text-white font-medium group-hover:text-cyan-400 transition-colors">
+                          Lire l'article
+                          <ArrowRight className="w-4 h-4" />
+                        </span>
                       </div>
-                      <motion.span 
-                        className="inline-flex items-center gap-2 text-white font-medium"
-                        whileHover={{ x: 5 }}
-                      >
-                        Lire l'article
-                        <ArrowRight className="w-5 h-5" />
-                      </motion.span>
-                    </motion.div>
+                    </div>
                   </div>
                 </div>
               </Link>
             </motion.div>
 
-            {/* Citation du jour - VERSION AMÉLIORÉE (structure complète inchangée) */}
+            {/* ===== WIDGET FLASH ===== */}
             <motion.div
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
               className="lg:col-span-4"
             >
-              <div className="relative h-full">
-                <div className="sticky top-8">
-                  {/* Header amélioré */}
-                  <div className="flex items-center justify-between mb-6">
-                    <motion.div 
-                      className="flex items-center gap-3"
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.3 }}
-                    >
-                      {/* Badge animé */}
-                      <div className="relative">
-                        <div className="absolute inset-0 bg-gradient-to-r from-gray-300 to-gray-100 rounded-full blur-xl opacity-60 animate-pulse" />
-                        <div className="relative flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 backdrop-blur-sm rounded-full border border-gray-300/50 shadow-lg overflow-hidden">
-                          {/* Effet métallique brillant */}
-                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent animate-pulse"></div>
-                          <Quote className="w-4 h-4 text-gray-700 relative z-10" />
-                          <span className="text-xs font-bold text-gray-800 uppercase tracking-wider relative z-10">
-                            Inspirations du jour
-                          </span>
-                          <div className="w-1.5 h-1.5 bg-gray-600 rounded-full animate-pulse relative z-10" />
-                        </div>
-                      </div>
-                    </motion.div>
-
-                    {/* Contrôles */}
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => setIsAutoPlay(!isAutoPlay)}
-                        className="p-2 rounded-lg bg-gray-700/20 hover:bg-gray-700/30 transition-all hover:scale-110"
-                      >
-                        {isAutoPlay ? (
-                          <Pause className="w-4 h-4 text-gray-700" />
-                        ) : (
-                          <Play className="w-4 h-4 text-gray-700" />
-                        )}
-                      </button>
-                    </div>
+              {/* Le widget prend la même hauteur que le 16:9 de l'article (ratio calculé: 8:9) */}
+              <div className="lg:aspect-[8/9] bg-white/[0.03] backdrop-blur-sm border border-white/10 rounded-2xl overflow-hidden flex flex-col">
+                
+                {/* Header */}
+                <div className="border-b border-white/10 px-4 py-3">
+                  <div className="flex items-center gap-2 text-white font-semibold">
+                    <Zap className="w-4 h-4 text-cyan-400" />
+                    <span>Flash</span>
                   </div>
+                </div>
 
-                  {/* Carte 3D avec effet de perspective (structure complète inchangée) */}
-                  <motion.div
-                    className="relative"
-                  >
-                    {/* Bordure animée gradient */}
-                    <div className="absolute -inset-[1px] rounded-3xl opacity-90">
-                      <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-gray-400 via-gray-200 to-gray-400 shadow-xl animate-pulse" />
-                    </div>
-
-                    {/* Carte principale */}
-                    <div className="relative bg-gradient-to-br from-gray-200 via-gray-100 to-gray-300 backdrop-blur-2xl border border-gray-400/50 rounded-3xl p-8 overflow-hidden shadow-2xl">
-                      {/* Effet métallique brillant */}
-                      <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/40 to-transparent pointer-events-none"></div>
-                      <div className="absolute inset-0 bg-gradient-to-bl from-transparent via-white/20 to-transparent pointer-events-none animate-pulse"></div>
+                {/* Liste des articles - espacement réduit */}
+                <div className="flex-1 overflow-y-auto">
+                  <div className="divide-y divide-white/5 h-full">
+                    {flashArticles.map((article, index) => {
+                      const catTitle = article.categories?.[0]?.title || '';
+                      const catColor = categoryColors[catTitle]?.text || 'text-gray-400';
                       
-                      {/* Particules flottantes dans la carte - SIMPLIFIÉ */}
-                      <div className="absolute inset-0">
-                        {[...Array(8)].map((_, i) => (
-                          <motion.div
-                            key={i}
-                            className="absolute w-1 h-1 bg-white/60 rounded-full shadow-sm"
-                            initial={{
-                              x: Math.random() * 100 + '%',
-                              y: Math.random() * 100 + '%',
-                            }}
-                            animate={{
-                              y: [0, -20, 0],
-                              opacity: [0.3, 0.8, 0.3],
-                            }}
-                            transition={{
-                              duration: 8 + i * 2,
-                              repeat: Infinity,
-                              ease: "easeInOut"
-                            }}
-                          />
-                        ))}
-                      </div>
-
-                      {/* Background pattern */}
-                      <div 
-                        className="absolute inset-0 opacity-5"
-                        style={{
-                          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-                        }}
-                      />
-                      
-                      <AnimatePresence mode="wait">
+                      return (
                         <motion.div
-                          key={currentQuoteIndex}
-                          initial={{ opacity: 0, scale: 0.9, rotateX: -20 }}
-                          animate={{ opacity: 1, scale: 1, rotateX: 0 }}
-                          exit={{ opacity: 0, scale: 0.9, rotateX: 20 }}
-                          transition={{ duration: 0.5, type: "spring" }}
-                          className="relative z-10"
+                          key={article._id}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: index * 0.02 }}
                         >
-                          {/* Guillemets stylisés */}
-                          <div className="relative mb-6">
-                            <motion.div
-                              initial={{ scale: 0, rotate: -180 }}
-                              animate={{ scale: 1, rotate: 0 }}
-                              transition={{ delay: 0.2, type: "spring" }}
-                            >
-                              <Quote className="w-10 h-10 text-gray-700" />
-                            </motion.div>
-                          </div>
-                          
-                          {/* Citation avec effet typewriter */}
-                          <blockquote className="text-xl md:text-2xl font-medium text-gray-900 leading-relaxed mb-8 min-h-[120px]">
-                            {displayedText}
-                            {isTyping && (
-                              <motion.span
-                                animate={{ opacity: [1, 0] }}
-                                transition={{ duration: 0.5, repeat: Infinity }}
-                                className="inline-block w-0.5 h-6 bg-gray-700 ml-1"
-                              />
-                            )}
-                          </blockquote>
-                          
-                          {/* Auteur avec avatar animé */}
-                          <motion.div 
-                            className="flex items-center gap-4"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.3 }}
+                          <Link 
+                            to={`/article/${article.slug?.current}`}
+                            className="flex items-start gap-3 px-4 py-2 hover:bg-white/[0.03] transition-colors group"
                           >
-                            {/* Avatar avec effet glow */}
-                            <div className="relative">
-                              <div className="absolute inset-0 bg-gradient-to-br from-gray-600 to-gray-700 rounded-full blur-lg opacity-60 animate-pulse" />
-                              <div className="relative w-14 h-14 rounded-full bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center shadow-xl">
-                                <span className="text-white font-bold text-lg">
-                                  {currentQuote.avatar}
-                                </span>
-                              </div>
-                            </div>
+                            {/* Heure */}
+                            <span className="text-xs text-gray-500 font-mono min-w-[42px] pt-0.5">
+                              {formatPublishTime(article.publishedAt)}
+                            </span>
                             
-                            <div className="flex-1">
-                              <cite className="block text-gray-900 font-bold not-italic">
-                                {currentQuote.author}
-                              </cite>
-                              <span className="text-sm text-gray-600">
-                                {currentQuote.role}
+                            {/* Titre avec catégorie colorée */}
+                            <p className="flex-1 text-sm leading-tight">
+                              {catTitle && (
+                                <span className={`font-bold ${catColor}`}>
+                                  {catTitle} : 
+                                </span>
+                              )}
+                              <span className="text-gray-300 group-hover:text-white transition-colors ml-1">
+                                {article.title}
                               </span>
-                            </div>
-
-                            {/* Actions */}
-                            <div className="flex items-center gap-2">
-                              <motion.button
-                                whileTap={{ scale: 0.9 }}
-                                onClick={() => setIsLiked(!isLiked)}
-                                className="p-2 rounded-lg bg-gray-700/10 hover:bg-gray-700/20 transition-all"
-                              >
-                                <Heart 
-                                  className={`w-4 h-4 transition-all ${
-                                    isLiked ? 'text-red-500 fill-red-500' : 'text-gray-600'
-                                  }`}
-                                />
-                              </motion.button>
-                              <motion.button
-                                whileTap={{ scale: 0.9 }}
-                                className="p-2 rounded-lg bg-gray-700/10 hover:bg-gray-700/20 transition-all"
-                              >
-                                <Share2 className="w-4 h-4 text-gray-600" />
-                              </motion.button>
-                            </div>
-                          </motion.div>
+                            </p>
+                          </Link>
                         </motion.div>
-                      </AnimatePresence>
-                    </div>
-                  </motion.div>
-
-                  {/* Navigation et Progress bar combinés */}
-                  <div className="relative mt-6">
-                    <div className="flex items-center gap-3">
-                      {/* Bouton précédent */}
-                      <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        onClick={handlePrevQuote}
-                        className="p-2 rounded-full bg-gray-700/20 backdrop-blur-sm border border-gray-600/30 hover:bg-gray-700/30 transition-all"
-                      >
-                        <ChevronLeft className="w-4 h-4 text-gray-700" />
-                      </motion.button>
-
-                      {/* Progress bars */}
-                      <div className="flex gap-2 flex-1">
-                        {dailyQuotes.map((_, index) => (
-                          <button
-                            key={index}
-                            onClick={() => setCurrentQuoteIndex(index)}
-                            className="relative flex-1 h-1 bg-gray-400/30 rounded-full overflow-hidden"
-                          >
-                            <motion.div
-                              className="absolute inset-0 bg-gradient-to-r from-gray-600 to-gray-800"
-                              initial={{ scaleX: 0 }}
-                              animate={{ 
-                                scaleX: index === currentQuoteIndex ? 1 : 0
-                              }}
-                              transition={{ 
-                                duration: index === currentQuoteIndex && isAutoPlay && !isTyping ? 5 : 0.3,
-                                ease: "linear"
-                              }}
-                              style={{ transformOrigin: "left" }}
-                            />
-                          </button>
-                        ))}
-                      </div>
-
-                      {/* Bouton suivant */}
-                      <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        onClick={handleNextQuote}
-                        className="p-2 rounded-full bg-gray-700/20 backdrop-blur-sm border border-gray-600/30 hover:bg-gray-700/30 transition-all"
-                      >
-                        <ChevronRight className="w-4 h-4 text-gray-700" />
-                      </motion.button>
-                    </div>
+                      );
+                    })}
                   </div>
+                </div>
 
-                  {/* Stats avec animation */}
-                  <motion.div 
-                    className="grid grid-cols-3 gap-4 mt-6"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5 }}
+                {/* Footer */}
+                <div className="flex items-center justify-between px-4 py-2 border-t border-white/10 bg-white/[0.02]">
+                  <Link 
+                    to="/articles"
+                    className="text-sm text-gray-400 hover:text-white transition-colors"
                   >
-                    {[
-                      { label: 'Inspirés', value: '12K+', icon: Sparkles },
-                      { label: 'Partagés', value: '3.5K', icon: Share2 },
-                      { label: 'Aimés', value: '8.2K', icon: Heart }
-                    ].map((stat, index) => (
-                      <motion.div
-                        key={stat.label}
-                        className="relative text-center p-3 rounded-xl bg-gradient-to-br from-gray-100/80 to-gray-200/80 backdrop-blur-sm border border-gray-300/50 shadow-lg"
-                        whileHover={{ scale: 1.05, backgroundColor: "rgba(229,231,235,0.9)" }}
-                        transition={{ delay: index * 0.1 }}
-                      >
-                        <stat.icon className="w-4 h-4 text-gray-700 mx-auto mb-2" />
-                        <div className="text-xl font-bold text-gray-900">{stat.value}</div>
-                        <div className="text-xs text-gray-600 uppercase tracking-wider">{stat.label}</div>
-                      </motion.div>
-                    ))}
-                  </motion.div>
+                    Voir tous
+                  </Link>
+                  
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => canScrollUp && setScrollPosition(p => p - 1)}
+                      disabled={!canScrollUp}
+                      className={`p-1 rounded transition-all ${
+                        canScrollUp 
+                          ? 'text-gray-400 hover:text-white hover:bg-white/10' 
+                          : 'text-gray-600 cursor-not-allowed'
+                      }`}
+                    >
+                      <ChevronUp className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => canScrollDown && setScrollPosition(p => p + 1)}
+                      disabled={!canScrollDown}
+                      className={`p-1 rounded transition-all ${
+                        canScrollDown 
+                          ? 'text-gray-400 hover:text-white hover:bg-white/10' 
+                          : 'text-gray-600 cursor-not-allowed'
+                      }`}
+                    >
+                      <ChevronDown className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               </div>
             </motion.div>
           </div>
 
-          {/* Section titre pour les articles récents (inchangée) */}
+          {/* Section Articles tendances */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -625,9 +423,9 @@ export const HeroSection = () => {
             <p className="text-gray-400">Les contenus qui font parler la communauté</p>
           </motion.div>
 
-          {/* Grille d'articles récents - Design cards modernes (structure inchangée) */}
+          {/* Grille d'articles */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-            {displayedArticles.map((article, index) => (
+            {displayedArticles.slice(0, 6).map((article, index) => (
               <motion.article
                 key={article._id}
                 initial={{ opacity: 0, y: 30 }}
@@ -638,9 +436,7 @@ export const HeroSection = () => {
               >
                 <Link to={`/article/${article.slug?.current}`} className="block h-full">
                   <div className="relative h-full bg-white/[0.02] backdrop-blur-sm border border-white/10 rounded-2xl overflow-hidden hover:bg-white/[0.05] hover:border-white/20 transition-all duration-300">
-                    {/* Image avec ratio 16:9 */}
                     <div className="relative aspect-[16/9] overflow-hidden">
-                      {/* Utilise SafeImage */}
                       <SafeImage
                         source={article.mainImage}
                         alt={article.title}
@@ -649,12 +445,9 @@ export const HeroSection = () => {
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                       />
                       
-                      {/* Badge catégorie - AVEC COULEURS */}
-                      {article.categories && article.categories.length > 0 && (
-                        <div className="absolute top-4 left-4 z-10">
-                          <div className={`px-3 py-1.5 bg-gradient-to-r ${
-                            categoryColors[article.categories[0].title] || 'from-gray-500 to-gray-600'
-                          } rounded-full shadow-lg`}>
+                      {article.categories?.[0] && (
+                        <div className="absolute top-4 left-4">
+                          <div className={`px-3 py-1.5 bg-gradient-to-r ${categoryColors[article.categories[0].title]?.gradient || 'from-gray-500 to-gray-600'} rounded-full shadow-lg`}>
                             <span className="text-xs font-bold text-white uppercase tracking-wider">
                               {article.categories[0].title}
                             </span>
@@ -662,7 +455,6 @@ export const HeroSection = () => {
                         </div>
                       )}
 
-                      {/* Temps de lecture en bas à droite */}
                       <div className="absolute bottom-4 right-4">
                         <span className="inline-flex items-center gap-1 px-3 py-1 bg-black/60 backdrop-blur-sm rounded-full">
                           <Clock className="w-3 h-3 text-white" />
@@ -673,7 +465,6 @@ export const HeroSection = () => {
                       </div>
                     </div>
                     
-                    {/* Contenu */}
                     <div className="p-6">
                       <h3 className="text-lg font-bold text-white mb-2 line-clamp-2 group-hover:text-blue-400 transition-colors">
                         {article.title}
@@ -688,13 +479,10 @@ export const HeroSection = () => {
                           {new Date(article.publishedAt || '').toLocaleDateString('fr-FR')}
                         </time>
                         
-                        <motion.div 
-                          className="flex items-center gap-1 text-blue-400 text-sm"
-                          whileHover={{ x: 3 }}
-                        >
-                          <span>Lire</span>
+                        <span className="flex items-center gap-1 text-blue-400 text-sm group-hover:translate-x-1 transition-transform">
+                          Lire
                           <ArrowRight className="w-3 h-3" />
-                        </motion.div>
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -703,7 +491,7 @@ export const HeroSection = () => {
             ))}
           </div>
 
-          {/* CTA vers tous les articles - Amélioré (inchangé) */}
+          {/* CTA */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -716,7 +504,7 @@ export const HeroSection = () => {
             >
               <Sparkles className="w-5 h-5" />
               <span>Découvrir tous les articles</span>
-              <ArrowRight className="w-5 h-5 transform group-hover:translate-x-1 transition-transform" />
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Link>
             
             <p className="mt-4 text-gray-500 text-sm">
@@ -725,11 +513,7 @@ export const HeroSection = () => {
           </motion.div>
         </div>
 
-        {/* Styles pour les animations (inchangés) */}
-        <style jsx>{`
-          .perspective-1000 {
-            perspective: 1000px;
-          }
+        <style>{`
           .animation-delay-2000 {
             animation-delay: 2s;
           }

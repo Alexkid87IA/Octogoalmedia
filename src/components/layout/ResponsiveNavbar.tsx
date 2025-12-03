@@ -633,19 +633,17 @@ export const ResponsiveNavbar = () => {
               </div>
 
               {/* Mobile Menu Button */}
-              <div className="lg:hidden absolute right-4 top-1/2 -translate-y-1/2" style={{ zIndex: 10000 }}>
+              <div className="lg:hidden flex items-center gap-3">
+                {/* Bouton burger propre */}
                 <button
                   onClick={() => setIsOpen(!isOpen)}
-                  className="w-12 h-12 flex items-center justify-center bg-black/50 backdrop-blur-sm rounded-lg border border-white/20"
+                  className="relative w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
                   aria-label="Menu"
-                  style={{ 
-                    WebkitTapHighlightColor: 'transparent'
-                  }}
                 >
-                  <div className="space-y-1.5 pointer-events-none">
-                    <span className={`block w-6 h-0.5 bg-white transition-all duration-300 ${isOpen ? 'rotate-45 translate-y-2' : ''}`} />
-                    <span className={`block w-6 h-0.5 bg-white transition-all duration-300 ${isOpen ? 'opacity-0' : ''}`} />
-                    <span className={`block w-6 h-0.5 bg-white transition-all duration-300 ${isOpen ? '-rotate-45 -translate-y-2' : ''}`} />
+                  <div className="w-5 h-4 flex flex-col justify-between">
+                    <span className={`block h-0.5 bg-white rounded-full transition-all duration-300 origin-center ${isOpen ? 'rotate-45 translate-y-[7px]' : ''}`} />
+                    <span className={`block h-0.5 bg-white rounded-full transition-all duration-300 ${isOpen ? 'opacity-0 scale-0' : ''}`} />
+                    <span className={`block h-0.5 bg-white rounded-full transition-all duration-300 origin-center ${isOpen ? '-rotate-45 -translate-y-[7px]' : ''}`} />
                   </div>
                 </button>
               </div>
@@ -687,120 +685,89 @@ export const ResponsiveNavbar = () => {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-40 lg:hidden"
           >
+            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/98 backdrop-blur-2xl"
+              className="absolute inset-0 bg-black/95 backdrop-blur-xl"
               onClick={() => setIsOpen(false)}
             />
 
+            {/* Menu Content */}
             <motion.div
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="absolute inset-y-0 right-0 w-full sm:max-w-md bg-black/95 backdrop-blur-2xl sm:border-l sm:border-white/10"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="relative h-full pt-24 pb-8 px-6 overflow-y-auto"
             >
-              <div className="h-full overflow-y-auto pt-24 px-6 pb-8">
-                <div className="space-y-2">
-                  {menuItems.map((item) => {
-                    const isActive = location.pathname.includes(item.slug);
-                    const gradient = getGradientByColor(item.color);
-                    
-                    return (
-                      <div key={item.slug} className="space-y-1">
-                        <Link
-                          to={item.path}
-                          onClick={() => setIsOpen(false)}
-                          className={`block px-4 py-3 rounded-xl font-medium transition-all ${
-                            isActive 
-                              ? 'bg-white/10 text-white' 
-                              : 'text-gray-300 hover:bg-white/5 hover:text-white active:bg-white/10'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <span>{item.label}</span>
-                            {isActive && (
-                              <div className={`w-2 h-2 rounded-full bg-gradient-to-r ${gradient}`} />
-                            )}
-                          </div>
-                        </Link>
-                        
-                        <div className="pl-4 space-y-1">
-                          {item.subcategories.map((sub) => (
-                            <Link
-                              key={sub.path}
-                              to={sub.path}
-                              onClick={() => setIsOpen(false)}
-                              className="block px-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-all active:bg-white/10"
-                            >
-                              {sub.label}
-                            </Link>
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  })}
+              {/* Close button en haut à droite */}
+              <button
+                onClick={() => setIsOpen(false)}
+                className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/10"
+              >
+                <X className="w-5 h-5 text-white" />
+              </button>
 
-                  <div className="my-4 h-px bg-white/10" />
-
-                  {specialItems.map((item) => (
+              {/* Navigation principale */}
+              <nav className="space-y-1">
+                {menuItems.map((item) => {
+                  const isActive = location.pathname.includes(item.slug);
+                  const gradient = getGradientByColor(item.color);
+                  
+                  return (
                     <Link
-                      key={item.path}
+                      key={item.slug}
                       to={item.path}
                       onClick={() => setIsOpen(false)}
-                      className="block px-4 py-3 rounded-xl text-gray-300 hover:bg-white/5 hover:text-white transition-all font-medium active:bg-white/10"
+                      className={`flex items-center justify-between px-4 py-4 rounded-xl transition-all ${
+                        isActive 
+                          ? 'bg-white/10 text-white' 
+                          : 'text-gray-300 active:bg-white/5'
+                      }`}
                     >
-                      <div className="flex items-center justify-between">
-                        <span>{item.label}</span>
-                        {item.isNew && (
-                          <span className="px-2 py-0.5 text-[10px] font-bold bg-gradient-to-r from-yellow-400 to-amber-500 text-black rounded-full">
-                            NEW
-                          </span>
-                        )}
-                        {item.isPremium && (
-                          <span className="px-2 py-0.5 text-[10px] font-bold bg-gradient-to-r from-purple-500 to-violet-600 text-white rounded-full flex items-center gap-0.5">
-                            <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
-                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                            </svg>
-                            PRO
-                          </span>
-                        )}
-                      </div>
+                      <span className="text-lg font-medium">{item.label}</span>
+                      {isActive && (
+                        <div className={`w-2 h-2 rounded-full bg-gradient-to-r ${gradient}`} />
+                      )}
                     </Link>
-                  ))}
+                  );
+                })}
+              </nav>
 
+              {/* Séparateur */}
+              <div className="my-6 h-px bg-white/10" />
+
+              {/* Liens spéciaux */}
+              <div className="space-y-1">
+                {specialItems.map((item) => (
                   <Link
-                    to="/create-with-roger"
+                    key={item.path}
+                    to={item.path}
                     onClick={() => setIsOpen(false)}
-                    className="block mt-6"
+                    className="flex items-center justify-between px-4 py-4 rounded-xl text-gray-300 active:bg-white/5 transition-all"
                   >
-                    <motion.div
-                      whileTap={{ scale: 0.98 }}
-                      className="relative"
-                    >
-                      <div className="relative overflow-hidden rounded-full p-[0.5px] bg-gradient-to-r from-white/10 via-white/20 to-white/10">
-                        <div className="relative w-full px-6 py-3.5 bg-black/90 backdrop-blur-xl rounded-full">
-                          <div className="flex items-center justify-center gap-3">
-                            <span className="text-[13px] font-extralight text-white/90 tracking-[0.12em] uppercase">
-                              Racontez votre histoire
-                            </span>
-                            <svg 
-                              className="w-3 h-3 text-white/50" 
-                              fill="none" 
-                              stroke="currentColor" 
-                              strokeWidth="0.5"
-                              viewBox="0 0 24 24"
-                            >
-                              <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                          </div>
-                        </div>
-                      </div>
-                    </motion.div>
+                    <span className="text-lg font-medium">{item.label}</span>
+                    {item.isPremium && (
+                      <span className="px-2 py-1 text-xs font-bold bg-gradient-to-r from-purple-500 to-violet-600 text-white rounded-full">
+                        PRO
+                      </span>
+                    )}
                   </Link>
-                </div>
+                ))}
+              </div>
+
+              {/* CTA en bas */}
+              <div className="mt-8">
+                <Link
+                  to="/create-with-roger"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center justify-center gap-3 w-full px-6 py-4 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl text-white font-medium"
+                >
+                  <span>Racontez votre histoire</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
               </div>
             </motion.div>
           </motion.div>

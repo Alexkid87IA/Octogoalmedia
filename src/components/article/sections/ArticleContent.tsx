@@ -292,18 +292,19 @@ const ArticleContent: React.FC<ArticleContentProps> = ({ article, colors, isEmis
         </div>
       )}
 
-      {/* CTA de fin d'article avec couleurs de la verticale */}
+      {/* CTA de fin d'article - Version Bientôt disponible */}
       <div className={`mt-16 p-6 md:p-8 bg-gradient-to-br ${colors.gradient}/10 rounded-2xl border`} style={{ borderColor: colors.borderColor }}>
         <h3 className="text-xl md:text-2xl font-bold text-white mb-4 whitespace-nowrap">
           Vous avez aimé cet article&nbsp;?
         </h3>
         <p className="text-gray-300 mb-6">
-          Rejoignez notre communauté pour recevoir nos meilleurs contenus directement dans votre boîte mail.
+          Notre newsletter arrive bientôt ! En attendant, partagez cet article avec votre réseau.
         </p>
         <div className="flex flex-col sm:flex-row gap-4">
-          <button className={`flex-1 py-3 px-6 bg-gradient-to-r ${colors.gradient} hover:opacity-90 text-white rounded-lg font-medium transition-all`}>
-            {"S'inscrire à la newsletter"}
-          </button>
+          <div className="flex-1 py-3 px-6 bg-white/10 text-white/50 rounded-lg font-medium text-center cursor-not-allowed flex items-center justify-center gap-2">
+            <span>📬</span>
+            <span>Newsletter bientôt disponible</span>
+          </div>
           <button 
             onClick={() => {
               const shareUrl = window.location.href;
