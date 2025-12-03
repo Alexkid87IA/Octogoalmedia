@@ -5,7 +5,7 @@ import {
   Share2, ArrowRight, Clock, Sparkles, PenTool, Zap,
   TrendingUp, Hash, Users, Calendar, MessageCircle,
   BookOpen, Award, Eye, ThumbsUp, Bookmark, Instagram,
-  ChevronLeft, ChevronRight
+  ChevronLeft, ChevronRight, Bell, Star
 } from "lucide-react";
 import { SanityArticle, VerticalColors, TableOfContentsHeading } from "../../../types/article.types";
 import ArticleAuthor from "../ui/ArticleAuthor";
@@ -555,7 +555,7 @@ const ArticleSidebar: React.FC<ArticleSidebarProps> = ({
           </div>
         </div>
 
-        {/* NOUVEAU : Newsletter */}
+        {/* NEWSLETTER - VERSION "BIENTÔT DISPONIBLE" */}
         <div 
           className="rounded-2xl p-6 border"
           style={{
@@ -563,35 +563,47 @@ const ArticleSidebar: React.FC<ArticleSidebarProps> = ({
             borderColor: colors.borderColor
           }}
         >
-          <div className="flex items-center gap-2 mb-3">
-            <MessageCircle size={18} style={{ color: colors.primary }} />
-            <h3 className="text-lg font-semibold text-white">
-              Newsletter exclusive
-            </h3>
+          {/* Badge Bientôt disponible */}
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <MessageCircle size={18} style={{ color: colors.primary }} />
+              <h3 className="text-lg font-semibold text-white">
+                Newsletter exclusive
+              </h3>
+            </div>
+            <span className="px-2 py-1 bg-amber-500/20 text-amber-400 rounded text-xs font-bold flex items-center gap-1">
+              <Clock size={10} />
+              Bientôt
+            </span>
           </div>
           
-          <p className="text-sm text-gray-400 mb-4">
-            Recevez chaque semaine nos meilleurs articles et analyses exclusives
+          {/* Icône animée */}
+          <div className="flex justify-center my-4">
+            <div className="w-14 h-14 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center animate-pulse">
+              <Bell size={24} className="text-black" />
+            </div>
+          </div>
+          
+          <p className="text-sm text-gray-400 mb-4 text-center">
+            Notre newsletter est en préparation. Revenez bientôt pour recevoir nos meilleurs articles !
           </p>
           
-          <form className="space-y-3">
-            <input
-              type="email"
-              placeholder="Votre email"
-              className="w-full px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white placeholder-gray-500 text-sm focus:outline-none focus:border-white/30"
-            />
-            <button
-              type="submit"
-              className="w-full py-2 rounded-lg font-medium text-white transition-all"
-              style={{
-                background: `linear-gradient(to r, ${colors.primary}, ${colors.secondary})`,
-              }}
-            >
-              S'inscrire
-            </button>
-          </form>
+          {/* Bouton désactivé */}
+          <div className="w-full py-2 rounded-lg font-medium text-white/50 text-center bg-white/10 border border-white/10 cursor-not-allowed">
+            <div className="flex items-center justify-center gap-2">
+              <Sparkles size={14} className="text-amber-400" />
+              <span className="text-sm">Disponible prochainement</span>
+            </div>
+          </div>
           
-          <p className="text-xs text-gray-500 mt-3">
+          {/* Indicateurs */}
+          <div className="flex items-center justify-center gap-1 mt-3">
+            {[...Array(5)].map((_, i) => (
+              <Star key={i} size={10} className="fill-amber-400 text-amber-400" />
+            ))}
+          </div>
+          
+          <p className="text-xs text-gray-500 mt-2 text-center">
             Pas de spam, désabonnement en 1 clic
           </p>
         </div>

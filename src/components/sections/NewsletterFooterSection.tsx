@@ -1,40 +1,19 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { 
   Mail, 
   Sparkles, 
-  Send,
-  CheckCircle,
   Calendar,
   Users,
   TrendingUp,
   Coffee,
   Zap,
-  Star
+  Star,
+  Bell,
+  Clock
 } from 'lucide-react';
 
 export const NewsletterFooterSection = () => {
-  const [email, setEmail] = useState('');
-  const [isSubscribed, setIsSubscribed] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleSubscribe = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (email) {
-      setIsLoading(true);
-      // TODO: Connecter à votre service d'email (ConvertKit, Mailchimp, etc.)
-      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulation
-      console.log('Email inscrit à la newsletter:', email);
-      setIsSubscribed(true);
-      setIsLoading(false);
-      
-      // Reset après 5 secondes
-      setTimeout(() => {
-        setEmail('');
-        setIsSubscribed(false);
-      }, 5000);
-    }
-  };
 
   const benefits = [
     {
@@ -101,16 +80,16 @@ export const NewsletterFooterSection = () => {
           viewport={{ once: true }}
           className="max-w-4xl mx-auto text-center"
         >
-          {/* Badge Monday Morning */}
+          {/* Badge Coming Soon */}
           <motion.div
             initial={{ scale: 0.9 }}
             animate={{ scale: [0.9, 1.05, 1] }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500/20 to-violet-500/20 border border-blue-500/30 rounded-full mb-8"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 rounded-full mb-8"
           >
-            <Calendar className="w-4 h-4 text-blue-400" />
-            <span className="text-sm font-medium text-blue-400">Tous les lundis à 7h00</span>
-            <Coffee className="w-4 h-4 text-blue-400" />
+            <Clock className="w-4 h-4 text-amber-400" />
+            <span className="text-sm font-medium text-amber-400">Bientôt disponible</span>
+            <Sparkles className="w-4 h-4 text-amber-400" />
           </motion.div>
 
           {/* Titre épique */}
@@ -152,7 +131,7 @@ export const NewsletterFooterSection = () => {
             })}
           </div>
 
-          {/* Form Container */}
+          {/* Coming Soon Container */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
@@ -160,88 +139,54 @@ export const NewsletterFooterSection = () => {
             className="relative max-w-xl mx-auto"
           >
             {/* Glow effect */}
-            <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 via-violet-500 to-cyan-500 rounded-2xl blur-lg opacity-30 animate-pulse" />
+            <div className="absolute -inset-1 bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500 rounded-2xl blur-lg opacity-30 animate-pulse" />
             
             <div className="relative bg-black/50 backdrop-blur-xl border border-white/10 rounded-2xl p-8">
-              <form onSubmit={handleSubscribe} className="space-y-4">
-                <div className="relative">
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="votre@email.com"
-                    required
-                    disabled={isSubscribed}
-                    className="w-full px-6 py-4 pr-14 bg-white/10 border border-white/20 rounded-xl text-white text-lg placeholder-gray-500 focus:outline-none focus:border-blue-400 focus:bg-white/15 transition-all duration-300"
-                  />
-                  <Mail className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-                </div>
-                
-                <motion.button
-                  type="submit"
-                  disabled={isSubscribed || isLoading}
-                  whileHover={{ scale: isSubscribed ? 1 : 1.02 }}
-                  whileTap={{ scale: isSubscribed ? 1 : 0.98 }}
-                  className={`
-                    w-full px-6 py-4 font-bold text-lg rounded-xl shadow-lg transition-all duration-300
-                    ${isSubscribed 
-                      ? 'bg-green-500 text-white shadow-green-500/20' 
-                      : 'bg-gradient-to-r from-blue-500 to-violet-500 text-white hover:shadow-blue-500/20'
-                    }
-                    disabled:cursor-not-allowed
-                    relative overflow-hidden
-                  `}
-                >
-                  {/* Effet de shine au hover */}
-                  {!isSubscribed && (
-                    <motion.div
-                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-                      initial={{ x: '-100%' }}
-                      whileHover={{ x: '100%' }}
-                      transition={{ duration: 0.6 }}
-                    />
-                  )}
-                  
-                  <span className="relative flex items-center justify-center gap-2">
-                    {isSubscribed ? (
-                      <>
-                        <CheckCircle className="w-5 h-5" />
-                        <span>Inscription confirmée !</span>
-                      </>
-                    ) : isLoading ? (
-                      <>
-                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        <span>Inscription...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Send className="w-5 h-5" />
-                        <span>Recevoir la newsletter</span>
-                        <Sparkles className="w-4 h-4" />
-                      </>
-                    )}
-                  </span>
-                </motion.button>
-              </form>
+              {/* Icône animée */}
+              <motion.div
+                animate={{ 
+                  scale: [1, 1.1, 1],
+                  rotate: [0, 5, -5, 0]
+                }}
+                transition={{ 
+                  duration: 2, 
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+                className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center"
+              >
+                <Bell className="w-10 h-10 text-black" />
+              </motion.div>
+
+              <h3 className="text-2xl font-bold text-white mb-3">
+                On prépare quelque chose d'incroyable
+              </h3>
+              
+              <p className="text-gray-400 mb-6">
+                Notre newsletter est en cours de préparation. 
+                Revenez bientôt pour ne rien manquer !
+              </p>
+
+              {/* Badge de lancement */}
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-full">
+                <Calendar className="w-4 h-4 text-amber-400" />
+                <span className="text-sm text-gray-300">Lancement prévu prochainement</span>
+              </div>
 
               {/* Trust indicators */}
               <div className="mt-6 pt-6 border-t border-white/10">
                 <div className="flex items-center justify-center gap-6 text-sm text-gray-400">
                   <div className="flex items-center gap-1">
                     <Users className="w-4 h-4" />
-                    <span><strong className="text-white">12,847</strong> lecteurs</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                    ))}
-                    <span>4.9/5</span>
+                    <span>Rejoignez <strong className="text-white">12,847</strong> futurs lecteurs</span>
                   </div>
                 </div>
                 
-                <p className="text-xs text-gray-500 mt-3">
-                  Désinscription en 1 clic. Jamais de spam. Vos données sont protégées.
-                </p>
+                <div className="flex items-center justify-center gap-1 mt-3">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                  ))}
+                </div>
               </div>
             </div>
           </motion.div>

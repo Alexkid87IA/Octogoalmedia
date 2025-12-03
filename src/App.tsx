@@ -5,7 +5,6 @@ import { HelmetProvider } from 'react-helmet-async';
 import { ResponsiveNavbar } from './components/layout/ResponsiveNavbar';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { Analytics } from './components/common/Analytics';
-import { ChatWidget } from './components/chat/ChatWidget';
 import { DataProvider } from './context/DataContext';
 import { HomePage } from './pages/HomePage';
 import ArticlePageNEW from './pages/ArticlePageNEW';
@@ -19,6 +18,7 @@ import { AboutPage } from './pages/AboutPage';
 import { AllArticlesPage } from './pages/AllArticlesPage';
 import { CoachingPage } from './pages/CoachingPage';
 import { ClubPage } from './pages/ClubPage';
+import { MissionPage } from './pages/MissionPage';
 import { NotFound } from './pages/NotFound';
 
 // Import des nouvelles pages
@@ -60,6 +60,7 @@ function App() {
                   <Route path="/create-with-roger" element={<CreateWithRogerPage />} />
                   <Route path="/coaching" element={<CoachingPage />} />
                   <Route path="/about" element={<AboutPage />} />
+                  <Route path="/mission" element={<MissionPage />} />
                   
                   {/* Nouvelles routes */}
                   <Route path="/success-stories" element={<SuccessStoriesPage />} />
@@ -77,7 +78,6 @@ function App() {
                 </Routes>
               </main>
               <Analytics />
-              <ChatWidget />
             </div>
           </ErrorBoundary>
         </DataProvider>

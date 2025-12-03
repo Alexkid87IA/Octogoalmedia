@@ -13,6 +13,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { guides, getPublishedGuides, Guide } from '../data/guidesData';
+import { Footer } from '../components/layout/Footer';
 
 const GuidesHub: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -144,6 +145,9 @@ const GuidesHub: React.FC = () => {
           </Link>
         </div>
       </section>
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 };

@@ -1,5 +1,6 @@
 // src/components/article/ui/ArticleCTA.tsx
 import React from "react";
+import { Clock, Sparkles, Users, Crown, Star } from "lucide-react";
 import { VerticalColors } from "../../../types/article.types";
 
 interface ArticleCTAProps {
@@ -28,58 +29,69 @@ const ArticleCTA: React.FC<ArticleCTAProps> = ({ colors, variant = 'desktop' }) 
         </div>
         
         <div className="relative p-6">
+          {/* Badge Bientôt disponible */}
           <div className="flex items-center gap-2 mb-3">
             <span className="px-2 py-1 bg-white/20 rounded text-xs font-semibold text-white uppercase">
               Le Club Élite
             </span>
-            <span className="px-2 py-1 bg-orange-500 text-black rounded text-xs font-bold">
-              -50%
+            <span className="px-2 py-1 bg-amber-500 text-black rounded text-xs font-bold flex items-center gap-1">
+              <Clock size={10} />
+              Bientôt
             </span>
           </div>
           
-          <h3 className="text-xl font-bold text-white mb-2">
-            Rejoindre la liste d'attente
-          </h3>
-          <p className="text-white/90 text-sm mb-4">
-            L'écosystème premium pour les entrepreneurs d'exception. 500+ inscrits sur liste d'attente.
-          </p>
-          
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <p className="text-3xl font-bold text-white">99€</p>
-              <p className="text-xs text-white/70">/mois</p>
-            </div>
-            <div className="text-right">
-              <p className="text-sm text-white/70 line-through">199€</p>
-              <p className="text-xs text-yellow-400 font-semibold">Offre fondateurs</p>
+          {/* Icône animée */}
+          <div className="flex justify-center mb-4">
+            <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center animate-pulse">
+              <Crown className="w-8 h-8 text-black" />
             </div>
           </div>
           
+          <h3 className="text-xl font-bold text-white mb-2 text-center">
+            Quelque chose d'exceptionnel arrive
+          </h3>
+          <p className="text-white/90 text-sm mb-4 text-center">
+            L'écosystème premium pour les entrepreneurs d'exception est en préparation.
+          </p>
+          
+          {/* Preview des avantages */}
           <div className="space-y-2 mb-4">
-            <div className="flex items-center gap-2 text-xs text-white/90">
-              <span className="text-yellow-400">✔</span>
+            <div className="flex items-center gap-2 text-xs text-white/70">
+              <span className="text-amber-400">✔</span>
               <span>Accès VIP aux contenus</span>
             </div>
-            <div className="flex items-center gap-2 text-xs text-white/90">
-              <span className="text-yellow-400">✔</span>
+            <div className="flex items-center gap-2 text-xs text-white/70">
+              <span className="text-amber-400">✔</span>
               <span>Communauté privée</span>
             </div>
-            <div className="flex items-center gap-2 text-xs text-white/90">
-              <span className="text-yellow-400">✔</span>
+            <div className="flex items-center gap-2 text-xs text-white/70">
+              <span className="text-amber-400">✔</span>
               <span>Events mensuels exclusifs</span>
             </div>
           </div>
           
-          <button 
-            className="w-full py-3 bg-yellow-400 text-black rounded-xl font-bold hover:bg-yellow-300 transition-all transform hover:scale-105"
-            onClick={() => window.location.href = '/le-club'}
-          >
-            🚀 Rejoindre la liste d'attente
-          </button>
+          {/* Bouton désactivé avec style "Coming Soon" */}
+          <div className="w-full py-3 bg-white/10 text-white/60 rounded-xl font-bold text-center border border-white/20 cursor-not-allowed">
+            <div className="flex items-center justify-center gap-2">
+              <Sparkles size={16} className="text-amber-400" />
+              <span>Ouverture prochaine</span>
+            </div>
+          </div>
           
-          <p className="text-xs text-white/60 text-center mt-3">
-            7 jours d'essai • Sans engagement
-          </p>
+          {/* Indicateur de liste d'attente */}
+          <div className="flex items-center justify-center gap-2 mt-3">
+            <Users size={12} className="text-white/60" />
+            <p className="text-xs text-white/60 text-center">
+              500+ personnes attendent déjà
+            </p>
+          </div>
+          
+          {/* Étoiles */}
+          <div className="flex items-center justify-center gap-1 mt-2">
+            {[...Array(5)].map((_, i) => (
+              <Star key={i} size={10} className="fill-amber-400 text-amber-400" />
+            ))}
+          </div>
         </div>
       </div>
     </div>
