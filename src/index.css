@@ -18,7 +18,7 @@
   }
 
   ::selection {
-    @apply bg-accent-blue/30 text-white;
+    @apply bg-octo-pink/30 text-white;
   }
 }
 
@@ -46,11 +46,11 @@ html {
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-accent-blue/50 rounded-full transition-colors;
+  @apply bg-octo-pink/50 rounded-full transition-colors;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-accent-blue;
+  @apply bg-octo-pink;
 }
 
 /* Background Effects */
@@ -78,11 +78,11 @@ html {
 
 /* Gradient Backgrounds */
 .bg-gradient-accent {
-  @apply bg-gradient-to-r from-accent-blue to-accent-turquoise;
+  @apply bg-gradient-to-r from-octo-pink to-octo-blue;
 }
 
 .bg-gradient-accent-diagonal {
-  @apply bg-gradient-to-br from-accent-blue to-accent-turquoise;
+  @apply bg-gradient-to-br from-octo-pink to-octo-blue;
 }
 
 .bg-gradient-accent-radial {
@@ -149,7 +149,7 @@ html {
 /* Puces personnalisées pour ul */
 .article-content ul li::before {
   content: "•";
-  @apply absolute left-0 text-accent-blue;
+  @apply absolute left-0 text-octo-pink;
   font-size: 1.5em;
   line-height: 1;
   top: 0.1em;
@@ -162,13 +162,13 @@ html {
 
 .article-content ol li::before {
   content: counter(custom-counter) ".";
-  @apply absolute left-0 text-accent-blue font-semibold;
+  @apply absolute left-0 text-octo-pink font-semibold;
   top: 0;
 }
 
 /* Citations */
 .article-content blockquote {
-  @apply border-l-4 border-accent-blue pl-6 py-4 my-8;
+  @apply border-l-4 border-octo-pink pl-6 py-4 my-8;
   background: rgba(0, 164, 249, 0.05);
   border-radius: 0 0.5rem 0.5rem 0;
 }
@@ -206,7 +206,7 @@ html {
 
 /* Liens */
 .article-content a {
-  @apply text-accent-blue hover:text-accent-turquoise underline transition-colors;
+  @apply text-octo-pink hover:text-octo-blue underline transition-colors;
 }
 
 /* Strong et em */

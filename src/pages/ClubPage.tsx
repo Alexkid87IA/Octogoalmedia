@@ -132,7 +132,7 @@ export const ClubPage = () => {
   return (
     <>
       <SEO
-        title="Le Club Élite | High Value Media"
+        title="Le Club Élite | Octogoal Media"
         description="Rejoignez l'écosystème premium pour entrepreneurs d'exception. Contenus exclusifs, communauté privée et ressources premium."
       />
 

@@ -6,11 +6,11 @@ import { useScrollDirection } from '../../hooks/useScrollDirection';
 import { useData } from '../../context/DataContext';
 
 // Import de tous les logos
-import logoMedia from '../../assets/logos/LOGO_HV_MEDIA.svg';
-import logoBusiness from '../../assets/logos/LOGO_HV_BUSINESS.svg';
-import logoMental from '../../assets/logos/LOGO_HV_PSYCHO.svg';
-import logoSociety from '../../assets/logos/LOGO_HV_SOCIETY.svg';
-import logoStory from '../../assets/logos/LOGO_HV_STORY.svg';
+import logoMedia from '../../assets/logos/LOGO_OCTOGOAL.png';
+import logoMatchs from '../../assets/logos/LOGO_HV_BUSINESS.svg';
+import logoClubs from '../../assets/logos/LOGO_HV_PSYCHO.svg';
+import logoJoueurs from '../../assets/logos/LOGO_HV_SOCIETY.svg';
+import logoActus from '../../assets/logos/LOGO_HV_STORY.svg';
 
 export const ResponsiveNavbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -37,10 +37,10 @@ export const ResponsiveNavbar = () => {
   const getCurrentLogo = () => {
     const path = location.pathname;
     
-    if (path.includes('/story')) return logoStory;
-    if (path.includes('/business')) return logoBusiness;
-    if (path.includes('/mental')) return logoMental;
-    if (path.includes('/society')) return logoSociety;
+    if (path.includes('/story')) return logoActus;
+    if (path.includes('/business')) return logoMatchs;
+    if (path.includes('/mental')) return logoClubs;
+    if (path.includes('/society')) return logoJoueurs;
     
     return logoMedia;
   };
@@ -76,10 +76,10 @@ export const ResponsiveNavbar = () => {
   // Couleurs des catégories
   const getCategoryColor = (category: string) => {
     const colors: { [key: string]: string } = {
-      'Story': 'bg-amber-500',
-      'Business': 'bg-blue-500',
-      'Mental': 'bg-purple-500',
-      'Society': 'bg-emerald-500',
+      'Actus': 'bg-amber-500',
+      'Matchs': 'bg-blue-500',
+      'Clubs': 'bg-purple-500',
+      'Joueurs': 'bg-emerald-500',
       'Mindset': 'bg-purple-500'
     };
     return colors[category] || 'bg-gray-500';
@@ -105,21 +105,21 @@ export const ResponsiveNavbar = () => {
           title: "Comment développer un mindset d'exception",
           slug: { current: 'mindset-exception' },
           publishedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-          categories: [{ title: 'Mental' }]
+          categories: [{ title: 'Clubs' }]
         },
         {
           _id: '2',
           title: "Les 5 stratégies de croissance des licornes",
           slug: { current: 'strategies-croissance' },
           publishedAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
-          categories: [{ title: 'Business' }]
+          categories: [{ title: 'Matchs' }]
         },
         {
           _id: '3',
           title: "L'art du pivot entrepreneurial",
           slug: { current: 'art-du-pivot' },
           publishedAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-          categories: [{ title: 'Story' }]
+          categories: [{ title: 'Actus' }]
         }
       ];
     }
@@ -130,67 +130,93 @@ export const ResponsiveNavbar = () => {
   // Navigation avec sous-catégories
   const menuItems = [
     { 
-      label: 'Story', 
-      path: '/rubrique/story', 
-      slug: 'story',
-      color: 'amber',
+      label: 'Actus', 
+      path: '/rubrique/actus', 
+      slug: 'actus',
+      color: 'pink',
       subcategories: [
-        { label: 'Parcours inspirants', path: '/rubrique/story/parcours' },
-        { label: 'Success stories', path: '/rubrique/story/success' },
-        { label: 'Échecs formateurs', path: '/rubrique/story/echecs' },
-        { label: 'Transformations', path: '/rubrique/story/transformations' },
-        { label: 'Entrepreneuriat', path: '/rubrique/story/entrepreneuriat' }
+        { label: 'Ligue 1', path: '/rubrique/actus/ligue-1' },
+        { label: 'Premier League', path: '/rubrique/actus/premier-league' },
+        { label: 'Liga', path: '/rubrique/actus/liga' },
+        { label: 'Champions League', path: '/rubrique/actus/champions-league' },
+        { label: 'Mercato', path: '/rubrique/actus/mercato' }
       ]
     },
     { 
-      label: 'Business', 
-      path: '/rubrique/business', 
-      slug: 'business',
+      label: 'Matchs', 
+      path: '/rubrique/matchs', 
+      slug: 'matchs',
       color: 'blue',
       subcategories: [
-        { label: 'Stratégie', path: '/rubrique/business/strategie' },
-        { label: 'Innovation', path: '/rubrique/business/innovation' },
-        { label: 'Leadership', path: '/rubrique/business/leadership' },
-        { label: 'Croissance', path: '/rubrique/business/croissance' },
-        { label: 'Finance', path: '/rubrique/business/finance' }
+        { label: 'Résultats', path: '/rubrique/matchs/resultats' },
+        { label: 'Classements', path: '/rubrique/matchs/classements' },
+        { label: 'Avant-match', path: '/rubrique/matchs/avant-match' },
+        { label: 'Après-match', path: '/rubrique/matchs/apres-match' },
+        { label: 'Notes du match', path: '/rubrique/matchs/notes-match' }
       ]
     },
     { 
-      label: 'Mental', 
-      path: '/rubrique/mental', 
-      slug: 'mental',
+      label: 'Clubs', 
+      path: '/rubrique/clubs', 
+      slug: 'clubs',
       color: 'purple',
       subcategories: [
-        { label: 'Mindset', path: '/rubrique/mental/mindset' },
-        { label: 'Productivité', path: '/rubrique/mental/productivite' },
-        { label: 'Résilience', path: '/rubrique/mental/resilience' },
-        { label: 'Focus', path: '/rubrique/mental/focus' },
-        { label: 'Bien-être', path: '/rubrique/mental/bien-etre' }
+        { label: 'Clubs Ligue 1', path: '/rubrique/clubs/clubs-ligue-1' },
+        { label: 'Clubs Premier League', path: '/rubrique/clubs/clubs-pl' },
+        { label: 'Clubs Liga', path: '/rubrique/clubs/clubs-liga' },
+        { label: 'Clubs Serie A', path: '/rubrique/clubs/clubs-serie-a' },
+        { label: 'Clubs Bundesliga', path: '/rubrique/clubs/clubs-bundesliga' }
       ]
     },
     { 
-      label: 'Society', 
-      path: '/rubrique/society', 
-      slug: 'society',
+      label: 'Joueurs', 
+      path: '/rubrique/joueurs', 
+      slug: 'joueurs',
       color: 'emerald',
       subcategories: [
-        { label: 'Tendances', path: '/rubrique/society/tendances' },
-        { label: 'Impact social', path: '/rubrique/society/impact' },
-        { label: 'Futur du travail', path: '/rubrique/society/futur' },
-        { label: 'Tech & IA', path: '/rubrique/society/tech' },
-        { label: 'Environnement', path: '/rubrique/society/environnement' }
+        { label: 'Tops joueurs', path: '/rubrique/joueurs/tops-joueurs' },
+        { label: 'Joueurs en forme', path: '/rubrique/joueurs/joueurs-en-forme' },
+        { label: 'Joueurs légendaires', path: '/rubrique/joueurs/joueurs-legendaires' },
+        { label: 'Fiches joueurs', path: '/rubrique/joueurs/fiches-joueurs' },
+        { label: 'Joueurs sous-cotés', path: '/rubrique/joueurs/joueurs-sous-cotes' }
+      ]
+    },
+    { 
+      label: 'Formats', 
+      path: '/rubrique/formats-octogoal', 
+      slug: 'formats-octogoal',
+      color: 'orange',
+      subcategories: [
+        { label: 'Tops & listes', path: '/rubrique/formats-octogoal/tops-listes' },
+        { label: 'Moments viraux', path: '/rubrique/formats-octogoal/moments-viraux' },
+        { label: 'Le joueur du jour', path: '/rubrique/formats-octogoal/joueur-du-jour' },
+        { label: 'Débats', path: '/rubrique/formats-octogoal/debats-reactions' },
+        { label: 'Humour', path: '/rubrique/formats-octogoal/humour-punchlines' }
+      ]
+    },
+    { 
+      label: 'Mèmes', 
+      path: '/rubrique/memes', 
+      slug: 'memes',
+      color: 'yellow',
+      subcategories: [
+        { label: 'Réactions', path: '/rubrique/memes/reactions' },
+        { label: 'Captures virales', path: '/rubrique/memes/captures-virales' },
+        { label: 'Mèmes Octogoal', path: '/rubrique/memes/memes-octogoal' },
+        { label: 'La tête de Momo', path: '/rubrique/memes/tete-de-momo' },
+        { label: 'Culture foot', path: '/rubrique/memes/culture-foot-internet' }
       ]
     }
   ];
 
   const specialItems = [
     { 
-      label: 'Guides', 
-      path: '/guides',
-      isPremium: true
+      label: 'Vidéos', 
+      path: '/videos',
+      isNew: true
     },
     { 
-      label: 'Podcasts', 
+      label: 'Émissions', 
       path: '/emissions'
     }
   ];
@@ -221,7 +247,7 @@ export const ResponsiveNavbar = () => {
 
   const getGradientByColor = (color: string) => {
     const gradients = {
-      amber: 'from-amber-400 to-orange-500',
+      pink: 'from-pink-500 to-rose-500',
       blue: 'from-blue-400 to-cyan-500',
       purple: 'from-purple-400 to-violet-500',
       emerald: 'from-emerald-400 to-teal-500'
@@ -284,7 +310,7 @@ export const ResponsiveNavbar = () => {
                   <div className="absolute inset-0 bg-white/20 blur-2xl scale-150 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   <img 
                     src={getCurrentLogo()}
-                    alt="High Value Media"
+                    alt="Octogoal Media"
                     className="h-10 md:h-12 w-auto relative z-10 filter group-hover:brightness-125 transition-all duration-300" 
                   />
                 </motion.div>

@@ -135,7 +135,7 @@ export const CreateWithRogerPage = () => {
   const faqs = [
     {
       question: "Comment puis-je partager mon histoire?",
-      answer: "La plateforme de soumission arrive très bientôt! En attendant, contactez-nous directement sur Instagram @highvalue.media ou par email à contact@highvalue.media"
+      answer: "La plateforme de soumission arrive très bientôt! En attendant, contactez-nous directement sur Instagram @octogoal.media ou par email à contact@octogoal.media"
     },
     {
       question: "Quel format choisir pour mon histoire?",
@@ -158,7 +158,7 @@ export const CreateWithRogerPage = () => {
   return (
     <>
       <SEO
-        title="Racontez votre histoire | High Value Media"
+        title="Racontez votre histoire | Octogoal Media"
         description="Partagez votre parcours entrepreneurial et inspirez la communauté. Article, vidéo, podcast - choisissez votre format."
       />
 
@@ -244,16 +244,16 @@ export const CreateWithRogerPage = () => {
                 
                 <div className="flex gap-4">
                   <a 
-                    href="https://www.instagram.com/highvalue.media/"
+                    href="https://www.instagram.com/octogoal.media/"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="px-6 py-3 bg-gradient-to-r from-violet-400 to-purple-500 text-white font-bold rounded-full hover:shadow-2xl hover:shadow-violet-500/25 transition-all flex items-center gap-2"
                   >
                     <Instagram className="w-5 h-5" />
-                    @highvalue.media
+                    @octogoal.media
                   </a>
                   <a 
-                    href="mailto:contact@highvalue.media"
+                    href="mailto:contact@octogoal.media"
                     className="px-6 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white font-medium rounded-full hover:bg-white/20 transition-all flex items-center gap-2"
                   >
                     <Mail className="w-5 h-5" />
@@ -586,7 +586,7 @@ export const CreateWithRogerPage = () => {
                 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <a
-                    href="https://www.instagram.com/highvalue.media/"
+                    href="https://www.instagram.com/octogoal.media/"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-violet-400 to-purple-500 text-white font-bold text-lg rounded-full hover:shadow-2xl hover:shadow-violet-500/25 transition-all"
@@ -597,7 +597,7 @@ export const CreateWithRogerPage = () => {
                   </a>
                   
                   <a
-                    href="mailto:contact@highvalue.media"
+                    href="mailto:contact@octogoal.media"
                     className="inline-flex items-center gap-3 px-8 py-4 bg-white/10 backdrop-blur-sm border border-white/20 text-white font-medium text-lg rounded-full hover:bg-white/20 transition-all"
                   >
                     <Mail className="w-6 h-6" />

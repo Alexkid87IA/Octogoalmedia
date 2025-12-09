@@ -122,13 +122,13 @@ export const MissionPage = () => {
           >
             <h2 className="text-3xl md:text-4xl font-bold mb-12 text-center">
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-400">
-                Pourquoi High Value Media existe
+                Pourquoi Octogoal Media existe
               </span>
             </h2>
             
             <div className="space-y-6 text-gray-300 leading-relaxed">
               <p className="text-lg">
-                Dans un monde saturé d'informations superficielles et de success stories formatées, nous avons créé High Value Media avec une conviction profonde : les véritables histoires de transformation méritent d'être racontées dans toute leur authenticité, leur complexité et leur humanité.
+                Dans un monde saturé d'informations superficielles et de success stories formatées, nous avons créé Octogoal Media avec une conviction profonde : les véritables histoires de transformation méritent d'être racontées dans toute leur authenticité, leur complexité et leur humanité.
               </p>
               
               <p className="text-lg">
@@ -136,7 +136,7 @@ export const MissionPage = () => {
               </p>
               
               <p className="text-lg">
-                High Value Media est né de la frustration face aux contenus qui survolent, aux conseils génériques, aux formules toutes faites. Nous croyons que notre audience mérite mieux : des analyses profondes, des récits nuancés, des insights actionnables.
+                Octogoal Media est né de la frustration face aux contenus qui survolent, aux conseils génériques, aux formules toutes faites. Nous croyons que notre audience mérite mieux : des analyses profondes, des récits nuancés, des insights actionnables.
               </p>
             </div>
           </motion.div>
@@ -170,7 +170,7 @@ export const MissionPage = () => {
               </p>
               
               <p className="text-lg">
-                Nous imaginons un futur où High Value Media sera le catalyseur de milliers de projets transformateurs, le point de rencontre des esprits les plus brillants, la source d'inspiration quotidienne pour ceux qui osent voir grand.
+                Nous imaginons un futur où Octogoal Media sera le catalyseur de milliers de projets transformateurs, le point de rencontre des esprits les plus brillants, la source d'inspiration quotidienne pour ceux qui osent voir grand.
               </p>
             </div>
           </motion.div>
@@ -320,7 +320,7 @@ export const MissionPage = () => {
           </h2>
           
           <p className="text-lg text-gray-300 mb-12 max-w-3xl mx-auto">
-            High Value Media n'est pas qu'un média - c'est un mouvement. Un mouvement de personnes qui refusent la médiocrité, qui cherchent l'excellence, qui croient au pouvoir de l'action éclairée. Si ces valeurs résonnent avec vous, si cette vision vous inspire, alors votre place est ici, avec nous.
+            Octogoal Media n'est pas qu'un média - c'est un mouvement. Un mouvement de personnes qui refusent la médiocrité, qui cherchent l'excellence, qui croient au pouvoir de l'action éclairée. Si ces valeurs résonnent avec vous, si cette vision vous inspire, alors votre place est ici, avec nous.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">

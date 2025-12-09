@@ -33,7 +33,7 @@ export const guides: Guide[] = [
     category: 'Productivité',
     featured: true,
     status: 'published',
-    author: 'High Value Team',
+    author: 'Octogoal Team',
     publishedDate: '2025-01-10',
     tags: ['Digital Detox', 'Productivité', 'FOMO', 'Réseaux sociaux', 'Mental'],
     color: {
@@ -52,7 +52,7 @@ export const guides: Guide[] = [
     category: 'Mental',
     featured: false,
     status: 'coming-soon',
-    author: 'High Value Team',
+    author: 'Octogoal Team',
     tags: ['Mindset', 'Entrepreneur', 'Mental', 'Success'],
     color: {
       primary: '#f59e0b',
@@ -70,7 +70,7 @@ export const guides: Guide[] = [
     category: 'Business',
     featured: false,
     status: 'coming-soon',
-    author: 'High Value Team',
+    author: 'Octogoal Team',
     tags: ['Personal Branding', 'Influence', 'Business', 'Marketing'],
     color: {
       primary: '#3b82f6',
@@ -80,7 +80,7 @@ export const guides: Guide[] = [
   {
     id: 4,
     slug: 'high-value-lifestyle',
-    title: 'High Value Lifestyle',
+    title: 'Octogoal Lifestyle',
     subtitle: 'L\'art de vivre à haute valeur',
     description: 'Les habitudes et routines des personnes à haute valeur ajoutée.',
     excerpt: 'Transformez votre quotidien avec les stratégies des 1% les plus performants.',
@@ -88,7 +88,7 @@ export const guides: Guide[] = [
     category: 'Lifestyle',
     featured: false,
     status: 'coming-soon',
-    author: 'High Value Team',
+    author: 'Octogoal Team',
     tags: ['Lifestyle', 'Habitudes', 'Performance', 'Success'],
     color: {
       primary: '#10b981',

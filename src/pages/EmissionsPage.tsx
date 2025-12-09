@@ -281,7 +281,7 @@ export const EmissionsPage = () => {
   return (
     <>
       <SEO
-        title="Podcasts | High Value Media"
+        title="Podcasts | Octogoal Media"
         description="Écoutez les conversations les plus inspirantes avec les entrepreneurs et leaders qui façonnent le monde de demain."
       />
 

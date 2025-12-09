@@ -205,7 +205,7 @@ export function CategoryPage() {
   return (
     <ErrorBoundary>
       <SEO
-        title={`${config.title} - ${config.subtitle} | High Value Media`}
+        title={`${config.title} - ${config.subtitle} | Octogoal Media`}
         description={config.description}
       />
       

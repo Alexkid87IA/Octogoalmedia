@@ -274,7 +274,7 @@ export const AllArticlesPage = () => {
   return (
     <>
       <SEO
-        title="Tous les articles | High Value Media"
+        title="Tous les articles | Octogoal Media"
         description="Explorez notre collection complète d'articles sur l'entrepreneuriat, l'innovation et le développement personnel."
       />
       

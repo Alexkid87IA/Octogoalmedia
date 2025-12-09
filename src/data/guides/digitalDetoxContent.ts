@@ -298,7 +298,7 @@ export const digitalDetoxContent: GuideSection[] = [
       actionItems: [
         "Commencez aujourd'hui avec une action simple",
         "Partagez ce guide avec quelqu'un qui en a besoin",
-        "Rejoignez la communauté High Value pour du soutien continu",
+        "Rejoignez la communauté Octogoal pour du soutien continu",
         "Mesurez vos progrès chaque semaine"
       ]
     }

@@ -5,40 +5,46 @@ export default {
     extend: {
       colors: {
         // Base colors
-        primary: '#000000', // Noir pur
-        secondary: '#FFFFFF',    // Blanc pur
-        tertiary: '#D1D5DB',    // Gris clair pour texte courant
+        primary: '#000000',
+        secondary: '#FFFFFF',
+        tertiary: '#D1D5DB',
 
         // Semantic colors
-        background: '#000000', // Noir pur
-        foreground: '#F9FAFB', // Texte principal (blanc cassé)
-        muted: '#0A0A0A', // Fond des cartes (noir légèrement plus clair)
-        'muted-foreground': '#9CA3AF', // Texte secondaire (gris moyen)
-        border: '#1A1A1A', // Bordure par défaut
+        background: '#000000',
+        foreground: '#F9FAFB',
+        muted: '#0A0A0A',
+        'muted-foreground': '#9CA3AF',
+        border: '#1A1A1A',
         input: '#0A0A0A',
-        ring: '#2563EB', // Bleu pour les anneaux de focus
+        ring: '#E91E63',
 
-        // Accent colors from maquette
-        'hv-blue-accent': '#00A4F9', // Bleu vif/turquoise pour accents et survol
-        'hv-card-bg': '#0A0A0A', // Fond des cartes (noir légèrement plus clair)
-        'hv-card-border': 'rgba(255, 255, 255, 0.05)', // Bordure fine et claire pour les cartes
-        'hv-text-white': '#FFFFFF',
-        'hv-text-primary-maquette': '#E5E7EB', // Texte principal sur fond sombre
-        'hv-text-secondary-maquette': '#9CA3AF', // Texte secondaire sur fond sombre
-        'hv-text-accent': '#00A4F9', // Texte accentué (bleu vif)
+        // Octogoal colors (dégradé rose → bleu)
+        'octo-pink': '#E91E63',
+        'octo-pink-light': '#FF4081',
+        'octo-blue': '#3F51B5',
+        'octo-blue-light': '#2196F3',
+        
+        // Accent colors Octogoal
+        'octo-accent': '#E91E63',
+        'octo-card-bg': '#0A0A0A',
+        'octo-card-border': 'rgba(255, 255, 255, 0.05)',
+        'octo-text-white': '#FFFFFF',
+        'octo-text-primary': '#E5E7EB',
+        'octo-text-secondary': '#9CA3AF',
+        'octo-text-accent': '#E91E63',
 
-        // Anciennes couleurs (à conserver ou migrer si besoin)
+        // Gradient stops
         accent: {
-          blue: '#00A4F9',      // Bleu accent
-          turquoise: '#63FDFD', // Turquoise accent
-          'blue-5': 'rgba(0, 164, 249, 0.05)',
-          'blue-10': 'rgba(0, 164, 249, 0.1)',
-          'blue-20': 'rgba(0, 164, 249, 0.2)',
-          'blue-40': 'rgba(0, 164, 249, 0.4)',
-          'turquoise-5': 'rgba(99, 253, 253, 0.05)',
-          'turquoise-10': 'rgba(99, 253, 253, 0.1)',
-          'turquoise-20': 'rgba(99, 253, 253, 0.2)',
-          'turquoise-40': 'rgba(99, 253, 253, 0.4)'
+          pink: '#E91E63',
+          blue: '#3F51B5',
+          'pink-5': 'rgba(233, 30, 99, 0.05)',
+          'pink-10': 'rgba(233, 30, 99, 0.1)',
+          'pink-20': 'rgba(233, 30, 99, 0.2)',
+          'pink-40': 'rgba(233, 30, 99, 0.4)',
+          'blue-5': 'rgba(63, 81, 181, 0.05)',
+          'blue-10': 'rgba(63, 81, 181, 0.1)',
+          'blue-20': 'rgba(63, 81, 181, 0.2)',
+          'blue-40': 'rgba(63, 81, 181, 0.4)'
         }
       },
       fontFamily: {
@@ -46,6 +52,10 @@ export default {
         inter: ['Inter', 'sans-serif'],
         'dm-sans': ['DM Sans', 'sans-serif'],
         playfair: ['Playfair Display', 'serif']
+      },
+      backgroundImage: {
+        'octo-gradient': 'linear-gradient(135deg, #E91E63 0%, #3F51B5 100%)',
+        'octo-gradient-hover': 'linear-gradient(135deg, #FF4081 0%, #2196F3 100%)',
       },
       animation: {
         tilt: 'tilt 10s infinite linear',
@@ -55,45 +65,21 @@ export default {
       },
       keyframes: {
         tilt: {
-          '0%, 50%, 100%': {
-            transform: 'rotate(0deg)',
-          },
-          '25%': {
-            transform: 'rotate(0.5deg)',
-          },
-          '75%': {
-            transform: 'rotate(-0.5deg)',
-          },
+          '0%, 50%, 100%': { transform: 'rotate(0deg)' },
+          '25%': { transform: 'rotate(0.5deg)' },
+          '75%': { transform: 'rotate(-0.5deg)' },
         },
         'gradient-y': {
-          '0%, 100%': {
-            'background-size': '400% 400%',
-            'background-position': 'center top'
-          },
-          '50%': {
-            'background-size': '200% 200%',
-            'background-position': 'center center'
-          }
+          '0%, 100%': { 'background-size': '400% 400%', 'background-position': 'center top' },
+          '50%': { 'background-size': '200% 200%', 'background-position': 'center center' }
         },
         'gradient-x': {
-          '0%, 100%': {
-            'background-size': '200% 200%',
-            'background-position': 'left center'
-          },
-          '50%': {
-            'background-size': '200% 200%',
-            'background-position': 'right center'
-          }
+          '0%, 100%': { 'background-size': '200% 200%', 'background-position': 'left center' },
+          '50%': { 'background-size': '200% 200%', 'background-position': 'right center' }
         },
         'gradient-xy': {
-          '0%, 100%': {
-            'background-size': '400% 400%',
-            'background-position': 'left center'
-          },
-          '50%': {
-            'background-size': '200% 200%',
-            'background-position': 'right center'
-          }
+          '0%, 100%': { 'background-size': '400% 400%', 'background-position': 'left center' },
+          '50%': { 'background-size': '200% 200%', 'background-position': 'right center' }
         }
       }
     },

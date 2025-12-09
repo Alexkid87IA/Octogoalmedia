@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 
 // Import de tous les logos
-import logoMedia from '../../assets/logos/LOGO_HV_MEDIA.svg';
+import logoMedia from '../../assets/logos/LOGO_OCTOGOAL.png';
 import logoBusiness from '../../assets/logos/LOGO_HV_BUSINESS.svg';
 import logoMental from '../../assets/logos/LOGO_HV_PSYCHO.svg';
 import logoSociety from '../../assets/logos/LOGO_HV_SOCIETY.svg';
@@ -42,10 +42,10 @@ export const Footer = () => {
   };
 
   const socialLinks = [
-    { icon: Twitter, url: 'https://twitter.com/highvalue' },
-    { icon: Instagram, url: 'https://instagram.com/highvalue' },
-    { icon: Youtube, url: 'https://youtube.com/highvalue' },
-    { icon: Linkedin, url: 'https://linkedin.com/company/highvalue' }
+    { icon: Twitter, url: 'https://twitter.com/octogoal' },
+    { icon: Instagram, url: 'https://instagram.com/octogoal' },
+    { icon: Youtube, url: 'https://youtube.com/octogoal' },
+    { icon: Linkedin, url: 'https://linkedin.com/company/octogoal' }
   ];
 
   const handleSubscribe = (e: React.FormEvent) => {
@@ -244,10 +244,10 @@ export const Footer = () => {
                   <h4 className="text-white font-semibold text-sm mb-3">Rubriques</h4>
                   <ul className="space-y-2">
                     {[
-                      { label: 'Story', path: '/rubrique/story' },
-                      { label: 'Business', path: '/rubrique/business' },
-                      { label: 'Mental', path: '/rubrique/mental' },
-                      { label: 'Society', path: '/rubrique/society' }
+                      { label: 'Actus', path: '/rubrique/actus' },
+                      { label: 'Matchs', path: '/rubrique/matchs' },
+                      { label: 'Clubs', path: '/rubrique/clubs' },
+                      { label: 'Joueurs', path: '/rubrique/joueurs' }
                     ].map((item) => (
                       <li key={item.path}>
                         <Link
@@ -378,7 +378,7 @@ export const Footer = () => {
                 <Link to="/" className="inline-block">
                   <img 
                     src={getCurrentLogo()}
-                    alt="High Value Media"
+                    alt="Octogoal Media"
                     className="h-10 w-auto opacity-90 hover:opacity-100 transition-opacity"
                   />
                 </Link>
@@ -416,7 +416,7 @@ export const Footer = () => {
               {/* Copyright et legal */}
               <div className="text-right">
                 <div className="text-xs text-gray-500 mb-2">
-                  © {new Date().getFullYear()} High Value Media • Built with ❤️ by 
+                  © {new Date().getFullYear()} Octogoal Media • Built with ❤️ by 
                   <a
                     href="https://www.instagram.com/alex______kid/"
                     target="_blank"

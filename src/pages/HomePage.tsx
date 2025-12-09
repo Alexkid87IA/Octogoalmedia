@@ -284,7 +284,7 @@ export const HomePage = () => {
           {/* 4. Nos formats : Podcasts */}
           <section className="py-20 bg-gradient-to-b from-transparent via-purple-900/10 to-transparent overflow-hidden">
             <ContentSection 
-              title="Le podcast High Value"
+              title="Le podcast Octogoal"
               description="Des conversations authentiques avec ceux qui façonnent le monde de demain"
               sectionType="emission"
             />

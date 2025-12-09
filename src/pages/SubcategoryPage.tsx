@@ -138,7 +138,7 @@ export function SubcategoryPage() {
   return (
     <ErrorBoundary>
       <SEO
-        title={`${subcategory?.title || 'Articles'} - ${category?.title || 'Catégorie'} | High Value Media`}
+        title={`${subcategory?.title || 'Articles'} - ${category?.title || 'Catégorie'} | Octogoal Media`}
         description={subcategory?.description || 'Découvrez nos articles'}
       />
       

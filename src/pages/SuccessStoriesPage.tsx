@@ -132,7 +132,7 @@ export const SuccessStoriesPage = () => {
   return (
     <>
       <SEO
-        title="Success Stories | High Value Media"
+        title="Success Stories | Octogoal Media"
         description="Découvrez des parcours inspirants d'entrepreneurs et d'innovateurs qui ont transformé leur vision en réalité."
       />
       

@@ -74,16 +74,16 @@ const GuideDigitalDetox: React.FC = () => {
     <>
       {/* Meta Tags SEO pour le partage */}
       <Helmet>
-        <title>{guide.title} - {guide.subtitle} | High Value</title>
+        <title>{guide.title} - {guide.subtitle} | Octogoal</title>
         <meta name="description" content={guide.excerpt} />
         
         {/* Open Graph pour Facebook/LinkedIn */}
         <meta property="og:title" content={`${guide.title} - ${guide.subtitle}`} />
         <meta property="og:description" content={guide.excerpt} />
         <meta property="og:type" content="article" />
-        <meta property="og:url" content="https://highvalue.media/guides/maitrise-digitale" />
+        <meta property="og:url" content="https://octogoal.media/guides/maitrise-digitale" />
         <meta property="og:image" content="https://26.staticbtf.eno.do/v1/57-default/3f8dd22f1c8fc2e00a6a725e2b8e2793/media.jpg" />
-        <meta property="og:site_name" content="High Value" />
+        <meta property="og:site_name" content="Octogoal" />
         
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />

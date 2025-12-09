@@ -127,7 +127,7 @@ export const BusinessIdeasPage = () => {
   return (
     <>
       <SEO
-        title="Études de Cas Business | High Value Media"
+        title="Études de Cas Business | Octogoal Media"
         description="Découvrez nos analyses approfondies et études de cas business. Des insights exclusifs pour entrepreneurs et professionnels ambitieux."
       />
       

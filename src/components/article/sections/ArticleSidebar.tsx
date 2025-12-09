@@ -498,19 +498,19 @@ const ArticleSidebar: React.FC<ArticleSidebarProps> = ({
             <div className="bg-white p-4 rounded-xl mb-4">
               <img 
                 src="https://i.imgur.com/DcSvEmy.png"
-                alt="QR Code Instagram High Value Media"
+                alt="QR Code Instagram Octogoal Media"
                 className="w-40 h-40 object-contain"
               />
             </div>
             
             {/* Username Instagram cliquable */}
             <a 
-              href="https://www.instagram.com/highvalue.media" 
+              href="https://www.instagram.com/octogoal.media" 
               target="_blank" 
               rel="noopener noreferrer"
               className="flex items-center gap-2 text-white hover:text-pink-400 transition-colors group"
             >
-              <span className="text-sm font-medium">@highvalue.media</span>
+              <span className="text-sm font-medium">@octogoal.media</span>
               <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
             </a>
             
