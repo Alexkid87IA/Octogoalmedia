@@ -725,7 +725,7 @@ const ArticlePage: React.FC<{ isEmission?: boolean }> = ({ isEmission = false })
       .replace('-jpg', '.jpg')
       .replace('-png', '.png')
       .replace('-webp', '.webp');
-    return `https://cdn.sanity.io/images/z9wsynas/production/${cleanRef}?w=1920&h=1080&fit=crop&auto=format`;
+    return `https://cdn.sanity.io/images/5rn8u6ed/production/${cleanRef}?w=1920&h=1080&fit=crop&auto=format`;
   };
 
   // Composants PortableText
@@ -1937,7 +1937,7 @@ const ArticlePage: React.FC<{ isEmission?: boolean }> = ({ isEmission = false })
                           <div className="flex gap-4 p-3 rounded-xl hover:bg-white/5 transition-all duration-300">
                             {related.mainImage && related.mainImage.asset && related.mainImage.asset._ref && (
                               <img 
-                                src={`https://cdn.sanity.io/images/z9wsynas/production/${related.mainImage.asset._ref.replace('image-', '').replace('-jpg', '.jpg').replace('-png', '.png').replace('-webp', '.webp')}?w=120&h=80&fit=crop&auto=format`}
+                                src={`https://cdn.sanity.io/images/5rn8u6ed/production/${related.mainImage.asset._ref.replace('image-', '').replace('-jpg', '.jpg').replace('-png', '.png').replace('-webp', '.webp')}?w=120&h=80&fit=crop&auto=format`}
                                 alt={related.title}
                                 className="w-20 h-20 object-cover rounded-lg flex-shrink-0"
                               />
@@ -2133,7 +2133,7 @@ const ArticlePage: React.FC<{ isEmission?: boolean }> = ({ isEmission = false })
                           {related.mainImage && related.mainImage.asset && related.mainImage.asset._ref && (
                             <div className="relative h-48 overflow-hidden">
                               <img 
-                                src={`https://cdn.sanity.io/images/z9wsynas/production/${related.mainImage.asset._ref.replace('image-', '').replace('-jpg', '.jpg').replace('-png', '.png').replace('-webp', '.webp')}?w=400&h=250&fit=crop&auto=format`}
+                                src={`https://cdn.sanity.io/images/5rn8u6ed/production/${related.mainImage.asset._ref.replace('image-', '').replace('-jpg', '.jpg').replace('-png', '.png').replace('-webp', '.webp')}?w=400&h=250&fit=crop&auto=format`}
                                 alt={related.title}
                                 className="w-full h-full object-cover"
                               />

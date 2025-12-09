@@ -106,7 +106,7 @@ export const buildSanityImageUrl = (imageRef: string): string => {
     .replace('-jpg', '.jpg')
     .replace('-png', '.png')
     .replace('-webp', '.webp');
-  return `https://cdn.sanity.io/images/z9wsynas/production/${cleanRef}?w=1920&h=1080&fit=crop&auto=format`;
+  return `https://cdn.sanity.io/images/5rn8u6ed/production/${cleanRef}?w=1920&h=1080&fit=crop&auto=format`;
 };
 
 // Fonction pour générer la table des matières

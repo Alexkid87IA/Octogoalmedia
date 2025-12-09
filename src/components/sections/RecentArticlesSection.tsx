@@ -98,7 +98,7 @@ export const RecentArticlesSection = ({ articles = [] }) => {
       const format = refParts[3];
       
       // Construire l'URL CDN de Sanity avec votre Project ID
-      const projectId = 'z9wsynas'; // Votre ID de projet Sanity
+      const projectId = '5rn8u6ed'; // Votre ID de projet Sanity
       const dataset = 'production'; // Ou 'development' selon votre configuration
       
       return `https://cdn.sanity.io/images/${projectId}/${dataset}/${id}-${dimensions}.${format}?w=200&h=200&fit=crop`;

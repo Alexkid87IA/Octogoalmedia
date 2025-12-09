@@ -31,7 +31,7 @@ const RelatedArticles: React.FC<RelatedArticlesProps> = ({ articles, colors }) =
         .replace('-png', '.png')
         .replace('-webp', '.webp');
       
-      return `https://cdn.sanity.io/images/z9wsynas/production/${cleanRef}?w=400&h=250&fit=crop&auto=format`;
+      return `https://cdn.sanity.io/images/5rn8u6ed/production/${cleanRef}?w=400&h=250&fit=crop&auto=format`;
     }
     
     return null;

@@ -22,7 +22,7 @@ export interface SanityImage {
 }
 
 // Configuration depuis les variables d'environnement
-const projectId = import.meta.env.VITE_SANITY_PROJECT_ID || "z9wsynas";
+const projectId = import.meta.env.VITE_SANITY_PROJECT_ID || "5rn8u6ed";
 const dataset = import.meta.env.VITE_SANITY_DATASET || "production";
 const apiVersion = import.meta.env.VITE_SANITY_API_VERSION || "2024-01-01"; // Aligné avec votre .env
 
