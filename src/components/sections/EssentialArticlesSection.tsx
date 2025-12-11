@@ -1,25 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Star, Crown, Sparkles, Zap, Target, Clock, Eye, Bookmark } from 'lucide-react';
+import { ArrowRight, Star, Trophy, Sparkles, Zap, Flame, Clock, TrendingUp, Award } from 'lucide-react';
 import SafeImage from '../common/SafeImage';
 import { sanityClient } from '../../utils/sanityClient';
 
-// Icons mapping pour les catégories
+// Icons mapping pour les catégories OCTOGOAL
 const categoryIcons = {
-  'Mental': Crown,
-  'Business': Target,
-  'Productivité': Zap,
-  'Leadership': Star,
-  'Négociation': Sparkles
+  'Actus': Zap,
+  'Matchs': Trophy,
+  'Clubs': Star,
+  'Joueurs': Award,
+  'Formats Octogoal': Sparkles,
+  'Mèmes': Flame,
+  'Vidéos': TrendingUp
 };
 
 const categoryGradients = {
-  'Mental': "from-purple-500 to-violet-500",
-  'Business': "from-blue-500 to-cyan-500",
-  'Productivité': "from-amber-500 to-orange-500",
-  'Leadership': "from-pink-500 to-rose-500",
-  'Négociation': "from-emerald-500 to-teal-500"
+  'Actus': "from-pink-500 to-rose-500",
+  'Matchs': "from-blue-500 to-indigo-500",
+  'Clubs': "from-purple-500 to-violet-500",
+  'Joueurs': "from-emerald-500 to-teal-500",
+  'Formats Octogoal': "from-orange-500 to-amber-500",
+  'Mèmes': "from-yellow-500 to-orange-500",
+  'Vidéos': "from-red-500 to-pink-500"
 };
 
 export const EssentialArticlesSection = () => {
@@ -29,7 +33,7 @@ export const EssentialArticlesSection = () => {
   useEffect(() => {
     const fetchEssentialArticles = async () => {
       try {
-        // SOLUTION SIMPLE : Récupérer directement les articles marqués comme essentiels
+        // Récupérer les articles marqués comme essentiels ou les plus populaires
         const query = `*[_type == "article" && isEssential == true] | order(publishedAt desc)[0...5] {
           _id,
           title,
@@ -46,18 +50,14 @@ export const EssentialArticlesSection = () => {
         const articles = await sanityClient.fetch(query);
         
         if (articles && articles.length > 0) {
-          // Mapper categories vers category pour uniformiser
           const mappedArticles = articles.map((article: any) => ({
             ...article,
             category: article.categories
           }));
           
           setEssentialArticles(mappedArticles);
-          console.log('Articles essentiels récupérés:', mappedArticles.length);
         } else {
-          // Si pas d'articles essentiels, récupérer les 5 articles les plus récents comme fallback
-          console.log('Aucun article essentiel trouvé, utilisation du fallback');
-          
+          // Fallback : récupérer les 5 articles les plus récents
           const fallbackQuery = `*[_type == "article"] | order(publishedAt desc)[0...5] {
             _id,
             title,
@@ -72,17 +72,15 @@ export const EssentialArticlesSection = () => {
           
           const fallbackArticles = await sanityClient.fetch(fallbackQuery);
           
-          // Mapper categories vers category pour uniformiser
           const mappedArticles = fallbackArticles.map((article: any) => ({
             ...article,
             category: article.categories
           }));
           
           setEssentialArticles(mappedArticles);
-          console.log('Articles de fallback récupérés:', mappedArticles.length);
         }
       } catch (error) {
-        console.error('Erreur lors de la récupération des articles essentiels:', error);
+        console.error('Erreur lors de la récupération des articles:', error);
         setEssentialArticles([]);
       } finally {
         setIsLoading(false);
@@ -96,16 +94,15 @@ export const EssentialArticlesSection = () => {
     return null;
   }
 
-  // Séparer le premier article (featured) des autres
   const [featuredArticle, ...otherArticles] = essentialArticles;
 
   return (
     <section className="relative py-20 overflow-hidden">
-      {/* Background subtil */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-neutral-900/30 to-transparent" />
+      {/* Background */}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-pink-900/10 to-transparent" />
       
       <div className="container relative">
-        {/* Header de section amélioré */}
+        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -113,15 +110,15 @@ export const EssentialArticlesSection = () => {
           className="mb-12"
         >
           <div className="flex items-center gap-3 mb-6">
-            <div className="p-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 shadow-lg">
-              <Star className="w-6 h-6 text-white" />
+            <div className="p-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-blue-500 shadow-lg">
+              <Trophy className="w-6 h-6 text-white" />
             </div>
             <div>
-              <span className="text-xs font-medium text-amber-400 uppercase tracking-wider">
+              <span className="text-xs font-medium text-pink-400 uppercase tracking-wider">
                 Les incontournables
               </span>
               <span className="text-xs text-gray-500 ml-2">
-                • Sélection éditoriale
+                • Top 5 de la semaine
               </span>
             </div>
           </div>
@@ -129,19 +126,18 @@ export const EssentialArticlesSection = () => {
           <div className="max-w-3xl">
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
               <span className="text-white">Les </span>
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-400">
-                5 essentiels
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-blue-400">
+                tops du moment
               </span>
-              <span className="text-white"> à lire absolument</span>
             </h2>
             <p className="text-lg text-gray-400 leading-relaxed">
-              Les articles incontournables qui ont déjà transformé des milliers d'entrepreneurs. 
-              Des contenus intemporels à lire, relire et appliquer.
+              Les articles qui font le buzz dans la communauté foot. 
+              Du contenu viral, des analyses choc et des moments légendaires.
             </p>
           </div>
         </motion.div>
 
-        {/* Grid layout : 1 grand article à gauche, 4 petits à droite */}
+        {/* Grid layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Article principal (featured) */}
           {featuredArticle && (
@@ -152,8 +148,8 @@ export const EssentialArticlesSection = () => {
               className="group lg:row-span-2"
             >
               <Link to={`/article/${featuredArticle.slug?.current || featuredArticle.slug}`} className="block h-full">
-                <div className="relative h-full bg-neutral-900 rounded-2xl overflow-hidden border border-white/5 hover:border-amber-500/30 transition-all duration-300">
-                  {/* Grande image avec aspect ratio adaptatif */}
+                <div className="relative h-full bg-neutral-900 rounded-2xl overflow-hidden border border-white/5 hover:border-pink-500/30 transition-all duration-300">
+                  {/* Grande image */}
                   <div className="relative aspect-[3/4] lg:aspect-auto lg:h-full">
                     <SafeImage
                       source={featuredArticle.mainImage}
@@ -162,10 +158,10 @@ export const EssentialArticlesSection = () => {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
                     
-                    {/* Badge "À la une" */}
-                    <div className="absolute top-6 left-6 flex items-center gap-2 px-4 py-2 bg-amber-500 rounded-full">
-                      <Star className="w-4 h-4 text-white fill-white" />
-                      <span className="text-sm font-medium text-white">Article essentiel #1</span>
+                    {/* Badge #1 */}
+                    <div className="absolute top-6 left-6 flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-pink-500 to-blue-500 rounded-full">
+                      <Trophy className="w-4 h-4 text-white fill-white" />
+                      <span className="text-sm font-medium text-white">Top #1 de la semaine</span>
                     </div>
 
                     {/* Contenu en overlay */}
@@ -181,7 +177,7 @@ export const EssentialArticlesSection = () => {
                         </div>
                       )}
                       
-                      <h3 className="text-2xl md:text-3xl font-bold mb-4 text-white group-hover:text-amber-400 transition-colors">
+                      <h3 className="text-2xl md:text-3xl font-bold mb-4 text-white group-hover:text-pink-400 transition-colors">
                         {featuredArticle.title}
                       </h3>
                       
@@ -191,15 +187,15 @@ export const EssentialArticlesSection = () => {
                         </p>
                       )}
 
-                      <div className="flex items-center gap-2 text-amber-400">
+                      <div className="flex items-center gap-2 text-pink-400">
                         <span>Lire maintenant</span>
                         <ArrowRight className="w-5 h-5 transform group-hover:translate-x-1 transition-transform" />
                       </div>
                     </div>
                   </div>
 
-                  {/* Ligne dorée au hover */}
-                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500" />
+                  {/* Ligne colorée au hover */}
+                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-pink-500 to-blue-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500" />
                 </div>
               </Link>
             </motion.article>
@@ -217,8 +213,8 @@ export const EssentialArticlesSection = () => {
                 className="group"
               >
                 <Link to={`/article/${article.slug?.current || article.slug}`} className="block h-full">
-                  <div className="relative h-full bg-neutral-900 rounded-xl overflow-hidden border border-white/5 hover:border-amber-500/30 transition-all duration-300">
-                    {/* Image plus petite */}
+                  <div className="relative h-full bg-neutral-900 rounded-xl overflow-hidden border border-white/5 hover:border-pink-500/30 transition-all duration-300">
+                    {/* Image */}
                     <div className="relative aspect-[16/9] overflow-hidden">
                       <SafeImage
                         source={article.mainImage}
@@ -227,13 +223,13 @@ export const EssentialArticlesSection = () => {
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
                       
-                      {/* Numéro de l'article essentiel */}
-                      <div className="absolute top-3 left-3 w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center">
+                      {/* Numéro */}
+                      <div className="absolute top-3 left-3 w-8 h-8 bg-gradient-to-r from-pink-500 to-blue-500 rounded-full flex items-center justify-center">
                         <span className="text-xs font-bold text-white">#{index + 2}</span>
                       </div>
                     </div>
 
-                    {/* Contenu compact */}
+                    {/* Contenu */}
                     <div className="p-5">
                       {article.category && (
                         <div className="flex items-center gap-2 mb-3">
@@ -246,7 +242,7 @@ export const EssentialArticlesSection = () => {
                         </div>
                       )}
 
-                      <h3 className="font-bold mb-2 line-clamp-2 group-hover:text-amber-400 transition-colors">
+                      <h3 className="font-bold mb-2 line-clamp-2 group-hover:text-pink-400 transition-colors">
                         {article.title}
                       </h3>
                       
@@ -256,9 +252,8 @@ export const EssentialArticlesSection = () => {
                         </p>
                       )}
 
-                      {/* Flèche discrète */}
                       <div className="flex items-center justify-end">
-                        <ArrowRight className="w-4 h-4 text-amber-400 transform group-hover:translate-x-1 transition-transform" />
+                        <ArrowRight className="w-4 h-4 text-pink-400 transform group-hover:translate-x-1 transition-transform" />
                       </div>
                     </div>
                   </div>
@@ -268,7 +263,7 @@ export const EssentialArticlesSection = () => {
           </div>
         </div>
 
-        {/* CTA discret */}
+        {/* CTA */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -276,11 +271,11 @@ export const EssentialArticlesSection = () => {
           className="flex justify-center mt-12"
         >
           <Link
-            to="/articles?filter=essentials"
-            className="group inline-flex items-center gap-2 text-gray-400 hover:text-amber-400 transition-colors"
+            to="/articles?filter=tops"
+            className="group inline-flex items-center gap-2 text-gray-400 hover:text-pink-400 transition-colors"
           >
-            <Bookmark className="w-4 h-4" />
-            <span className="text-sm">Voir toute notre bibliothèque d'essentiels</span>
+            <Trophy className="w-4 h-4" />
+            <span className="text-sm">Voir tous les tops de la semaine</span>
             <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
           </Link>
         </motion.div>

@@ -1,451 +1,355 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, ArrowUpRight, Zap } from 'lucide-react';
+import { 
+  ArrowRight, 
+  ArrowUpRight, 
+  Zap, 
+  Newspaper, 
+  Trophy, 
+  Users, 
+  Laugh,
+  TrendingUp,
+  Star,
+  Calendar,
+  BarChart3,
+  FileText,
+  Crown,
+  Flame,
+  Camera,
+  MessageCircle,
+  Globe,
+  Award
+} from 'lucide-react';
 import { getUniverses, getSubcategoriesGrouped } from '../../utils/sanityAPI';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 import ErrorBoundary from '../common/ErrorBoundary';
 
-// Données mockées pour fallback
-const mockUniverses = [
+// Configuration des univers OCTOGOAL
+const universeConfig = [
   {
     _id: '1',
-    title: 'Story',
-    subtitle: 'Pour t\'inspirer',
-    description: 'Plonge dans les récits authentiques d\'entrepreneurs et de visionnaires. Chaque histoire est une leçon, chaque parcours une source d\'inspiration.',
-    atomicNumber: '01',
-    symbol: 'St',
-    slug: { current: 'story' },
-    stats: '120+ récits'
+    title: 'Actus',
+    subtitle: 'Toute l\'actu foot',
+    description: 'Les dernières news du foot français et européen. Transferts, résultats, déclarations.',
+    slug: { current: 'actus' },
+    stats: '200+ actus',
+    icon: Newspaper,
+    subcategories: [
+      { title: 'Ligue 1', slug: 'ligue-1', icon: Globe },
+      { title: 'Premier League', slug: 'premier-league', icon: Globe },
+      { title: 'Liga', slug: 'liga', icon: Globe },
+      { title: 'Champions League', slug: 'champions-league', icon: Trophy },
+      { title: 'Mercato', slug: 'mercato', icon: TrendingUp }
+    ]
   },
   {
     _id: '2',
-    title: 'Business',
-    subtitle: 'Pour faire du chiffre',
-    description: 'Stratégies concrètes, études de cas détaillées et insights exclusifs pour dominer ton marché.',
-    atomicNumber: '02',
-    symbol: 'Bu',
-    slug: { current: 'business' },
-    stats: '200+ guides'
+    title: 'Matchs',
+    subtitle: 'Les compétitions',
+    description: 'Notes, analyses, avant-matchs, résultats. Tout pour suivre les matchs comme un vrai.',
+    slug: { current: 'matchs' },
+    stats: '150+ matchs',
+    icon: Trophy,
+    subcategories: [
+      { title: 'Résultats', slug: 'resultats', icon: BarChart3 },
+      { title: 'Notes du match', slug: 'notes', icon: Star },
+      { title: 'Avant-match', slug: 'avant-match', icon: Calendar },
+      { title: 'Après-match', slug: 'apres-match', icon: FileText },
+      { title: 'Compos', slug: 'compos', icon: Users }
+    ]
   },
   {
     _id: '3',
-    title: 'Mental',
-    subtitle: 'Pour ta tête',
-    description: 'Développe une psychologie de champion et optimise tes performances cognitives.',
-    atomicNumber: '03',
-    symbol: 'Mt',
-    slug: { current: 'mental' },
-    stats: '80+ articles'
+    title: 'Joueurs',
+    subtitle: 'Les stars du ballon',
+    description: 'Portraits, tops, stats. Découvre les joueurs qui font vibrer le foot mondial.',
+    slug: { current: 'joueurs' },
+    stats: '100+ profils',
+    icon: Users,
+    subcategories: [
+      { title: 'Tops joueurs', slug: 'tops-joueurs', icon: Award },
+      { title: 'Joueurs en forme', slug: 'en-forme', icon: Flame },
+      { title: 'Fiches joueurs', slug: 'fiches', icon: FileText },
+      { title: 'Légendes', slug: 'legendes', icon: Crown },
+      { title: 'Pépites', slug: 'pepites', icon: Star }
+    ]
   },
   {
     _id: '4',
-    title: 'Society',
-    subtitle: 'Pour ta culture',
-    description: 'Décrypte les mutations sociétales et anticipe les tendances de demain.',
-    atomicNumber: '04',
-    symbol: 'Sc',
-    slug: { current: 'society' },
-    stats: '150+ analyses'
+    title: 'Mèmes',
+    subtitle: 'Le meilleur du LOL',
+    description: 'Les mèmes, les réactions, les moments viraux. La culture Internet du foot.',
+    slug: { current: 'memes' },
+    stats: '300+ mèmes',
+    icon: Laugh,
+    subcategories: [
+      { title: 'Réactions', slug: 'reactions', icon: MessageCircle },
+      { title: 'Captures virales', slug: 'captures', icon: Camera },
+      { title: 'Best of Octogoal', slug: 'best-of', icon: Award },
+      { title: 'Culture foot', slug: 'culture-foot', icon: Globe },
+      { title: 'La tête de Momo', slug: 'tete-momo', icon: Laugh }
+    ]
   }
 ];
 
-const mockSubcategories = {
-  story: [
-    { title: 'Parcours inspirants', slug: 'parcours', symbol: 'Pi' },
-    { title: 'Success stories', slug: 'success', symbol: 'Ss' },
-    { title: 'Échecs formateurs', slug: 'echecs', symbol: 'Ef' },
-    { title: 'Transformations', slug: 'transformations', symbol: 'Tr' },
-    { title: 'Entrepreneuriat', slug: 'entrepreneuriat', symbol: 'Ep' }
-  ],
-  business: [
-    { title: 'Stratégie', slug: 'strategie', symbol: 'Sr' },
-    { title: 'Innovation', slug: 'innovation', symbol: 'In' },
-    { title: 'Leadership', slug: 'leadership', symbol: 'Ld' },
-    { title: 'Croissance', slug: 'croissance', symbol: 'Cr' },
-    { title: 'Finance', slug: 'finance', symbol: 'Fi' }
-  ],
-  mental: [
-    { title: 'Mindset', slug: 'mindset', symbol: 'Ms' },
-    { title: 'Productivité', slug: 'productivite', symbol: 'Pr' },
-    { title: 'Résilience', slug: 'resilience', symbol: 'Rs' },
-    { title: 'Focus', slug: 'focus', symbol: 'Fc' },
-    { title: 'Bien-être', slug: 'bien-etre', symbol: 'Be' }
-  ],
-  society: [
-    { title: 'Tendances', slug: 'tendances', symbol: 'Td' },
-    { title: 'Impact social', slug: 'impact', symbol: 'Is' },
-    { title: 'Futur du travail', slug: 'futur', symbol: 'Ft' },
-    { title: 'Tech & IA', slug: 'tech', symbol: 'Ti' },
-    { title: 'Environnement', slug: 'environnement', symbol: 'Ev' }
-  ]
-};
-
-// Styles fixes pour chaque univers avec plus de couleur
+// Styles par univers
 const universeStyles = {
-  story: {
-    gradient: 'from-orange-500 via-pink-500 to-red-500',
-    lightGradient: 'from-orange-500/30 via-pink-500/30 to-red-500/30',
-    cardBg: 'bg-gradient-to-br from-orange-500/20 via-pink-500/20 to-red-500/20',
-    border: 'border-orange-500/50',
-    activeBorder: 'border-orange-400',
-    text: 'text-orange-400',
-    subBg: 'bg-gradient-to-br from-orange-500/10 to-red-500/10'
+  actus: {
+    gradient: 'from-rose-500 to-pink-600',
+    lightGradient: 'from-rose-500/20 to-pink-600/20',
+    glow: 'shadow-rose-500/20',
+    border: 'border-rose-500/30',
+    hoverBorder: 'hover:border-rose-400/50',
+    text: 'text-rose-400',
+    bg: 'bg-rose-500/10'
   },
-  business: {
-    gradient: 'from-blue-500 via-cyan-500 to-teal-500',
-    lightGradient: 'from-blue-500/30 via-cyan-500/30 to-teal-500/30',
-    cardBg: 'bg-gradient-to-br from-blue-500/20 via-cyan-500/20 to-teal-500/20',
-    border: 'border-blue-500/50',
-    activeBorder: 'border-blue-400',
+  matchs: {
+    gradient: 'from-blue-500 to-indigo-600',
+    lightGradient: 'from-blue-500/20 to-indigo-600/20',
+    glow: 'shadow-blue-500/20',
+    border: 'border-blue-500/30',
+    hoverBorder: 'hover:border-blue-400/50',
     text: 'text-blue-400',
-    subBg: 'bg-gradient-to-br from-blue-500/10 to-cyan-500/10'
+    bg: 'bg-blue-500/10'
   },
-  mental: {
-    gradient: 'from-purple-500 via-violet-500 to-indigo-500',
-    lightGradient: 'from-purple-500/30 via-violet-500/30 to-indigo-500/30',
-    cardBg: 'bg-gradient-to-br from-purple-500/20 via-violet-500/20 to-indigo-500/20',
-    border: 'border-purple-500/50',
-    activeBorder: 'border-purple-400',
-    text: 'text-purple-400',
-    subBg: 'bg-gradient-to-br from-purple-500/10 to-indigo-500/10'
+  joueurs: {
+    gradient: 'from-emerald-500 to-teal-600',
+    lightGradient: 'from-emerald-500/20 to-teal-600/20',
+    glow: 'shadow-emerald-500/20',
+    border: 'border-emerald-500/30',
+    hoverBorder: 'hover:border-emerald-400/50',
+    text: 'text-emerald-400',
+    bg: 'bg-emerald-500/10'
   },
-  society: {
-    gradient: 'from-green-500 via-emerald-500 to-teal-500',
-    lightGradient: 'from-green-500/30 via-emerald-500/30 to-teal-500/30',
-    cardBg: 'bg-gradient-to-br from-green-500/20 via-emerald-500/20 to-teal-500/20',
-    border: 'border-green-500/50',
-    activeBorder: 'border-green-400',
-    text: 'text-green-400',
-    subBg: 'bg-gradient-to-br from-green-500/10 to-teal-500/10'
+  memes: {
+    gradient: 'from-amber-500 to-orange-600',
+    lightGradient: 'from-amber-500/20 to-orange-600/20',
+    glow: 'shadow-amber-500/20',
+    border: 'border-amber-500/30',
+    hoverBorder: 'hover:border-amber-400/50',
+    text: 'text-amber-400',
+    bg: 'bg-amber-500/10'
   }
 };
 
 export const EditorialSection = () => {
-  const [universes, setUniverses] = useState(mockUniverses);
-  const [subcategories, setSubcategories] = useState(mockSubcategories);
-  const [selectedUniverse, setSelectedUniverse] = useState<string | null>(null);
-  const [hoveredUniverse, setHoveredUniverse] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setIsLoading(true);
-        
-        const sanityUniverses = await getUniverses();
-        if (sanityUniverses && sanityUniverses.length > 0) {
-          setUniverses(sanityUniverses.map((u: any, i: number) => ({
-            ...u,
-            atomicNumber: mockUniverses[i]?.atomicNumber || `0${i+1}`,
-            symbol: mockUniverses[i]?.symbol || u.title.substring(0, 2),
-            description: u.description || mockUniverses[i]?.description,
-            stats: mockUniverses[i]?.stats
-          })));
-        }
-
-        const sanitySubcategories = await getSubcategoriesGrouped();
-        if (sanitySubcategories && sanitySubcategories.length > 0) {
-          const subcatMap: any = {};
-          sanitySubcategories.forEach((cat: any) => {
-            if (cat.subcategories && cat.subcategories.length > 0) {
-              subcatMap[cat.slug.current] = cat.subcategories.map((sub: any, i: number) => ({
-                title: sub.title,
-                slug: sub.slug.current,
-                symbol: mockSubcategories[cat.slug.current]?.[i]?.symbol || sub.title.substring(0, 2)
-              }));
-            }
-          });
-          
-          setSubcategories({
-            ...mockSubcategories,
-            ...subcatMap
-          });
-          
-          // Forcer l'ajout d'Entrepreneuriat si Story n'a que 4 sous-catégories
-          if (subcatMap.story && subcatMap.story.length === 4) {
-            subcatMap.story.push({
-              title: 'Entrepreneuriat',
-              slug: 'entrepreneuriat',
-              symbol: 'Ep'
-            });
-          }
-        }
-      } catch (error) {
-        console.error('Erreur:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  if (isLoading) {
-    return (
-      <section className="relative py-20 flex items-center justify-center bg-black">
-        <LoadingSpinner />
-      </section>
-    );
-  }
+  const [activeUniverse, setActiveUniverse] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const getStyle = (slug: string) => {
-    return universeStyles[slug as keyof typeof universeStyles] || universeStyles.story;
+    return universeStyles[slug as keyof typeof universeStyles] || universeStyles.actus;
   };
 
   return (
     <ErrorBoundary>
-      <section className="relative py-16 md:py-24 overflow-hidden bg-black">
-        {/* Background avec particules colorées */}
+      <section className="relative py-24 overflow-hidden">
+        {/* Background */}
         <div className="absolute inset-0">
           <div className="absolute inset-0 bg-gradient-to-b from-black via-neutral-950 to-black" />
-          
-          {/* Orbes de couleur flottants */}
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-[150px] animate-pulse" />
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-[150px] animate-pulse" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-pink-500/5 to-blue-500/5 rounded-full blur-3xl" />
         </div>
 
-        <div className="container relative z-10">
+        <div className="container relative z-10 max-w-7xl mx-auto px-4">
           {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
+            className="text-center mb-20"
           >
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
-              <span className="text-white">Explore nos </span>
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-cyan-400 to-purple-400">
-                4 univers
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full mb-8"
+            >
+              <Zap className="w-4 h-4 text-pink-400" />
+              <span className="text-sm text-gray-300 font-medium">Explore nos univers</span>
+            </motion.div>
+            
+            <h2 className="text-5xl md:text-6xl lg:text-7xl font-black mb-6 tracking-tight">
+              <span className="text-white">Tout le </span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400">
+                foot
               </span>
+              <br />
+              <span className="text-white">en un clic</span>
             </h2>
-            <p className="text-gray-400 text-lg max-w-3xl mx-auto">
-              Story, Business, Mental et Society - Choisis ta verticale pour transformer ta vision
+            
+            <p className="text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed">
+              Actus, matchs, joueurs, mèmes... Choisis ton univers et plonge dans le meilleur du foot
             </p>
           </motion.div>
 
-          {/* Grille principale avec design coloré */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-7xl mx-auto">
-            {universes.map((universe, index) => {
-              const isSelected = selectedUniverse === universe.slug.current;
-              const isHovered = hoveredUniverse === universe.slug.current;
+          {/* Grille des univers */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+            {universeConfig.map((universe, index) => {
               const style = getStyle(universe.slug.current);
-              const subcats = subcategories[universe.slug.current] || [];
+              const Icon = universe.icon;
+              const isActive = activeUniverse === universe.slug.current;
+
+              return (
+                <motion.div
+                  key={universe._id}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  onMouseEnter={() => setActiveUniverse(universe.slug.current)}
+                  onMouseLeave={() => setActiveUniverse(null)}
+                >
+                  <Link
+                    to={`/rubrique/${universe.slug.current}`}
+                    className="block h-full"
+                  >
+                    <div className={`
+                      relative h-full p-6 rounded-2xl
+                      bg-gradient-to-b from-white/[0.08] to-white/[0.02]
+                      backdrop-blur-xl
+                      border ${style.border} ${style.hoverBorder}
+                      transition-all duration-500
+                      hover:shadow-2xl ${style.glow}
+                      hover:-translate-y-2
+                      group
+                    `}>
+                      {/* Glow effect on hover */}
+                      <div className={`
+                        absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500
+                        bg-gradient-to-b ${style.lightGradient}
+                      `} />
+                      
+                      {/* Content */}
+                      <div className="relative z-10">
+                        {/* Header */}
+                        <div className="flex items-start justify-between mb-6">
+                          <div className={`
+                            p-3 rounded-xl bg-gradient-to-br ${style.gradient}
+                            shadow-lg group-hover:scale-110 transition-transform duration-300
+                          `}>
+                            <Icon className="w-6 h-6 text-white" />
+                          </div>
+                          
+                          <span className={`
+                            text-xs font-medium px-3 py-1 rounded-full
+                            bg-white/5 border border-white/10
+                            ${style.text}
+                          `}>
+                            {universe.stats}
+                          </span>
+                        </div>
+
+                        {/* Title & Subtitle */}
+                        <div className="mb-4">
+                          <h3 className={`
+                            text-2xl font-bold mb-1
+                            text-transparent bg-clip-text bg-gradient-to-r ${style.gradient}
+                          `}>
+                            {universe.title}
+                          </h3>
+                          <p className="text-sm text-gray-500">{universe.subtitle}</p>
+                        </div>
+
+                        {/* Description */}
+                        <p className="text-sm text-gray-400 leading-relaxed mb-6 line-clamp-2">
+                          {universe.description}
+                        </p>
+
+                        {/* Subcategories */}
+                        <div className="space-y-2 mb-6">
+                          {universe.subcategories.slice(0, 5).map((subcat, idx) => {
+                            const SubIcon = subcat.icon;
+                            return (
+                              <Link
+                                key={subcat.slug}
+                                to={`/rubrique/${universe.slug.current}/${subcat.slug}`}
+                                onClick={(e) => e.stopPropagation()}
+                                className="block group/sub"
+                              >
+                                <motion.div
+                                  initial={{ opacity: 0, x: -10 }}
+                                  whileInView={{ opacity: 1, x: 0 }}
+                                  transition={{ delay: idx * 0.05 }}
+                                  className={`
+                                    flex items-center gap-3 p-2.5 rounded-xl
+                                    bg-white/[0.03] border border-white/5
+                                    hover:bg-white/[0.08] hover:border-white/10
+                                    transition-all duration-300
+                                    group-hover/sub:translate-x-1
+                                  `}
+                                >
+                                  <div className={`
+                                    w-8 h-8 rounded-lg flex items-center justify-center
+                                    bg-gradient-to-br ${style.lightGradient}
+                                  `}>
+                                    <SubIcon className={`w-4 h-4 ${style.text}`} />
+                                  </div>
+                                  <span className="text-sm text-gray-300 flex-1 font-medium">
+                                    {subcat.title}
+                                  </span>
+                                  <ArrowUpRight className={`
+                                    w-4 h-4 ${style.text} opacity-0 
+                                    group-hover/sub:opacity-100 transition-opacity
+                                  `} />
+                                </motion.div>
+                              </Link>
+                            );
+                          })}
+                        </div>
+
+                        {/* CTA */}
+                        <div className={`
+                          flex items-center gap-2 text-sm font-semibold
+                          ${style.text} group-hover:gap-3 transition-all
+                        `}>
+                          <span>Explorer</span>
+                          <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        </div>
+                      </div>
+
+                      {/* Bottom accent line */}
+                      <div className={`
+                        absolute bottom-0 left-0 right-0 h-1 rounded-b-2xl
+                        bg-gradient-to-r ${style.gradient}
+                        transform scale-x-0 group-hover:scale-x-100
+                        transition-transform duration-500 origin-left
+                      `} />
+                    </div>
+                  </Link>
+                </motion.div>
+              );
+            })}
+          </div>
+
+          {/* Navigation Pills */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="flex flex-wrap justify-center gap-3"
+          >
+            {universeConfig.map((universe) => {
+              const style = getStyle(universe.slug.current);
+              const Icon = universe.icon;
+              const isActive = activeUniverse === universe.slug.current;
               
               return (
                 <Link
                   key={universe._id}
                   to={`/rubrique/${universe.slug.current}`}
-                  className="group block h-full"
-                >
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: index * 0.1 }}
-                    whileHover={{ scale: 1.02 }}
-                    onMouseEnter={() => setHoveredUniverse(universe.slug.current)}
-                    onMouseLeave={() => setHoveredUniverse(null)}
-                    className="h-full"
-                  >
-                    <div className={`
-                      relative overflow-hidden rounded-3xl transition-all duration-500
-                      ${style.cardBg} ${isSelected || isHovered ? style.activeBorder : style.border}
-                      border-2 backdrop-blur-sm h-full flex flex-col
-                      ${isSelected || isHovered ? 'shadow-2xl' : 'shadow-lg'}
-                    `}>
-                      {/* Effet de brillance animé */}
-                      <div className="absolute inset-0 opacity-50">
-                        <div className={`absolute inset-0 bg-gradient-to-br ${style.lightGradient}`} />
-                        {(isSelected || isHovered) && (
-                          <motion.div
-                            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12"
-                            animate={{ x: [-200, 200] }}
-                            transition={{ duration: 1.5, repeat: Infinity }}
-                          />
-                        )}
-                      </div>
-
-                      <div className="relative p-8 flex flex-col h-full">
-                        {/* Header avec symbole périodique stylisé */}
-                        <div className="flex items-start justify-between mb-6">
-                          <div className="flex-1">
-                            {/* Badge numéro atomique */}
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/30 backdrop-blur-sm mb-4">
-                              <span className="text-xs font-mono text-white/60">Element</span>
-                              <span className="text-xs font-bold text-white">{universe.atomicNumber}</span>
-                            </div>
-                            
-                            {/* Titre XXL */}
-                            <h3 className="text-4xl md:text-5xl font-bold text-white mb-2">
-                              {universe.title}
-                            </h3>
-                            
-                            {/* Subtitle avec stats */}
-                            <div className="flex items-center gap-3">
-                              <p className="text-white/90 font-medium">{universe.subtitle}</p>
-                              <span className="text-xs px-2 py-1 rounded-full bg-white/20 text-white/80">
-                                {universe.stats}
-                              </span>
-                            </div>
-                          </div>
-                          
-                          {/* Symbole périodique géant avec effet 3D */}
-                          <motion.div
-                            className="relative flex-shrink-0"
-                            animate={{ rotateY: isHovered ? 10 : 0 }}
-                          >
-                            {/* Ombre portée pour créer de la profondeur */}
-                            <div className="absolute -inset-2 bg-black/30 rounded-3xl blur-xl" />
-                            
-                            {/* Glow coloré */}
-                            <div className={`absolute -inset-4 bg-gradient-to-br ${style.gradient} opacity-30 rounded-3xl blur-2xl`} />
-                            
-                            {/* Carte principale avec élévation */}
-                            <div className="relative w-28 h-28 rounded-2xl bg-black/50 backdrop-blur-md border-2 border-white/30 flex flex-col items-center justify-center shadow-2xl transform hover:scale-105 transition-transform">
-                              {/* Numéro atomique en haut */}
-                              <span className="absolute top-2 left-2 text-[10px] font-mono text-white/50">
-                                {universe.atomicNumber}
-                              </span>
-                              
-                              {/* Symbole central */}
-                              <span className={`text-5xl font-black text-transparent bg-clip-text bg-gradient-to-br ${style.gradient}`}>
-                                {universe.symbol}
-                              </span>
-                              
-                              {/* Nom de l'élément en bas */}
-                              <span className="absolute bottom-2 text-[10px] font-medium text-white/50 uppercase tracking-wider">
-                                {universe.title}
-                              </span>
-                            </div>
-                          </motion.div>
-                        </div>
-
-                        {/* Description */}
-                        <p className="text-white/70 text-sm leading-relaxed mb-6 min-h-[60px] line-clamp-3">
-                          {universe.description}
-                        </p>
-
-                        {/* Sous-catégories avec design périodique amélioré */}
-                        <div className="space-y-3 flex-grow flex flex-col">
-                          <div className="grid grid-cols-2 gap-2">
-                            {subcats.slice(0, 4).map((subcat, idx) => (
-                              <Link
-                                key={subcat.slug}
-                                to={`/rubrique/${universe.slug.current}/${subcat.slug}`}
-                                onClick={(e) => e.stopPropagation()}
-                                className="group/sub"
-                              >
-                                <motion.div
-                                  initial={{ opacity: 0, y: 10 }}
-                                  animate={{ opacity: 1, y: 0 }}
-                                  transition={{ delay: isSelected ? idx * 0.05 : 0 }}
-                                  whileHover={{ scale: 1.05 }}
-                                  className={`
-                                    relative p-3 rounded-xl ${style.subBg} 
-                                    border border-white/10 hover:border-white/30
-                                    transition-all overflow-hidden
-                                  `}
-                                >
-                                  {/* Mini symbole périodique */}
-                                  <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center flex-shrink-0">
-                                      <span className={`text-xs font-bold text-transparent bg-clip-text bg-gradient-to-br ${style.gradient}`}>
-                                        {subcat.symbol}
-                                      </span>
-                                    </div>
-                                    <span className="text-xs text-white/80 font-medium flex-1 line-clamp-1">
-                                      {subcat.title}
-                                    </span>
-                                    <ArrowUpRight className="w-3 h-3 text-white/40 opacity-0 group-hover/sub:opacity-100 transition-opacity flex-shrink-0" />
-                                  </div>
-                                </motion.div>
-                              </Link>
-                            ))}
-                          </div>
-
-                          {/* 5ème sous-catégorie en pleine largeur si existe */}
-                          {subcats[4] && (
-                            <Link
-                              to={`/rubrique/${universe.slug.current}/${subcats[4].slug}`}
-                              onClick={(e) => e.stopPropagation()}
-                              className="group/sub block"
-                            >
-                              <motion.div
-                                whileHover={{ scale: 1.02 }}
-                                className={`
-                                  relative p-3 rounded-xl ${style.subBg}
-                                  border border-white/10 hover:border-white/30
-                                  transition-all
-                                `}
-                              >
-                                <div className="flex items-center gap-3">
-                                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center flex-shrink-0">
-                                    <span className={`text-xs font-bold text-transparent bg-clip-text bg-gradient-to-br ${style.gradient}`}>
-                                      {subcats[4].symbol}
-                                    </span>
-                                  </div>
-                                  <span className="text-xs text-white/80 font-medium flex-1">
-                                    {subcats[4].title}
-                                  </span>
-                                  <ArrowUpRight className="w-3 h-3 text-white/40 opacity-0 group-hover/sub:opacity-100 transition-opacity flex-shrink-0" />
-                                </div>
-                              </motion.div>
-                            </Link>
-                          )}
-                          
-                          {/* Spacer pour pousser le CTA en bas */}
-                          <div className="flex-grow"></div>
-                        </div>
-
-                        {/* CTA principal */}
-                        <div 
-                          onClick={(e) => e.stopPropagation()}
-                          className="inline-flex items-center gap-2 mt-auto pt-6 text-white font-medium hover:gap-3 transition-all"
-                        >
-                          <span>Explorer tout l'univers</span>
-                          <ArrowRight className="w-4 h-4" />
-                        </div>
-                      </div>
-
-                      {/* Barre de progression colorée en bas */}
-                      {(isSelected || isHovered) && (
-                        <motion.div
-                          layoutId="active-indicator"
-                          className={`absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r ${style.gradient}`}
-                        />
-                      )}
-                    </div>
-                  </motion.div>
-                </Link>
-              );
-            })}
-          </div>
-
-          {/* Indicateurs de navigation colorés */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="flex justify-center gap-3 mt-12"
-          >
-            {universes.map((universe) => {
-              const isActive = selectedUniverse === universe.slug.current;
-              const style = getStyle(universe.slug.current);
-              
-              return (
-                <button
-                  key={universe._id}
-                  onClick={() => setSelectedUniverse(universe.slug.current)}
                   className={`
-                    relative px-4 py-2 rounded-full font-mono text-xs transition-all
+                    inline-flex items-center gap-2 px-5 py-2.5 rounded-full
+                    font-medium text-sm transition-all duration-300
                     ${isActive 
-                      ? `bg-gradient-to-r ${style.gradient} text-white shadow-lg` 
-                      : 'bg-white/5 text-gray-400 hover:bg-white/10'
+                      ? `bg-gradient-to-r ${style.gradient} text-white shadow-lg ${style.glow}` 
+                      : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white border border-white/10'
                     }
                   `}
+                  onMouseEnter={() => setActiveUniverse(universe.slug.current)}
+                  onMouseLeave={() => setActiveUniverse(null)}
                 >
-                  {universe.symbol}
-                </button>
+                  <Icon className="w-4 h-4" />
+                  <span>{universe.title}</span>
+                </Link>
               );
             })}
           </motion.div>
