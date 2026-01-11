@@ -26,43 +26,61 @@ import SafeImage from "../components/common/SafeImage";
 import { getArticlesByCategory, getCategoryBySlug } from "../utils/sanityAPI";
 import { SanityArticle } from "../types/sanity";
 
-// Configuration des catégories avec leurs styles
+// Configuration des catégories Octogoal - Football & Divertissement
 const categoryConfig = {
-  story: {
-    title: "Story",
-    subtitle: "Parcours & Transformations",
-    description: "Des histoires qui inspirent et transforment votre vision du possible",
-    gradient: "from-amber-400 to-orange-500",
-    bgGradient: "from-amber-900/20 to-orange-900/20",
-    icon: Sparkles,
-    stats: { articles: 247, authors: 18, reads: "12.5k" }
+  actus: {
+    title: "Actus",
+    subtitle: "L'actu foot en direct",
+    description: "Toute l'actualité du football : transferts, résultats, analyses et infos exclusives",
+    gradient: "from-pink-500 to-rose-500",
+    bgGradient: "from-pink-900/20 to-rose-900/20",
+    icon: Zap,
+    stats: { articles: 324, authors: 12, reads: "45.2k" }
   },
-  business: {
-    title: "Business",
-    subtitle: "Stratégie & Innovation",
-    description: "Les clés pour entreprendre, innover et réussir dans le monde des affaires",
+  matchs: {
+    title: "Matchs",
+    subtitle: "Analyses & Résultats",
+    description: "Résultats en direct, analyses tactiques, notes des joueurs et classements",
     gradient: "from-blue-400 to-cyan-500",
     bgGradient: "from-blue-900/20 to-cyan-900/20",
-    icon: Zap,
-    stats: { articles: 189, authors: 24, reads: "18.7k" }
+    icon: Target,
+    stats: { articles: 256, authors: 8, reads: "38.7k" }
   },
-  mental: {
-    title: "Mental",
-    subtitle: "Mindset & Performance",
-    description: "Développez votre potentiel mental et atteignez l'excellence",
+  clubs: {
+    title: "Clubs",
+    subtitle: "L'univers des clubs",
+    description: "Suivez l'actualité de vos clubs préférés : Ligue 1, Premier League, Liga et plus",
     gradient: "from-purple-400 to-violet-500",
     bgGradient: "from-purple-900/20 to-violet-900/20",
-    icon: Brain,
-    stats: { articles: 156, authors: 15, reads: "9.3k" }
+    icon: Users,
+    stats: { articles: 198, authors: 10, reads: "28.3k" }
   },
-  society: {
-    title: "Society",
-    subtitle: "Tendances & Impact",
-    description: "Comprendre les transformations sociétales et leur impact sur notre futur",
+  joueurs: {
+    title: "Joueurs",
+    subtitle: "Stars & Talents",
+    description: "Profils, performances et parcours des meilleurs joueurs du monde",
     gradient: "from-emerald-400 to-teal-500",
     bgGradient: "from-emerald-900/20 to-teal-900/20",
-    icon: Users,
-    stats: { articles: 203, authors: 21, reads: "15.1k" }
+    icon: Sparkles,
+    stats: { articles: 175, authors: 9, reads: "32.1k" }
+  },
+  "formats-octogoal": {
+    title: "Formats Octogoal",
+    subtitle: "Contenus exclusifs",
+    description: "Tops, classements, débats et formats originaux made in Octogoal",
+    gradient: "from-orange-400 to-amber-500",
+    bgGradient: "from-orange-900/20 to-amber-900/20",
+    icon: Brain,
+    stats: { articles: 89, authors: 6, reads: "18.5k" }
+  },
+  memes: {
+    title: "Mèmes",
+    subtitle: "Humour & Viral",
+    description: "Les meilleurs mèmes foot, moments viraux et culture internet du ballon rond",
+    gradient: "from-yellow-400 to-orange-500",
+    bgGradient: "from-yellow-900/20 to-orange-900/20",
+    icon: Sparkles,
+    stats: { articles: 156, authors: 5, reads: "52.8k" }
   }
 };
 
@@ -79,7 +97,7 @@ export function CategoryPage() {
   const [page, setPage] = useState(1);
   const articlesPerPage = 9;
 
-  const config = categoryConfig[categorySlug as keyof typeof categoryConfig] || categoryConfig.story;
+  const config = categoryConfig[categorySlug as keyof typeof categoryConfig] || categoryConfig.actus;
   const Icon = config.icon;
 
   useEffect(() => {
@@ -121,32 +139,42 @@ export function CategoryPage() {
     fetchCategoryAndArticles();
   }, [categorySlug]);
 
-  // Fonction pour générer des articles de démonstration
+  // Fonction pour générer des articles de démonstration - Football
   const generateMockArticles = (category: string): SanityArticle[] => {
     const mockTitles = {
-      story: [
-        "De SDF à millionnaire : l'incroyable parcours de Jean",
-        "Comment elle a quitté son job pour créer une startup à succès",
-        "L'échec qui a changé ma vie : témoignage d'un entrepreneur"
+      actus: [
+        "Mercato : Les 5 dossiers chauds de janvier",
+        "PSG : Mbappé bientôt prolongé ? Les dernières infos",
+        "Ligue 1 : Le calendrier infernal qui attend les clubs français"
       ],
-      business: [
-        "Les 5 stratégies pour lever des fonds en 2024",
-        "Comment l'IA transforme le business model des startups",
-        "Leadership : les nouvelles règles du jeu"
+      matchs: [
+        "PSG 3-1 OM : Les notes du Classico",
+        "Real Madrid vs Barcelone : Analyse tactique du Clasico",
+        "Liverpool s'impose dans le derby : Résumé et stats"
       ],
-      mental: [
-        "Développer un mindset de champion en 30 jours",
-        "La méthode pour rester focus dans un monde de distractions",
-        "Comment la méditation a boosté ma productivité"
+      clubs: [
+        "PSG : Les coulisses du projet QSI révélées",
+        "Manchester City : Comment Guardiola a révolutionné le club",
+        "Real Madrid : Les secrets de la Maison Blanche"
       ],
-      society: [
-        "Le futur du travail : ce qui nous attend en 2030",
-        "Impact social : ces startups qui changent le monde",
-        "Tech for good : quand l'innovation sert l'humanité"
+      joueurs: [
+        "Mbappé : Portrait du prodige français",
+        "Haaland : La machine à buts norvégienne décryptée",
+        "Bellingham : La nouvelle pépite du Real Madrid"
+      ],
+      "formats-octogoal": [
+        "Top 10 : Les plus beaux buts de la saison",
+        "Débat : Qui est le GOAT ? Messi vs Ronaldo",
+        "Classement : Les 50 meilleurs joueurs de 2024"
+      ],
+      memes: [
+        "Les réactions Twitter après le Classico",
+        "Quand Mbappé découvre son transfert sur TikTok",
+        "Les meilleures tête de Momo de la semaine"
       ]
     };
 
-    return (mockTitles[category as keyof typeof mockTitles] || mockTitles.story).map((title, i) => ({
+    return (mockTitles[category as keyof typeof mockTitles] || mockTitles.actus).map((title, i) => ({
       _id: `mock-${i}`,
       title,
       slug: { _type: "slug", current: `article-${i}` },

@@ -313,18 +313,18 @@ export const ResponsiveNavbar = () => {
                   {menuItems.map((item) => {
                     const isActive = location.pathname.includes(item.slug);
                     const gradient = getGradientByColor(item.color);
-                    
+
                     return (
                       <div
                         key={item.slug}
                         className="relative"
                         onMouseEnter={() => setActiveDropdown(item.slug)}
                       >
-                        {/* TEMPORAIREMENT DÉSACTIVÉ - Remplacer div par Link to={item.path} pour réactiver */}
-                        <div
-                          className={`relative px-4 py-2 text-sm font-medium transition-all duration-300 flex items-center gap-1 group cursor-default ${
-                            isActive 
-                              ? 'text-white' 
+                        <Link
+                          to={item.path}
+                          className={`relative px-4 py-2 text-sm font-medium transition-all duration-300 flex items-center gap-1 group ${
+                            isActive
+                              ? 'text-white'
                               : 'text-gray-300 hover:text-white'
                           }`}
                         >
@@ -332,7 +332,7 @@ export const ResponsiveNavbar = () => {
                           <ChevronDown className={`w-3 h-3 transition-transform duration-300 ${
                             activeDropdown === item.slug ? 'rotate-180' : ''
                           }`} />
-                          
+
                           {isActive && (
                             <motion.div
                               layoutId="navbar-active"
@@ -340,7 +340,7 @@ export const ResponsiveNavbar = () => {
                               transition={{ type: "spring", stiffness: 300, damping: 30 }}
                             />
                           )}
-                        </div>
+                        </Link>
                       </div>
                     );
                   })}
@@ -374,10 +374,11 @@ export const ResponsiveNavbar = () => {
                                   
                                   <div className="grid grid-cols-2 gap-2">
                                     {item.subcategories.slice(0, 4).map((sub, idx) => (
-                                      // TEMPORAIREMENT DÉSACTIVÉ - Remplacer div par Link to={sub.path} pour réactiver
-                                      <div
+                                      <Link
                                         key={sub.path}
-                                        className="group relative cursor-default"
+                                        to={sub.path}
+                                        className="group relative"
+                                        onClick={() => setActiveDropdown(null)}
                                       >
                                         <motion.div
                                           whileHover={{ scale: 1.02, x: 3 }}
@@ -391,18 +392,19 @@ export const ResponsiveNavbar = () => {
                                               {sub.label}
                                             </h4>
                                             <p className="text-xs text-gray-500">
-                                              Bientôt disponible
+                                              Voir les articles
                                             </p>
                                           </div>
                                           <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-5 rounded-xl transition-opacity`} />
                                         </motion.div>
-                                      </div>
+                                      </Link>
                                     ))}
-                                    
+
                                     {item.subcategories.length === 5 && (
-                                      // TEMPORAIREMENT DÉSACTIVÉ
-                                      <div
-                                        className="group relative col-span-2 cursor-default"
+                                      <Link
+                                        to={item.subcategories[4].path}
+                                        className="group relative col-span-2"
+                                        onClick={() => setActiveDropdown(null)}
                                       >
                                         <motion.div
                                           whileHover={{ scale: 1.02, x: 3 }}
@@ -416,12 +418,12 @@ export const ResponsiveNavbar = () => {
                                               {item.subcategories[4].label}
                                             </h4>
                                             <p className="text-xs text-gray-500">
-                                              Bientôt disponible
+                                              Voir les articles
                                             </p>
                                           </div>
                                           <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-5 rounded-xl transition-opacity`} />
                                         </motion.div>
-                                      </div>
+                                      </Link>
                                     )}
                                   </div>
                                   
@@ -437,12 +439,13 @@ export const ResponsiveNavbar = () => {
                                           <span className="ml-2 font-bold text-pink-400">+18</span>
                                         </div>
                                       </div>
-                                      {/* TEMPORAIREMENT DÉSACTIVÉ */}
-                                      <span
-                                        className={`text-xs font-medium text-transparent bg-clip-text bg-gradient-to-r ${gradient} cursor-default`}
+                                      <Link
+                                        to={item.path}
+                                        onClick={() => setActiveDropdown(null)}
+                                        className={`text-xs font-medium text-transparent bg-clip-text bg-gradient-to-r ${gradient} hover:opacity-80 transition-opacity`}
                                       >
-                                        Bientôt →
-                                      </span>
+                                        Voir tout →
+                                      </Link>
                                     </div>
                                   </div>
                                 </div>
@@ -457,43 +460,31 @@ export const ResponsiveNavbar = () => {
                   {/* Séparateur */}
                   <div className="w-px h-6 bg-white/10 mx-2" />
 
-                  {/* Items spéciaux - Football est ACTIF, Émissions est désactivé */}
+                  {/* Items spéciaux - Football et Émissions */}
                   {specialItems.map((item) => (
-                    item.isLive ? (
-                      // FOOTBALL - ACTIF avec badge LIVE
-                      <Link
-                        key={item.path}
-                        to={item.path}
-                        className={`relative px-4 py-2 text-sm font-medium flex items-center gap-2 transition-all duration-300 ${
-                          location.pathname === '/football'
-                            ? 'text-white'
-                            : 'text-gray-300 hover:text-white'
-                        }`}
-                      >
-                        <span>{item.label}</span>
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      className={`relative px-4 py-2 text-sm font-medium flex items-center gap-2 transition-all duration-300 ${
+                        location.pathname === item.path
+                          ? 'text-white'
+                          : 'text-gray-300 hover:text-white'
+                      }`}
+                    >
+                      <span>{item.label}</span>
+                      {item.isLive && (
                         <span className="px-2 py-0.5 text-[10px] font-bold bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-full">
                           LIVE
                         </span>
-                        {location.pathname === '/football' && (
-                          <motion.div
-                            layoutId="navbar-special-active"
-                            className="absolute -bottom-2 left-0 right-0 h-0.5 bg-gradient-to-r from-emerald-500 to-green-500"
-                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                          />
-                        )}
-                      </Link>
-                    ) : (
-                      // Autres items - DÉSACTIVÉS
-                      <div
-                        key={item.path}
-                        className="relative px-4 py-2 text-sm font-medium text-gray-500 flex items-center gap-2 cursor-default"
-                      >
-                        <span>{item.label}</span>
-                        <span className="px-2 py-0.5 text-[10px] font-bold bg-white/10 text-gray-400 rounded-full">
-                          Bientôt
-                        </span>
-                      </div>
-                    )
+                      )}
+                      {location.pathname === item.path && (
+                        <motion.div
+                          layoutId="navbar-special-active"
+                          className={`absolute -bottom-2 left-0 right-0 h-0.5 bg-gradient-to-r ${item.isLive ? 'from-emerald-500 to-green-500' : 'from-pink-500 to-rose-500'}`}
+                          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                        />
+                      )}
+                    </Link>
                   ))}
                 </div>
               </div>
@@ -724,21 +715,21 @@ export const ResponsiveNavbar = () => {
               <nav className="space-y-1">
                 {menuItems.map((item) => {
                   const isActive = location.pathname.includes(item.slug);
-                  const gradient = getGradientByColor(item.color);
-                  
+
                   return (
-                    // TEMPORAIREMENT DÉSACTIVÉ - Remplacer div par Link to={item.path} onClick={() => setIsOpen(false)} pour réactiver
-                    <div
+                    <Link
                       key={item.slug}
-                      className={`flex items-center justify-between px-4 py-4 rounded-xl transition-all cursor-default ${
-                        isActive 
-                          ? 'bg-white/10 text-white' 
-                          : 'text-gray-300'
+                      to={item.path}
+                      onClick={() => setIsOpen(false)}
+                      className={`flex items-center justify-between px-4 py-4 rounded-xl transition-all ${
+                        isActive
+                          ? 'bg-white/10 text-white'
+                          : 'text-gray-300 hover:bg-white/5'
                       }`}
                     >
                       <span className="text-lg font-medium">{item.label}</span>
-                      <span className="text-xs text-gray-500 bg-white/5 px-2 py-1 rounded-full">Bientôt</span>
-                    </div>
+                      <ArrowRight className="w-4 h-4" />
+                    </Link>
                   );
                 })}
               </nav>
@@ -746,38 +737,30 @@ export const ResponsiveNavbar = () => {
               {/* Séparateur */}
               <div className="my-6 h-px bg-white/10" />
 
-              {/* Liens spéciaux - Football ACTIF, Émissions désactivé */}
+              {/* Liens spéciaux - Football et Émissions */}
               <div className="space-y-1">
                 {specialItems.map((item) => (
-                  item.isLive ? (
-                    // FOOTBALL - ACTIF
-                    <Link
-                      key={item.path}
-                      to={item.path}
-                      onClick={() => setIsOpen(false)}
-                      className={`flex items-center justify-between px-4 py-4 rounded-xl transition-all ${
-                        location.pathname === '/football'
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    onClick={() => setIsOpen(false)}
+                    className={`flex items-center justify-between px-4 py-4 rounded-xl transition-all ${
+                      location.pathname === item.path
+                        ? item.isLive
                           ? 'bg-emerald-500/20 text-white border border-emerald-500/30'
-                          : 'text-white hover:bg-white/5'
-                      }`}
-                    >
-                      <span className="text-lg font-medium">{item.label}</span>
+                          : 'bg-pink-500/20 text-white border border-pink-500/30'
+                        : 'text-white hover:bg-white/5'
+                    }`}
+                  >
+                    <span className="text-lg font-medium">{item.label}</span>
+                    {item.isLive ? (
                       <span className="px-2 py-1 text-[10px] font-bold bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-full">
                         LIVE
                       </span>
-                    </Link>
-                  ) : (
-                    // Autres - DÉSACTIVÉS
-                    <div
-                      key={item.path}
-                      className="flex items-center justify-between px-4 py-4 rounded-xl text-gray-500 cursor-default"
-                    >
-                      <span className="text-lg font-medium">{item.label}</span>
-                      <span className="text-xs bg-white/5 px-2 py-1 rounded-full text-gray-500">
-                        Bientôt
-                      </span>
-                    </div>
-                  )
+                    ) : (
+                      <ArrowRight className="w-4 h-4" />
+                    )}
+                  </Link>
                 ))}
               </div>
 
