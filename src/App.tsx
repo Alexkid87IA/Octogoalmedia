@@ -29,6 +29,10 @@ import BusinessIdeasPage from './pages/BusinessIdeasPage';
 import GuidesHub from './pages/GuidesHub';
 import GuideDigitalDetox from './pages/GuideDigitalDetox';
 
+// Import de la page Football
+import FootballPage from './pages/FootballPage';
+import FootballClubPage from './pages/FootballClubPage';
+
 // Page de test simple
 const TestPage = () => {
   return (
@@ -69,6 +73,10 @@ function App() {
                   {/* Routes des guides */}
                   <Route path="/guides" element={<GuidesHub />} />
                   <Route path="/guides/maitrise-digitale" element={<GuideDigitalDetox />} />
+                  
+                  {/* Route Football - Classements et résultats en direct */}
+                  <Route path="/football" element={<FootballPage />} />
+                  <Route path="/football/club/:teamId" element={<FootballClubPage />} />
                   
                   {/* Route de test */}
                   <Route path="/test" element={<TestPage />} />

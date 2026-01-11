@@ -461,12 +461,12 @@ export const getCategoryBySlug = async (slug: string) => {
   });
 };
 
-// Récupérer les amuses-bouches - VERSION CORRIGÉE AVEC IMAGES
-export const getAmuseBouches = async (limit = 5): Promise<any[]> => {
-  return getWithCache(`amuseBouches_${limit}`, async () => {
+// Récupérer les Flash (anciennement amuses-bouches) - VERSION OCTOGOAL
+export const getFlashContent = async (limit = 5): Promise<any[]> => {
+  return getWithCache(`flash_${limit}`, async () => {
     try {
-      // Chercher les articles avec contentType "amuse-bouche"
-      const query = `*[_type == "article" && contentType == "amuse-bouche"] | order(publishedAt desc)[0...$limit] {
+      // Chercher les articles avec contentType "flash"
+      const query = `*[_type == "article" && contentType == "flash"] | order(publishedAt desc)[0...$limit] {
         _id,
         title,
         slug,
@@ -489,13 +489,18 @@ export const getAmuseBouches = async (limit = 5): Promise<any[]> => {
       }`;
       
       const results = await sanityClient.fetch(query, { limit });
-      console.log(`Amuses-bouches récupérés: ${results?.length || 0}`);
+      console.log(`Flash récupérés: ${results?.length || 0}`);
       return results || [];
     } catch (error) {
-      console.error("Erreur lors de la récupération des amuses-bouches:", error);
+      console.error("Erreur lors de la récupération des Flash:", error);
       return [];
     }
   });
+};
+
+// Fonction legacy pour compatibilité (redirige vers getFlashContent)
+export const getAmuseBouches = async (limit = 5): Promise<any[]> => {
+  return getFlashContent(limit);
 };
 
 // Récupérer la citation la plus récente
@@ -631,15 +636,29 @@ export const getClubPricing = async (): Promise<SanityClubPricing[]> => {
   });
 };
 
-// Récupérer les contenus par type (utilise contentType maintenant) - VERSION CORRIGÉE AVEC IMAGES
+// ============= TYPES DE CONTENU OCTOGOAL =============
+// Mapping des types de contenu pour Octogoal Media
+// actu     → 📰 News foot classiques
+// emission → 🎬 Réactions, débats, lives
+// flash    → ⚡ Contenu court, réaction rapide
+// analyse  → 📊 Décryptage tactique, stats
+// portrait → 👤 Focus joueur ou personnalité
+// meme     → 😂 Contenus humoristiques
+// top      → 📋 Classements, top 10...
+
+// Récupérer les contenus par type - VERSION OCTOGOAL
 export const getContentItems = async (contentType: string, limit = 5): Promise<any[]> => {
   return getWithCache(`contentItems_${contentType}_${limit}`, async () => {
     try {
       // Mapping des types de section vers les valeurs de contentType dans Sanity
       const typeMapping: Record<string, string> = {
+        'actu': 'actu',
         'emission': 'emission',
-        'business-idea': 'case-study',
-        'success-story': 'success-story'
+        'flash': 'flash',
+        'analyse': 'analyse',
+        'portrait': 'portrait',
+        'meme': 'meme',
+        'top': 'top'
       };
       
       const sanityContentType = typeMapping[contentType];
@@ -931,6 +950,206 @@ export const getEmissionsByCategory = async (category: string): Promise<any[]> =
       return emissions;
     } catch (error) {
       console.error(`Erreur lors de la récupération des émissions de la catégorie ${category}:`, error);
+      return [];
+    }
+  });
+};
+
+// ============= FONCTIONS SPÉCIFIQUES OCTOGOAL =============
+
+// Récupérer les analyses (matchs, tactique)
+export const getAnalyses = async (limit = 5): Promise<any[]> => {
+  return getWithCache(`analyses_${limit}`, async () => {
+    try {
+      const query = `*[_type == "article" && contentType == "analyse"] | order(publishedAt desc)[0...$limit] {
+        _id,
+        title,
+        slug,
+        mainImage {
+          asset->{
+            _ref,
+            _type,
+            url
+          },
+          hotspot,
+          crop
+        },
+        excerpt,
+        publishedAt,
+        matchInfo,
+        keyPoints,
+        readingTime,
+        categories[]->{
+          _id,
+          title,
+          slug
+        }
+      }`;
+      
+      const results = await sanityClient.fetch(query, { limit });
+      console.log(`Analyses récupérées: ${results?.length || 0}`);
+      return results || [];
+    } catch (error) {
+      console.error("Erreur lors de la récupération des analyses:", error);
+      return [];
+    }
+  });
+};
+
+// Récupérer les portraits (joueurs, personnalités)
+export const getPortraits = async (limit = 5): Promise<any[]> => {
+  return getWithCache(`portraits_${limit}`, async () => {
+    try {
+      const query = `*[_type == "article" && contentType == "portrait"] | order(publishedAt desc)[0...$limit] {
+        _id,
+        title,
+        slug,
+        mainImage {
+          asset->{
+            _ref,
+            _type,
+            url
+          },
+          hotspot,
+          crop
+        },
+        excerpt,
+        publishedAt,
+        playerName,
+        playerClub,
+        playerPosition,
+        keyPoints,
+        readingTime,
+        categories[]->{
+          _id,
+          title,
+          slug
+        }
+      }`;
+      
+      const results = await sanityClient.fetch(query, { limit });
+      console.log(`Portraits récupérés: ${results?.length || 0}`);
+      return results || [];
+    } catch (error) {
+      console.error("Erreur lors de la récupération des portraits:", error);
+      return [];
+    }
+  });
+};
+
+// Récupérer les mèmes
+export const getMemes = async (limit = 10): Promise<any[]> => {
+  return getWithCache(`memes_${limit}`, async () => {
+    try {
+      const query = `*[_type == "article" && contentType == "meme"] | order(publishedAt desc)[0...$limit] {
+        _id,
+        title,
+        slug,
+        mainImage {
+          asset->{
+            _ref,
+            _type,
+            url
+          },
+          hotspot,
+          crop
+        },
+        excerpt,
+        publishedAt,
+        videoUrl,
+        stats
+      }`;
+      
+      const results = await sanityClient.fetch(query, { limit });
+      console.log(`Mèmes récupérés: ${results?.length || 0}`);
+      return results || [];
+    } catch (error) {
+      console.error("Erreur lors de la récupération des mèmes:", error);
+      return [];
+    }
+  });
+};
+
+// Récupérer les tops/listes
+export const getTops = async (limit = 5): Promise<any[]> => {
+  return getWithCache(`tops_${limit}`, async () => {
+    try {
+      const query = `*[_type == "article" && contentType == "top"] | order(publishedAt desc)[0...$limit] {
+        _id,
+        title,
+        slug,
+        mainImage {
+          asset->{
+            _ref,
+            _type,
+            url
+          },
+          hotspot,
+          crop
+        },
+        excerpt,
+        publishedAt,
+        listItems,
+        keyPoints,
+        readingTime,
+        categories[]->{
+          _id,
+          title,
+          slug
+        }
+      }`;
+      
+      const results = await sanityClient.fetch(query, { limit });
+      console.log(`Tops/Listes récupérés: ${results?.length || 0}`);
+      return results || [];
+    } catch (error) {
+      console.error("Erreur lors de la récupération des tops:", error);
+      return [];
+    }
+  });
+};
+
+// Récupérer les actus
+export const getActus = async (limit = 10): Promise<any[]> => {
+  return getWithCache(`actus_${limit}`, async () => {
+    try {
+      const query = `*[_type == "article" && contentType == "actu"] | order(publishedAt desc)[0...$limit] {
+        _id,
+        title,
+        slug,
+        mainImage {
+          asset->{
+            _ref,
+            _type,
+            url
+          },
+          hotspot,
+          crop
+        },
+        excerpt,
+        publishedAt,
+        keyPoints,
+        readingTime,
+        isTrending,
+        isFeatured,
+        isEssential,
+        categories[]->{
+          _id,
+          title,
+          slug
+        },
+        subcategories[]->{
+          _id,
+          title,
+          slug
+        }
+      }`;
+      
+      const results = await sanityClient.fetch(query, { limit });
+      console.log(`Actus récupérées: ${results?.length || 0}`);
+      return results || [];
+    } catch (error) {
+      console.error("Erreur lors de la récupération des actus:", error);
       return [];
     }
   });

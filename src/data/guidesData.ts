@@ -79,7 +79,7 @@ export const guides: Guide[] = [
   },
   {
     id: 4,
-    slug: 'high-value-lifestyle',
+    slug: 'octogoal-lifestyle',
     title: 'Octogoal Lifestyle',
     subtitle: 'L\'art de vivre à haute valeur',
     description: 'Les habitudes et routines des personnes à haute valeur ajoutée.',

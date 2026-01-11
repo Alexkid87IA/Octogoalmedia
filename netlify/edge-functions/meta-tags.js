@@ -128,30 +128,30 @@ export default async (request, context) => {
   const path = url.pathname;
   
   // Valeurs par défaut
-  let title = 'High Value Media - Coaching & Stratégie Digitale';
-  let description = 'Développez votre potentiel avec High Value Media. Coaching personnalisé et stratégies digitales innovantes.';
-  let image = 'https://highvalue.media/LOGO_HV_MEDIA.svg';
+  let title = 'Octogoal - Sport, Clash et Divertissement';
+  let description = 'Octogoal, votre média sport, clash et divertissement. Actualités, analyses et contenus exclusifs.';
+  let image = 'https://octogoal.media/LOGO_OCTOGOAL.png';
   
   // Pages spécifiques statiques
   if (path === '/guides/maitrise-digitale' || path === '/guides/maitrise-digitale/') {
-    title = 'Guide : Maîtrise Digitale Complète - High Value Media';
+    title = 'Guide : Maîtrise Digitale Complète - Octogoal';
     description = 'Découvrez comment reprendre le contrôle de votre vie numérique avec notre guide complet sur la maîtrise digitale.';
     image = 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=1200&h=630&fit=crop&q=80';
   } else if (path === '/guides' || path === '/guides/') {
-    title = 'Guides Pratiques - High Value Media';
-    description = 'Découvrez nos guides pour maîtriser le digital et développer votre business en 2025.';
+    title = 'Guides Pratiques - Octogoal';
+    description = 'Découvrez nos guides sport, clash et divertissement.';
     image = 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=1200&h=630&fit=crop&q=80';
   } else if (path === '/articles' || path === '/articles/') {
-    title = 'Articles & Insights - High Value Media';
-    description = 'Articles, analyses et conseils pour entrepreneurs ambitieux. Stratégies digitales et growth hacking.';
+    title = 'Articles & Insights - Octogoal';
+    description = 'Articles, analyses et actualités sport, clash et divertissement.';
     image = 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=1200&h=630&fit=crop&q=80';
   } else if (path === '/coaching' || path === '/coaching/') {
-    title = 'Coaching Personnalisé - High Value Media';
-    description = 'Séances de coaching one-on-one avec Roger pour transformer votre business et atteindre vos objectifs.';
+    title = 'Coaching - Octogoal';
+    description = 'Découvrez nos services de coaching sur Octogoal.';
     image = 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=1200&h=630&fit=crop&q=80';
   } else if (path === '/club' || path === '/club/') {
-    title = 'Le Club High Value - Accès Exclusif';
-    description = 'Rejoignez une communauté exclusive d\'entrepreneurs ambitieux. Networking, masterclasses et opportunités uniques.';
+    title = 'Le Club Octogoal - Accès Exclusif';
+    description = 'Rejoignez la communauté exclusive Octogoal. Contenus premium et accès privilégié.';
     image = 'https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=1200&h=630&fit=crop&q=80';
   }
   
@@ -166,13 +166,13 @@ export default async (request, context) => {
     
     if (article && article.title) {
       // Utiliser les vraies données de Sanity
-      title = `${article.title} - High Value Media`;
+      title = `${article.title} - Octogoal`;
       
       // Chercher la description dans plusieurs champs possibles
       description = article.excerpt || 
                    article.description || 
                    article.summary ||
-                   'Découvrez cet article exclusif sur High Value Media. Insights et stratégies pour développer votre potentiel.';
+                   'Découvrez cet article exclusif sur Octogoal. Insights et stratégies pour développer votre potentiel.';
       
       // Nettoyer la description (enlever les balises HTML/Markdown)
       description = description
@@ -250,14 +250,14 @@ export default async (request, context) => {
       };
       
       if (articleDatabase[slug]) {
-        title = `${articleDatabase[slug].title} - High Value Media`;
+        title = `${articleDatabase[slug].title} - Octogoal`;
         description = articleDatabase[slug].description;
         image = articleDatabase[slug].image;
       } else {
         // Fallback générique mais professionnel
         const formattedSlug = slug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-        title = `${formattedSlug} - High Value Media`;
-        description = `Article exclusif : ${formattedSlug}. Stratégies et insights pour entrepreneurs ambitieux sur High Value Media.`;
+        title = `${formattedSlug} - Octogoal`;
+        description = `Article exclusif : ${formattedSlug}. Stratégies et insights pour entrepreneurs ambitieux sur Octogoal.`;
         image = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1200&h=630&fit=crop&q=80';
       }
     }
@@ -267,7 +267,7 @@ export default async (request, context) => {
   if (path.startsWith('/emission/')) {
     const slug = path.replace('/emission/', '').replace('/', '');
     const formattedSlug = slug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-    title = `Émission : ${formattedSlug} - High Value Media`;
+    title = `Émission : ${formattedSlug} - Octogoal`;
     description = `Regardez notre émission ${formattedSlug.toLowerCase()} avec des invités exclusifs et des insights uniques.`;
     image = 'https://images.unsplash.com/photo-1598743400863-0201c7e1445b?w=1200&h=630&fit=crop&q=80';
   }
@@ -315,7 +315,7 @@ export default async (request, context) => {
   modifiedHtml = updateMetaTag(modifiedHtml, 'property', 'og:description', description);
   modifiedHtml = updateMetaTag(modifiedHtml, 'property', 'og:url', url.href);
   modifiedHtml = updateMetaTag(modifiedHtml, 'property', 'og:type', path.startsWith('/article/') ? 'article' : 'website');
-  modifiedHtml = updateMetaTag(modifiedHtml, 'property', 'og:site_name', 'High Value Media');
+  modifiedHtml = updateMetaTag(modifiedHtml, 'property', 'og:site_name', 'Octogoal');
   modifiedHtml = updateMetaTag(modifiedHtml, 'property', 'og:image', image);
   modifiedHtml = updateMetaTag(modifiedHtml, 'property', 'og:image:width', '1200');
   modifiedHtml = updateMetaTag(modifiedHtml, 'property', 'og:image:height', '630');
@@ -333,7 +333,7 @@ export default async (request, context) => {
   modifiedHtml = updateMetaTag(modifiedHtml, 'name', 'twitter:image:alt', title);
   
   // Tags LinkedIn spécifiques
-  modifiedHtml = updateMetaTag(modifiedHtml, 'name', 'author', 'Roger - High Value Media');
+  modifiedHtml = updateMetaTag(modifiedHtml, 'name', 'author', 'Octogoal');
   
   // Retourner la réponse modifiée avec headers optimisés
   return new Response(modifiedHtml, {

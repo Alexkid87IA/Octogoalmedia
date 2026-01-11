@@ -38,7 +38,7 @@
 
 # Forcer HTTPS
 [[redirects]]
-  from = "http://highvalue.media/*"
-  to = "https://highvalue.media/:splat"
+  from = "http://octogoal.media/*"
+  to = "https://octogoal.media/:splat"
   status = 301
   force = true

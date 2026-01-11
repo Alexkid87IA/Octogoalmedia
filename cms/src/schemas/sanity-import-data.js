@@ -112,7 +112,7 @@ export const clubFeaturesData = [
   {
     _type: 'clubFeature',
     title: "Réseau privilégié",
-    description: "Connexions avec des entrepreneurs et décideurs high value",
+    description: "Connexions avec des passionnés et experts du sport",
     icon: "Users",
     order: 4
   }

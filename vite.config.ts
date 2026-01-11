@@ -1,31 +1,19 @@
-// vite.config.ts
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import Pages from 'vite-plugin-pages';
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [
-    react(),
-    Pages({
-      dirs: 'src/pages',
-      extensions: ['tsx', 'ts'],
-    }),
-  ],
-  
-  optimizeDeps: {
-    exclude: ['lucide-react'],
-    include: ['react-helmet-async'],
-  },
-  
-  build: {
-    rollupOptions: {
-      external: [],
-    },
-  },
-  
-  // SSG options (pour vite-ssg)
-  ssr: {
-    noExternal: ['react-helmet-async'],
-  },
-});
+  plugins: [react()],
+  server: {
+    proxy: {
+      '/api/football': {
+        target: 'https://api.football-data.org',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/football/, '/v4'),
+        headers: {
+          'X-Auth-Token': '003a99a4b9fe4d8cb814b314077aeaff'
+        }
+      }
+    }
+  }
+})

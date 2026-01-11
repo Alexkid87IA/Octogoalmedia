@@ -196,11 +196,12 @@ export const ResponsiveNavbar = () => {
     }
   ];
 
+  // MODIFIÉ : Football remplace Vidéos (même nombre d'éléments = centrage préservé)
   const specialItems = [
     { 
-      label: 'Vidéos', 
-      path: '/videos',
-      isNew: true
+      label: 'Football', 
+      path: '/football',
+      isLive: true  // Nouveau flag pour identifier le lien actif
     },
     { 
       label: 'Émissions', 
@@ -456,17 +457,43 @@ export const ResponsiveNavbar = () => {
                   {/* Séparateur */}
                   <div className="w-px h-6 bg-white/10 mx-2" />
 
-                  {/* Items spéciaux - TEMPORAIREMENT DÉSACTIVÉS */}
+                  {/* Items spéciaux - Football est ACTIF, Émissions est désactivé */}
                   {specialItems.map((item) => (
-                    <div
-                      key={item.path}
-                      className="relative px-4 py-2 text-sm font-medium text-gray-500 flex items-center gap-2 cursor-default"
-                    >
-                      <span>{item.label}</span>
-                      <span className="px-2 py-0.5 text-[10px] font-bold bg-white/10 text-gray-400 rounded-full">
-                        Bientôt
-                      </span>
-                    </div>
+                    item.isLive ? (
+                      // FOOTBALL - ACTIF avec badge LIVE
+                      <Link
+                        key={item.path}
+                        to={item.path}
+                        className={`relative px-4 py-2 text-sm font-medium flex items-center gap-2 transition-all duration-300 ${
+                          location.pathname === '/football'
+                            ? 'text-white'
+                            : 'text-gray-300 hover:text-white'
+                        }`}
+                      >
+                        <span>{item.label}</span>
+                        <span className="px-2 py-0.5 text-[10px] font-bold bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-full">
+                          LIVE
+                        </span>
+                        {location.pathname === '/football' && (
+                          <motion.div
+                            layoutId="navbar-special-active"
+                            className="absolute -bottom-2 left-0 right-0 h-0.5 bg-gradient-to-r from-emerald-500 to-green-500"
+                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                          />
+                        )}
+                      </Link>
+                    ) : (
+                      // Autres items - DÉSACTIVÉS
+                      <div
+                        key={item.path}
+                        className="relative px-4 py-2 text-sm font-medium text-gray-500 flex items-center gap-2 cursor-default"
+                      >
+                        <span>{item.label}</span>
+                        <span className="px-2 py-0.5 text-[10px] font-bold bg-white/10 text-gray-400 rounded-full">
+                          Bientôt
+                        </span>
+                      </div>
+                    )
                   ))}
                 </div>
               </div>
@@ -719,18 +746,38 @@ export const ResponsiveNavbar = () => {
               {/* Séparateur */}
               <div className="my-6 h-px bg-white/10" />
 
-              {/* Liens spéciaux - TEMPORAIREMENT DÉSACTIVÉS */}
+              {/* Liens spéciaux - Football ACTIF, Émissions désactivé */}
               <div className="space-y-1">
                 {specialItems.map((item) => (
-                  <div
-                    key={item.path}
-                    className="flex items-center justify-between px-4 py-4 rounded-xl text-gray-500 cursor-default"
-                  >
-                    <span className="text-lg font-medium">{item.label}</span>
-                    <span className="text-xs bg-white/5 px-2 py-1 rounded-full text-gray-500">
-                      Bientôt
-                    </span>
-                  </div>
+                  item.isLive ? (
+                    // FOOTBALL - ACTIF
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      onClick={() => setIsOpen(false)}
+                      className={`flex items-center justify-between px-4 py-4 rounded-xl transition-all ${
+                        location.pathname === '/football'
+                          ? 'bg-emerald-500/20 text-white border border-emerald-500/30'
+                          : 'text-white hover:bg-white/5'
+                      }`}
+                    >
+                      <span className="text-lg font-medium">{item.label}</span>
+                      <span className="px-2 py-1 text-[10px] font-bold bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-full">
+                        LIVE
+                      </span>
+                    </Link>
+                  ) : (
+                    // Autres - DÉSACTIVÉS
+                    <div
+                      key={item.path}
+                      className="flex items-center justify-between px-4 py-4 rounded-xl text-gray-500 cursor-default"
+                    >
+                      <span className="text-lg font-medium">{item.label}</span>
+                      <span className="text-xs bg-white/5 px-2 py-1 rounded-full text-gray-500">
+                        Bientôt
+                      </span>
+                    </div>
+                  )
                 ))}
               </div>
 

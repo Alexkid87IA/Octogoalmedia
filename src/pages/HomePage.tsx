@@ -9,8 +9,10 @@ import { EssentialArticlesSection } from '../components/sections/EssentialArticl
 import { ClubSection } from '../components/sections/ClubSection';
 import { Footer } from '../components/layout/Footer';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
-// import { getAllArticles } from '../utils/sanityAPI';
 import { useData } from '../context/DataContext';
+
+// Widget Live Scores via iframe (fonctionne sans problème CORS)
+import MatchesTicker from '../components/football/MatchesTicker';
 
 const mockArticles = [
   {
@@ -226,27 +228,22 @@ const mockArticles = [
 ];
 
 export const HomePage = () => {
-  // CORRECTION: Utilisation correcte du contexte et ajout des états locaux manquants
   const { recentArticles, isLoading: contextLoading } = useData();
   const [articles, setArticles] = useState(mockArticles);
-  const [isLoading, setIsLoading] = useState(false);
   const [dataSource, setDataSource] = useState('mock');
 
   useEffect(() => {
-    // Utilisation directe des données du contexte si disponibles
     if (recentArticles && recentArticles.length > 0) {
       setArticles(recentArticles.slice(0, 10));
       setDataSource('sanity');
       console.log('✅ Articles récupérés depuis le contexte DataContext');
     } else {
-      // Fallback sur les données mockées
       setArticles(mockArticles);
       setDataSource('mock');
       console.log('📦 Utilisation des articles mockés (fallback)');
     }
   }, [recentArticles]);
 
-  // Afficher le spinner si le contexte est en chargement
   if (contextLoading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
@@ -258,9 +255,8 @@ export const HomePage = () => {
   return (
     <>
       <SEO {...staticSEO.home} />
-      {/* CORRECTION: overflow-hidden ajouté */}
       <div className="relative min-h-screen bg-black overflow-hidden">
-        {/* Background effects - CORRECTION: contenus dans un div avec overflow hidden */}
+        {/* Background effects */}
         <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(0,164,249,0.15),transparent_50%)]" />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,rgba(99,253,253,0.15),transparent_50%)]" />
@@ -268,8 +264,12 @@ export const HomePage = () => {
           <div className="absolute inset-0 backdrop-blur-[100px]" />
         </div>
 
-        {/* CORRECTION: z-[5] au lieu de z-10, et overflow-x-hidden */}
-        <main className="relative z-[5] pt-20 overflow-x-hidden">
+        {/* LIVE SCORES TICKER - Entre navbar et hero */}
+        <div className="relative z-[45] pt-20">
+          <MatchesTicker />
+        </div>
+
+        <main className="relative z-[5] overflow-x-hidden">
           {/* 1. Hero avec article à la une + 6 articles récents + CTA */}
           <HeroSection />
           
@@ -281,11 +281,11 @@ export const HomePage = () => {
             <EssentialArticlesSection />
           </section>
           
-          {/* 4. Nos formats : Podcasts */}
+          {/* 4. Nos formats : Émissions Octogoal */}
           <section className="py-20 bg-gradient-to-b from-transparent via-purple-900/10 to-transparent overflow-hidden">
             <ContentSection 
-              title="Le podcast Octogoal"
-              description="Des conversations authentiques avec ceux qui façonnent le monde de demain"
+              title="Les émissions Octogoal"
+              description="Réactions live, débats enflammés et analyses décalées"
               sectionType="emission"
             />
           </section>
@@ -311,11 +311,11 @@ export const HomePage = () => {
           {/* 7. Navigation thématique + stats + CTA */}
           <EditorialSection />
           
-          {/* 8. Proposition premium - SANS WRAPPER */}
+          {/* 8. Proposition premium */}
           <ClubSection />
         </main>
         
-        {/* 9. Footer avec liens et infos */}
+        {/* 9. Footer */}
         <Footer />
       </div>
     </>
