@@ -1,46 +1,50 @@
 // src/App.tsx
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { ResponsiveNavbar } from './components/layout/ResponsiveNavbar';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { Analytics } from './components/common/Analytics';
 import { DataProvider } from './context/DataContext';
-import { HomePage } from './pages/HomePage';
-import ArticlePageNEW from './pages/ArticlePageNEW';
-import { CategoryPage } from './pages/CategoryPage';
-import { SubcategoryPage } from './pages/SubcategoryPage';
-import { PodcastPage } from './pages/PodcastPage';
-import EmissionsPage from './pages/EmissionsPage';
-import { EmissionPage } from './pages/EmissionPage';
-import { CreateWithRogerPage } from './pages/CreateWithRogerPage';
-import { AboutPage } from './pages/AboutPage';
-import { AllArticlesPage } from './pages/AllArticlesPage';
-import { CoachingPage } from './pages/CoachingPage';
-import { ClubPage } from './pages/ClubPage';
-import { MissionPage } from './pages/MissionPage';
-import { NotFound } from './pages/NotFound';
 
-// Import des nouvelles pages
-import SuccessStoriesPage from './pages/SuccessStoriesPage';
-import BusinessIdeasPage from './pages/BusinessIdeasPage';
+// Code Splitting - Lazy loading des pages
+const HomePage = lazy(() => import('./pages/HomePage').then(m => ({ default: m.HomePage })));
+const ArticlePageNEW = lazy(() => import('./pages/ArticlePageNEW'));
+const CategoryPage = lazy(() => import('./pages/CategoryPage').then(m => ({ default: m.CategoryPage })));
+const SubcategoryPage = lazy(() => import('./pages/SubcategoryPage').then(m => ({ default: m.SubcategoryPage })));
+const PodcastPage = lazy(() => import('./pages/PodcastPage').then(m => ({ default: m.PodcastPage })));
+const EmissionsPage = lazy(() => import('./pages/EmissionsPage'));
+const EmissionPage = lazy(() => import('./pages/EmissionPage').then(m => ({ default: m.EmissionPage })));
+const CreateWithRogerPage = lazy(() => import('./pages/CreateWithRogerPage').then(m => ({ default: m.CreateWithRogerPage })));
+const AboutPage = lazy(() => import('./pages/AboutPage').then(m => ({ default: m.AboutPage })));
+const AllArticlesPage = lazy(() => import('./pages/AllArticlesPage').then(m => ({ default: m.AllArticlesPage })));
+const CoachingPage = lazy(() => import('./pages/CoachingPage').then(m => ({ default: m.CoachingPage })));
+const ClubPage = lazy(() => import('./pages/ClubPage').then(m => ({ default: m.ClubPage })));
+const MissionPage = lazy(() => import('./pages/MissionPage').then(m => ({ default: m.MissionPage })));
+const NotFound = lazy(() => import('./pages/NotFound').then(m => ({ default: m.NotFound })));
+const SuccessStoriesPage = lazy(() => import('./pages/SuccessStoriesPage'));
+const BusinessIdeasPage = lazy(() => import('./pages/BusinessIdeasPage'));
+const GuidesHub = lazy(() => import('./pages/GuidesHub'));
+const GuideDigitalDetox = lazy(() => import('./pages/GuideDigitalDetox'));
+const FootballPage = lazy(() => import('./pages/FootballPage'));
+const FootballClubPage = lazy(() => import('./pages/FootballClubPage'));
 
-// Import des pages de guides
-import GuidesHub from './pages/GuidesHub';
-import GuideDigitalDetox from './pages/GuideDigitalDetox';
-
-// Import de la page Football
-import FootballPage from './pages/FootballPage';
-import FootballClubPage from './pages/FootballClubPage';
+// Composant de chargement optimisé
+const PageLoader = () => (
+  <div className="min-h-screen bg-black flex items-center justify-center">
+    <div className="flex flex-col items-center gap-4">
+      <div className="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin" />
+      <span className="text-white/60 text-sm">Chargement...</span>
+    </div>
+  </div>
+);
 
 // Page de test simple
-const TestPage = () => {
-  return (
-    <div className="min-h-screen bg-black text-white flex items-center justify-center">
-      <h1 className="text-4xl">Page de Test</h1>
-    </div>
-  );
-};
+const TestPage = () => (
+  <div className="min-h-screen bg-black text-white flex items-center justify-center">
+    <h1 className="text-4xl">Page de Test</h1>
+  </div>
+);
 
 function App() {
   return (
@@ -51,6 +55,7 @@ function App() {
             <div className="relative min-h-screen bg-black overflow-x-hidden">
               <ResponsiveNavbar />
               <main className="relative z-[1]">
+                <Suspense fallback={<PageLoader />}>
                 <Routes>
                   <Route path="/" element={<HomePage />} />
                   <Route path="/articles" element={<AllArticlesPage />} />
@@ -84,6 +89,7 @@ function App() {
                   {/* Route 404 - DOIT ÊTRE EN DERNIER */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
+                </Suspense>
               </main>
               <Analytics />
             </div>
