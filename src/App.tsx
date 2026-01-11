@@ -28,6 +28,8 @@ const GuidesHub = lazy(() => import('./pages/GuidesHub'));
 const GuideDigitalDetox = lazy(() => import('./pages/GuideDigitalDetox'));
 const FootballPage = lazy(() => import('./pages/FootballPage'));
 const FootballClubPage = lazy(() => import('./pages/FootballClubPage'));
+const MatchsPage = lazy(() => import('./pages/MatchsPage'));
+const ClubsPage = lazy(() => import('./pages/ClubsPage'));
 
 // Composant de chargement optimisé
 const PageLoader = () => (
@@ -82,6 +84,12 @@ function App() {
                   {/* Route Football - Classements et résultats en direct */}
                   <Route path="/football" element={<FootballPage />} />
                   <Route path="/football/club/:teamId" element={<FootballClubPage />} />
+
+                  {/* Route Matchs - Match Center Live */}
+                  <Route path="/matchs" element={<MatchsPage />} />
+
+                  {/* Route Clubs - Club Universe */}
+                  <Route path="/clubs" element={<ClubsPage />} />
                   
                   {/* Route de test */}
                   <Route path="/test" element={<TestPage />} />

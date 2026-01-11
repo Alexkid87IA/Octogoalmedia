@@ -129,30 +129,32 @@ export const ResponsiveNavbar = () => {
         { label: 'Mercato', path: '/rubrique/actus/mercato' }
       ]
     },
-    { 
-      label: 'Matchs', 
-      path: '/rubrique/matchs', 
+    {
+      label: 'Matchs',
+      path: '/matchs',
       slug: 'matchs',
       color: 'blue',
+      isLive: true, // Page API Live
       subcategories: [
-        { label: 'Résultats', path: '/rubrique/matchs/resultats' },
-        { label: 'Classements', path: '/rubrique/matchs/classements' },
-        { label: 'Avant-match', path: '/rubrique/matchs/avant-match' },
-        { label: 'Après-match', path: '/rubrique/matchs/apres-match' },
-        { label: 'Notes du match', path: '/rubrique/matchs/notes-match' }
+        { label: 'En direct', path: '/matchs?view=live' },
+        { label: 'Aujourd\'hui', path: '/matchs?view=today' },
+        { label: 'À venir', path: '/matchs?view=upcoming' },
+        { label: 'Résultats', path: '/matchs?view=results' },
+        { label: 'Par journée', path: '/matchs?view=matchday' }
       ]
     },
-    { 
-      label: 'Clubs', 
-      path: '/rubrique/clubs', 
+    {
+      label: 'Clubs',
+      path: '/clubs',
       slug: 'clubs',
       color: 'purple',
+      isLive: true, // Page API Live
       subcategories: [
-        { label: 'Clubs Ligue 1', path: '/rubrique/clubs/clubs-ligue-1' },
-        { label: 'Clubs Premier League', path: '/rubrique/clubs/clubs-pl' },
-        { label: 'Clubs Liga', path: '/rubrique/clubs/clubs-liga' },
-        { label: 'Clubs Serie A', path: '/rubrique/clubs/clubs-serie-a' },
-        { label: 'Clubs Bundesliga', path: '/rubrique/clubs/clubs-bundesliga' }
+        { label: 'Ligue 1', path: '/clubs?league=LIGUE_1' },
+        { label: 'Premier League', path: '/clubs?league=PREMIER_LEAGUE' },
+        { label: 'La Liga', path: '/clubs?league=LA_LIGA' },
+        { label: 'Serie A', path: '/clubs?league=SERIE_A' },
+        { label: 'Bundesliga', path: '/clubs?league=BUNDESLIGA' }
       ]
     },
     { 
@@ -313,6 +315,7 @@ export const ResponsiveNavbar = () => {
                   {menuItems.map((item) => {
                     const isActive = location.pathname.includes(item.slug);
                     const gradient = getGradientByColor(item.color);
+                    const itemIsLive = 'isLive' in item && item.isLive;
 
                     return (
                       <div
@@ -329,6 +332,11 @@ export const ResponsiveNavbar = () => {
                           }`}
                         >
                           <span>{item.label}</span>
+                          {itemIsLive && (
+                            <span className="px-1.5 py-0.5 text-[9px] font-bold bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-full uppercase">
+                              Live
+                            </span>
+                          )}
                           <ChevronDown className={`w-3 h-3 transition-transform duration-300 ${
                             activeDropdown === item.slug ? 'rotate-180' : ''
                           }`} />
@@ -715,6 +723,7 @@ export const ResponsiveNavbar = () => {
               <nav className="space-y-1">
                 {menuItems.map((item) => {
                   const isActive = location.pathname.includes(item.slug);
+                  const itemIsLive = 'isLive' in item && item.isLive;
 
                   return (
                     <Link
@@ -727,7 +736,14 @@ export const ResponsiveNavbar = () => {
                           : 'text-gray-300 hover:bg-white/5'
                       }`}
                     >
-                      <span className="text-lg font-medium">{item.label}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg font-medium">{item.label}</span>
+                        {itemIsLive && (
+                          <span className="px-2 py-0.5 text-[10px] font-bold bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-full uppercase">
+                            Live
+                          </span>
+                        )}
+                      </div>
                       <ArrowRight className="w-4 h-4" />
                     </Link>
                   );
