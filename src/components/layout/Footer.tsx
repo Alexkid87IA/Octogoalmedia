@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ArrowRight,
@@ -16,30 +16,14 @@ import {
   Clock
 } from 'lucide-react';
 
-// Import de tous les logos
-import logoMedia from '../../assets/logos/LOGO_OCTOGOAL.png';
-import logoBusiness from '../../assets/logos/LOGO_HV_BUSINESS.svg';
-import logoMental from '../../assets/logos/LOGO_HV_PSYCHO.svg';
-import logoSociety from '../../assets/logos/LOGO_HV_SOCIETY.svg';
-import logoStory from '../../assets/logos/LOGO_HV_STORY.svg';
+// Logo Octogoal
+import logoOctogoal from '../../assets/logos/LOGO_OCTOGOAL.png';
 
 export const Footer = () => {
-  const location = useLocation();
   const [email, setEmail] = useState('');
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [showComingSoonModal, setShowComingSoonModal] = useState(false);
   const [comingSoonFeature, setComingSoonFeature] = useState('');
-  
-  const getCurrentLogo = () => {
-    const path = location.pathname;
-    
-    if (path.includes('/story')) return logoStory;
-    if (path.includes('/business')) return logoBusiness;
-    if (path.includes('/mental')) return logoMental;
-    if (path.includes('/society')) return logoSociety;
-    
-    return logoMedia;
-  };
 
   const socialLinks = [
     { icon: Twitter, url: 'https://twitter.com/octogoal' },
@@ -376,9 +360,9 @@ export const Footer = () => {
               {/* Logo et social */}
               <div className="flex items-center gap-6">
                 <Link to="/" className="inline-block">
-                  <img 
-                    src={getCurrentLogo()}
-                    alt="Octogoal Media"
+                  <img
+                    src={logoOctogoal}
+                    alt="Octogoal"
                     className="h-10 w-auto opacity-90 hover:opacity-100 transition-opacity"
                   />
                 </Link>
