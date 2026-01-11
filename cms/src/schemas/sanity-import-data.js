@@ -15,7 +15,7 @@ export const universesData = [
     },
     logo: {
       _type: 'image',
-      url: "/src/assets/logos/LOGO_HV STORY.svg"
+      url: "/src/assets/logos/LOGO_OCTOGOAL.png"
     },
     slug: {
       _type: 'slug',
@@ -35,7 +35,7 @@ export const universesData = [
     },
     logo: {
       _type: 'image',
-      url: "/src/assets/logos/LOGO_HV BUSINESS.svg"
+      url: "/src/assets/logos/LOGO_OCTOGOAL.png"
     },
     slug: {
       _type: 'slug',
@@ -55,7 +55,7 @@ export const universesData = [
     },
     logo: {
       _type: 'image',
-      url: "/src/assets/logos/LOGO_HV PSYCHO.svg"
+      url: "/src/assets/logos/LOGO_OCTOGOAL.png"
     },
     slug: {
       _type: 'slug',
@@ -75,7 +75,7 @@ export const universesData = [
     },
     logo: {
       _type: 'image',
-      url: "/src/assets/logos/LOGO_HV SOCIETY.svg"
+      url: "/src/assets/logos/LOGO_OCTOGOAL.png"
     },
     slug: {
       _type: 'slug',
