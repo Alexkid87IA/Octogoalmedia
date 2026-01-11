@@ -15,8 +15,8 @@ const CoachingPage = () => {
   return (
     <>
       <SEO
-        title="Coaching avec Roger Ormières | Accompagnement stratégique et aligné"
-        description="Découvrez les offres de coaching de Roger Ormières pour vous aligner, entreprendre et avancer avec clarté."
+        title="Coaching avec Octogoal | Accompagnement stratégique et aligné"
+        description="Découvrez les offres de coaching de Octogoal pour vous aligner, entreprendre et avancer avec clarté."
         image="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&q=80"
       />
       <div className="pb-20">

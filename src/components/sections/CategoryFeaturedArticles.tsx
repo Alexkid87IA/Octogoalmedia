@@ -96,7 +96,7 @@ export const CategoryFeaturedArticles = ({ articles }: CategoryFeaturedArticlesP
                     </div>
                     <div className="flex items-center gap-2">
                       <User size={16} className="text-accent-blue" />
-                      <span>Roger Ormières</span>
+                      <span>Octogoal</span>
                     </div>
                   </div>
 

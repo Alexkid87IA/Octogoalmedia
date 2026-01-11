@@ -15,7 +15,7 @@ const fadeInUp = {
 export const AboutPage = () => {
   // Update document title for SEO
   React.useEffect(() => {
-    document.title = "À propos de Roger Ormières | Contact";
+    document.title = "À propos de Octogoal | Contact";
   }, []);
 
   return (
@@ -52,7 +52,7 @@ export const AboutPage = () => {
           </nav>
 
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-montserrat font-bold leading-tight mb-4">
-            À propos de Roger Ormières
+            À propos de Octogoal
           </h1>
           <p className="text-xl text-tertiary max-w-3xl">
             Un passeur d'histoires, une voix singulière, une vision engagée.
@@ -70,7 +70,7 @@ export const AboutPage = () => {
             <div>
               <img
                 src="https://yt3.googleusercontent.com/JoLqbdLoPqNLoBUYorqoeyht0KT5uyehGL5ppcCIu5s5PAOeMXi86FoULWWjE2VpJnBKdYPmNj8=s900-c-k-c0x00ffffff-no-rj"
-                alt="Roger Ormières"
+                alt="Octogoal"
                 className="w-full h-[600px] object-cover rounded-2xl"
               />
             </div>
@@ -186,9 +186,9 @@ export const AboutPage = () => {
                 <div>
                   <h3 className="text-xl font-bold mb-4">Informations de contact</h3>
                   <div className="space-y-4">
-                    <a href="mailto:contact@rogerormières.fr" className="flex items-center gap-3 text-tertiary hover:text-accent-fuchsia">
+                    <a href="mailto:contact@octogoal.media" className="flex items-center gap-3 text-tertiary hover:text-accent-fuchsia">
                       <Mail size={20} />
-                      <span>contact@rogerormières.fr</span>
+                      <span>contact@octogoal.media</span>
                     </a>
                     <a href="tel:+33600000000" className="flex items-center gap-3 text-tertiary hover:text-accent-fuchsia">
                       <Phone size={20} />

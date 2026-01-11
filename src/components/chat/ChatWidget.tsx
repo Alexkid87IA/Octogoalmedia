@@ -20,7 +20,7 @@ const quickReplies = [
   "Je veux en savoir plus sur le coaching",
   "Comment réserver une session ?",
   "Quels sont vos tarifs ?",
-  "Comment créer du contenu avec Roger ?"
+  "Comment créer du contenu avec Octogoal ?"
 ];
 
 export const ChatWidget = () => {
@@ -31,7 +31,7 @@ export const ChatWidget = () => {
     {
       id: '1',
       role: 'assistant',
-      content: "Bonjour ! Je suis l'assistant de Roger. Comment puis-je vous aider aujourd'hui ? (Fonctionnalité de chat IA temporairement indisponible)", // Updated initial message
+      content: "Bonjour ! Je suis l'assistant Octogoal. Comment puis-je vous aider aujourd'hui ? (Fonctionnalité de chat IA temporairement indisponible)", // Updated initial message
       timestamp: new Date()
     }
   ]);
@@ -65,11 +65,11 @@ export const ChatWidget = () => {
     // Simulate a simple response or indicate feature is unavailable
     // This part replaces the Supabase call
     setTimeout(() => {
-      let assistantResponseContent = "Merci pour votre message. La fonctionnalité de réponse intelligente est en cours de maintenance. Roger vous contactera bientôt.";
+      let assistantResponseContent = "Merci pour votre message. La fonctionnalité de réponse intelligente est en cours de maintenance. L'équipe Octogoal vous contactera bientôt.";
       if (sentMessage.toLowerCase().includes("coaching")) {
-        assistantResponseContent = "Pour toute question sur le coaching, Roger vous répondra directement. La fonctionnalité de chat IA est temporairement indisponible.";
+        assistantResponseContent = "Pour toute question sur le coaching, l'équipe Octogoal vous répondra directement. La fonctionnalité de chat IA est temporairement indisponible.";
       } else if (sentMessage.toLowerCase().includes("session") || sentMessage.toLowerCase().includes("réserver")){
-        assistantResponseContent = "Pour réserver une session, veuillez contacter Roger directement. La fonctionnalité de chat IA est temporairement indisponible.";
+        assistantResponseContent = "Pour réserver une session, veuillez contacter Octogoal directement. La fonctionnalité de chat IA est temporairement indisponible.";
       }
 
       const assistantMessage = {
@@ -105,15 +105,15 @@ export const ChatWidget = () => {
 
     // Simulate a simple response for quick replies
     setTimeout(() => {
-      let assistantResponseContent = "Merci pour votre question. La fonctionnalité de réponse intelligente est en cours de maintenance. Roger vous contactera bientôt.";
+      let assistantResponseContent = "Merci pour votre question. La fonctionnalité de réponse intelligente est en cours de maintenance. L'équipe Octogoal vous contactera bientôt.";
       if (reply.toLowerCase().includes("coaching")) {
-        assistantResponseContent = "Pour toute question sur le coaching, Roger vous répondra directement. La fonctionnalité de chat IA est temporairement indisponible.";
+        assistantResponseContent = "Pour toute question sur le coaching, l'équipe Octogoal vous répondra directement. La fonctionnalité de chat IA est temporairement indisponible.";
       } else if (reply.toLowerCase().includes("session") || reply.toLowerCase().includes("réserver")){
-        assistantResponseContent = "Pour réserver une session, veuillez contacter Roger directement. La fonctionnalité de chat IA est temporairement indisponible.";
+        assistantResponseContent = "Pour réserver une session, veuillez contacter Octogoal directement. La fonctionnalité de chat IA est temporairement indisponible.";
       } else if (reply.toLowerCase().includes("tarifs")){
-        assistantResponseContent = "Concernant les tarifs, Roger vous fournira les informations. La fonctionnalité de chat IA est temporairement indisponible.";
+        assistantResponseContent = "Concernant les tarifs, l'équipe Octogoal vous fournira les informations. La fonctionnalité de chat IA est temporairement indisponible.";
       } else if (reply.toLowerCase().includes("créer du contenu")){
-        assistantResponseContent = "Pour créer du contenu avec Roger, veuillez le contacter. La fonctionnalité de chat IA est temporairement indisponible.";
+        assistantResponseContent = "Pour créer du contenu avec Octogoal, veuillez nous contacter. La fonctionnalité de chat IA est temporairement indisponible.";
       }
 
       const assistantMessage = {
@@ -165,12 +165,12 @@ export const ChatWidget = () => {
             <div className="bg-accent-blue p-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <img
-                  src="https://yt3.googleusercontent.com/JoLqbdLoPqNLoBUYorqoeyht0KT5uyehGL5ppcCIu5s5PAOeMXi86FoULWWjE2VpJnBKdYPmNj8=s900-c-k-c0x00ffffff-no-rj"
-                  alt="Roger Ormières"
+                  src="/LOGO_OCTOGOAL.png"
+                  alt="Octogoal"
                   className="w-8 h-8 rounded-full"
                 />
                 <div>
-                  <h3 className="font-bold text-white">Assistant de Roger</h3>
+                  <h3 className="font-bold text-white">Assistant Octogoal</h3>
                   <p className="text-xs text-white/80">Répond en quelques secondes</p>
                 </div>
               </div>

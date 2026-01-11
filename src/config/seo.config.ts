@@ -9,61 +9,61 @@ interface RouteConfig {
 }
 
 export const defaultSEO: SEOConfig = {
-  title: "Roger Ormières | Média indépendant sur l'entrepreneuriat et l'innovation",
-  description: "Explorez des récits inspirants, des réflexions sur le mindset et la culture entrepreneuriale avec Roger Ormières.",
-  image: "https://kajabi-storefronts-production.kajabi-cdn.com/kajabi-storefronts-production/file-uploads/themes/2158442603/settings_images/2267772-a03-cc5b-56b1-6e0565bf3b8_e1fe347b-e16c-469d-b181-2b274cfb4c5a.png"
+  title: "Octogoal - Sport, Clash et Divertissement",
+  description: "Octogoal, votre média sport, clash et divertissement. Actualités football, analyses et contenus exclusifs.",
+  image: "https://octogoal.media/LOGO_OCTOGOAL.png"
 };
 
 export const routeSEO: RouteConfig = {
   "/": defaultSEO,
   "/articles": {
-    title: "Articles | Roger Ormières",
-    description: "Découvrez une collection d'articles sur l'entrepreneuriat, l'innovation et le développement personnel.",
+    title: "Articles - Octogoal",
+    description: "Tous les articles Octogoal : actus foot, analyses et divertissement.",
     image: defaultSEO.image
   },
-  "/rubrique/recits": {
-    title: "Récits | Roger Ormières",
-    description: "Des histoires authentiques qui inspirent et transforment notre vision du possible.",
+  "/rubrique/actus": {
+    title: "Actus Football - Octogoal",
+    description: "Toute l'actualité du football sur Octogoal.",
     image: defaultSEO.image
   },
-  "/rubrique/business": {
-    title: "Business & Innovation | Roger Ormières",
-    description: "Décryptez les tendances et innovations qui façonnent le monde des affaires.",
+  "/rubrique/matchs": {
+    title: "Matchs - Octogoal",
+    description: "Suivez tous les matchs et résultats sur Octogoal.",
     image: defaultSEO.image
   },
-  "/rubrique/mindset": {
-    title: "Mindset | Roger Ormières",
-    description: "Développez un mindset de champion avec des stratégies et conseils concrets.",
+  "/rubrique/clubs": {
+    title: "Clubs - Octogoal",
+    description: "L'actu de tous les clubs de football sur Octogoal.",
     image: defaultSEO.image
   },
-  "/rubrique/culture": {
-    title: "Culture | Roger Ormières",
-    description: "Explorez les mutations culturelles qui transforment notre société.",
+  "/rubrique/joueurs": {
+    title: "Joueurs - Octogoal",
+    description: "Portraits et analyses des joueurs de football.",
     image: defaultSEO.image
   },
   "/podcasts": {
-    title: "Podcasts | Roger Ormières",
-    description: "Écoutez des conversations inspirantes avec des personnalités exceptionnelles.",
+    title: "Podcasts - Octogoal",
+    description: "Les podcasts Octogoal : débats et analyses football.",
     image: defaultSEO.image
   },
   "/emissions": {
-    title: "Émissions | Roger Ormières",
-    description: "Regardez nos émissions et interviews exclusives sur l'entrepreneuriat et l'innovation.",
+    title: "Émissions - Octogoal",
+    description: "Les émissions Octogoal : réactions et débats sur l'actu foot.",
     image: defaultSEO.image
   },
-  "/roger-said": {
-    title: "Roger a dit | Tribunes et réflexions",
-    description: "Des mots pour réveiller, des idées pour secouer. Découvrez les tribunes de Roger Ormières.",
+  "/football": {
+    title: "Football - Classements et Résultats - Octogoal",
+    description: "Classements, résultats et stats des grands championnats sur Octogoal.",
     image: defaultSEO.image
   },
-  "/create-with-roger": {
-    title: "Créer avec Roger | Production de contenu",
-    description: "Créez du contenu authentique et impactant avec l'expertise de Roger Ormières.",
+  "/club": {
+    title: "Le Club Octogoal",
+    description: "Rejoignez le Club Octogoal pour des contenus exclusifs.",
     image: defaultSEO.image
   },
   "/about": {
-    title: "À propos | Roger Ormières",
-    description: "Découvrez qui est Roger Ormières et sa vision pour un média indépendant qui inspire et transforme.",
+    title: "À propos - Octogoal",
+    description: "Découvrez Octogoal, votre média sport, clash et divertissement.",
     image: defaultSEO.image
   }
 };

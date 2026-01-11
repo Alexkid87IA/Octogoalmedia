@@ -79,7 +79,7 @@ export const CreateWithRogerHeroSection = () => {
             <div className="relative w-full h-full">
               <img
                 src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80"
-                alt="Studio Roger Ormières"
+                alt="Studio Octogoal"
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-black/30 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity" />

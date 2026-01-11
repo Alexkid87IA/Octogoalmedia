@@ -5,11 +5,11 @@ import { ArrowRight } from 'lucide-react';
 
 const contributors = [
   {
-    name: "Roger Ormières",
-    role: "Fondateur & Rédacteur en chef",
-    image: "https://yt3.googleusercontent.com/JoLqbdLoPqNLoBUYorqoeyht0KT5uyehGL5ppcCIu5s5PAOeMXi86FoULWWjE2VpJnBKdYPmNj8=s900-c-k-c0x00ffffff-no-rj",
+    name: "Équipe Octogoal",
+    role: "Rédaction",
+    image: "/LOGO_OCTOGOAL.png",
     articles: 45,
-    bio: "Entrepreneur, investisseur et producteur, Roger accompagne les entrepreneurs ambitieux à travers le monde."
+    bio: "L'équipe éditoriale Octogoal vous propose le meilleur du sport, clash et divertissement."
   },
   {
     name: "Marie Laurent",

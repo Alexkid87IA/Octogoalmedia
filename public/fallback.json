@@ -1,5 +1,5 @@
 {
-  "title": "Roger Ormières",
+  "title": "Octogoal",
   "message": "Une erreur est survenue lors du chargement de la page",
   "action": {
     "text": "Recharger la page",
@@ -15,8 +15,8 @@
       "url": "/articles"
     },
     {
-      "text": "Podcasts",
-      "url": "/podcasts"
+      "text": "Football",
+      "url": "/football"
     },
     {
       "text": "Émissions",

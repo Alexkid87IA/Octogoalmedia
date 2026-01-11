@@ -6,7 +6,7 @@ interface QuoteBlockProps {
   author?: string;
 }
 
-export const QuoteBlock = ({ quote, author = 'Roger Ormières' }: QuoteBlockProps) => {
+export const QuoteBlock = ({ quote, author = 'Octogoal' }: QuoteBlockProps) => {
   return (
     <blockquote className="relative p-8 bg-neutral-900 rounded-lg">
       <Quote className="absolute top-4 left-4 text-accent-violet opacity-20" size={40} />

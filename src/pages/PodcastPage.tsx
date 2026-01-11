@@ -80,7 +80,7 @@ export const PodcastPage = () => {
           className="container pt-12 pb-8"
         >
           <h1 className="text-4xl md:text-5xl font-montserrat font-bold leading-tight mb-4">
-            Le podcast de Roger Ormières
+            Le podcast de Octogoal
           </h1>
           <p className="text-tertiary text-lg max-w-3xl mb-8">
             Des conversations profondes avec des personnalités hors-norme. À écouter partout, à tout moment.

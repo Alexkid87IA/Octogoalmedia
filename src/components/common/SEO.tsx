@@ -23,7 +23,7 @@ export const SEO: React.FC<SEOProps> = ({
     title: title || currentRoute.title,
     description: description || currentRoute.description,
     image: image || currentRoute.image,
-    url: `https://rogerormieres.fr${location.pathname}`
+    url: `https://octogoal.media${location.pathname}`
   };
 
   return (
@@ -39,7 +39,7 @@ export const SEO: React.FC<SEOProps> = ({
       <meta property="og:description" content={seo.description} />
       <meta property="og:image" content={seo.image} />
       <meta property="og:type" content={article ? 'article' : 'website'} />
-      <meta property="og:site_name" content="Roger Ormières" />
+      <meta property="og:site_name" content="Octogoal" />
 
       {/* Twitter Card */}
       <meta name="twitter:card" content="summary_large_image" />

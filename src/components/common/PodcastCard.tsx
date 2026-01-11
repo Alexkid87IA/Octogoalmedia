@@ -37,7 +37,7 @@ export const PodcastCard = ({
         <div className="w-full md:w-48 h-48">
           <SafeImage
             source={image}
-            alt={`${guest} - Podcast Roger Ormières`}
+            alt={`${guest} - Podcast Octogoal`}
             width={192}
             height={192}
             className="w-full h-full object-cover"

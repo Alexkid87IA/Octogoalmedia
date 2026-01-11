@@ -20,7 +20,7 @@ export const EmissionsHeroSection = () => {
           Émissions
         </span>
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-montserrat font-bold leading-tight mb-6 max-w-3xl">
-          L'émission de Roger Ormières
+          L'émission Octogoal
         </h1>
         <p className="text-xl text-tertiary max-w-2xl mb-8">
           Des conversations profondes avec des personnalités incroyables. Des parcours, des idées, des vies à contre-courant.

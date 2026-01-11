@@ -5,7 +5,7 @@ import { VideoEmbed } from '../common/VideoEmbed';
 const latestEpisode = {
   id: '6mD_n_H88Zk',
   title: "L'innovation au service de l'humain",
-  guest: "Roger Ormières",
+  guest: "Octogoal",
   duration: "55 min",
   date: "2024-03-21",
   summary: "Dans cet épisode spécial, nous explorons comment l'innovation peut être mise au service de l'humain. Une réflexion profonde sur les enjeux et les opportunités de la transformation digitale.",

@@ -92,7 +92,7 @@ export const CategoryArticlesGrid = ({ articles, onLoadMore, hasMore }: Category
                     {/* Border & CTA */}
                     <div className="pt-4 border-t border-white/10 flex items-center justify-between">
                       <span className="text-sm text-gray-400">
-                        Par Roger Ormières
+                        Par Octogoal
                       </span>
                       <span className="inline-flex items-center gap-2 text-accent-blue group-hover:text-accent-turquoise transition-colors">
                         <span className="text-sm">Lire</span>

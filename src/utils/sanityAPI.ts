@@ -555,7 +555,7 @@ export const getFeaturedDebate = async (): Promise<SanityDebate | null> => {
           }
         ],
         "moderator": {
-          "name": "Roger Ormières",
+          "name": "Octogoal",
           "role": "Modérateur",
           "image": forPerson.image
         },
