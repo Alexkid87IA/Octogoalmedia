@@ -28,11 +28,24 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/api\/football/, ''),
         configure: (proxy) => {
           proxy.on('proxyReq', (proxyReq, req) => {
-            proxyReq.setHeader('x-apisports-key', 'baddb54e402c0dcdc8d1bae4ebec5474');
-            console.log('[Proxy]', req.url, '->', proxyReq.path);
+            proxyReq.setHeader('x-apisports-key', 'da33787ca20dc37d8986e538ef30f941');
+            console.log('[Proxy Football]', req.url, '->', proxyReq.path);
           });
           proxy.on('proxyRes', (proxyRes, req) => {
-            console.log('[Proxy Response]', req.url, proxyRes.statusCode);
+            console.log('[Proxy Football Response]', req.url, proxyRes.statusCode);
+          });
+        }
+      },
+      // Proxy pour les cotes - redirige vers la production Vercel
+      '/api/odds': {
+        target: 'https://octogoalmedia.vercel.app',
+        changeOrigin: true,
+        configure: (proxy) => {
+          proxy.on('proxyReq', (proxyReq, req) => {
+            console.log('[Proxy Odds]', req.url);
+          });
+          proxy.on('proxyRes', (proxyRes, req) => {
+            console.log('[Proxy Odds Response]', req.url, proxyRes.statusCode);
           });
         }
       }

@@ -14,7 +14,7 @@ import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { useData } from '../context/DataContext';
 
 // Composants Football - API-Football
-import ResultsTicker from '../components/football/ResultsTicker';
+import UnifiedMatchTicker from '../components/football/UnifiedMatchTicker';
 
 const mockArticles = [
   {
@@ -266,9 +266,9 @@ export const HomePage = () => {
           <div className="absolute inset-0 backdrop-blur-[100px]" />
         </div>
 
-        {/* Ticker des résultats - Sticky sous la navbar */}
+        {/* Ticker unifié - Sticky sous la navbar */}
         <div className="relative z-[45] pt-20">
-          <ResultsTicker title="Derniers résultats" showTitle={false} maxResults={20} className="bg-black/90 backdrop-blur-sm border-b border-white/10" />
+          <UnifiedMatchTicker />
         </div>
 
         <main className="relative z-[5] overflow-x-hidden">

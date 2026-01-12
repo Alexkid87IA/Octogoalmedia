@@ -165,6 +165,37 @@ const ArticleSidebar: React.FC<ArticleSidebarProps> = ({
     { id: 'emissions' as FlashTab, label: 'Vidéos', icon: Play },
   ];
 
+  // Couleurs par catégorie
+  const getCategoryColor = (category: string | undefined): string => {
+    if (!category) return 'bg-gray-500/20 text-gray-400';
+    const slug = category.toLowerCase();
+    if (slug.includes('actu')) return 'bg-pink-500/20 text-pink-400';
+    if (slug.includes('match')) return 'bg-blue-500/20 text-blue-400';
+    if (slug.includes('joueur')) return 'bg-emerald-500/20 text-emerald-400';
+    if (slug.includes('meme') || slug.includes('mème')) return 'bg-amber-500/20 text-amber-400';
+    if (slug.includes('club')) return 'bg-purple-500/20 text-purple-400';
+    if (slug.includes('emission') || slug.includes('émission')) return 'bg-red-500/20 text-red-400';
+    return 'bg-gray-500/20 text-gray-400';
+  };
+
+  const getCategoryLabel = (item: SanityArticle): string => {
+    // Priorité: contentType > catégorie > défaut
+    if (item.contentType) {
+      const labels: Record<string, string> = {
+        'emission': 'ÉMISSION',
+        'analyse': 'ANALYSE',
+        'interview': 'INTERVIEW',
+        'actualite': 'ACTUS',
+        'match-report': 'MATCHS',
+      };
+      return labels[item.contentType] || item.contentType.toUpperCase();
+    }
+    if (item.categories?.[0]?.title) {
+      return item.categories[0].title.toUpperCase();
+    }
+    return 'ACTUS';
+  };
+
   return (
     <div className="space-y-6">
       {/* Auteur */}
@@ -227,6 +258,8 @@ const ArticleSidebar: React.FC<ArticleSidebarProps> = ({
             <div className="p-2 space-y-1">
               {getDisplayedArticles().map((item) => {
                 const imageUrl = getArticleImage(item);
+                const categoryLabel = getCategoryLabel(item);
+                const categoryColor = getCategoryColor(categoryLabel);
                 return (
                   <Link
                     key={item._id}
@@ -239,6 +272,10 @@ const ArticleSidebar: React.FC<ArticleSidebarProps> = ({
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
+                      {/* Badge catégorie coloré */}
+                      <span className={`inline-block text-[9px] font-bold px-1.5 py-0.5 rounded mb-1 ${categoryColor}`}>
+                        {categoryLabel}
+                      </span>
                       <h4 className="text-sm text-gray-300 group-hover:text-white transition-colors line-clamp-2 leading-snug">
                         {item.title}
                       </h4>

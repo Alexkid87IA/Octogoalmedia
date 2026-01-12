@@ -127,8 +127,9 @@ export const VSPollSection: React.FC = () => {
             <div className="absolute inset-0 bg-gray-900/80 backdrop-blur-sm" />
           </div>
 
-          {/* Ligne de séparation centrale avec VS */}
-          <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-px bg-gradient-to-b from-transparent via-white/20 to-transparent z-10" />
+          {/* Ligne de séparation centrale - horizontale sur mobile, verticale sur desktop */}
+          <div className="hidden md:block absolute inset-y-0 left-1/2 -translate-x-1/2 w-px bg-gradient-to-b from-transparent via-white/20 to-transparent z-10" />
+          <div className="md:hidden absolute inset-x-0 top-1/2 -translate-y-1/2 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent z-10" />
 
           {/* Badge VS central */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
@@ -142,9 +143,9 @@ export const VSPollSection: React.FC = () => {
               {/* Glow effect */}
               <div className="absolute inset-0 bg-gradient-to-r from-pink-500 to-blue-500 rounded-full blur-xl opacity-50" />
 
-              {/* Octogone VS */}
-              <div className="relative w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-pink-500 via-purple-500 to-blue-500 rounded-2xl rotate-45 flex items-center justify-center shadow-2xl">
-                <span className="text-white font-black text-2xl md:text-3xl -rotate-45 tracking-tighter">
+              {/* Octogone VS - plus petit sur mobile */}
+              <div className="relative w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 bg-gradient-to-br from-pink-500 via-purple-500 to-blue-500 rounded-xl md:rounded-2xl rotate-45 flex items-center justify-center shadow-2xl">
+                <span className="text-white font-black text-lg sm:text-xl md:text-2xl -rotate-45 tracking-tighter">
                   VS
                 </span>
               </div>
@@ -152,27 +153,27 @@ export const VSPollSection: React.FC = () => {
           </div>
 
           {/* Content Grid */}
-          <div className="relative grid grid-cols-1 md:grid-cols-2 gap-0 min-h-[500px]">
+          <div className="relative grid grid-cols-2 md:grid-cols-2 gap-0 min-h-[280px] sm:min-h-[350px] md:min-h-[450px]">
             {/* Option 1 */}
             <motion.div
-              initial={{ opacity: 0, x: -50 }}
+              initial={{ opacity: 0, x: -30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.3 }}
-              className="relative p-6 md:p-10 flex flex-col items-center justify-center"
+              className="relative p-3 sm:p-5 md:p-10 flex flex-col items-center justify-center"
             >
               {/* Image */}
-              <div className="relative mb-6">
+              <div className="relative mb-3 sm:mb-4 md:mb-6">
                 <div
                   className="absolute inset-0 rounded-full blur-2xl opacity-40"
                   style={{ backgroundColor: poll.option1.color || '#ec4899' }}
                 />
-                <div className="relative w-32 h-32 md:w-44 md:h-44 rounded-full overflow-hidden border-4 border-white/20 shadow-2xl">
+                <div className="relative w-20 h-20 sm:w-28 sm:h-28 md:w-40 md:h-40 rounded-full overflow-hidden border-2 sm:border-4 border-white/20 shadow-2xl">
                   <SafeImage
                     source={poll.option1.image}
                     alt={poll.option1.name}
-                    width={176}
-                    height={176}
+                    width={160}
+                    height={160}
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -180,19 +181,19 @@ export const VSPollSection: React.FC = () => {
                   <motion.div
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
-                    className="absolute -bottom-2 -right-2 w-10 h-10 bg-green-500 rounded-full flex items-center justify-center shadow-lg"
+                    className="absolute -bottom-1 -right-1 sm:-bottom-2 sm:-right-2 w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 bg-green-500 rounded-full flex items-center justify-center shadow-lg"
                   >
-                    <Check size={20} className="text-white" />
+                    <Check size={14} className="text-white sm:w-4 sm:h-4 md:w-5 md:h-5" />
                   </motion.div>
                 )}
               </div>
 
               {/* Info */}
-              <h3 className="text-2xl md:text-3xl font-bold text-white mb-1 text-center">
+              <h3 className="text-base sm:text-xl md:text-2xl font-bold text-white mb-0.5 text-center">
                 {poll.option1.name}
               </h3>
               {poll.option1.subtitle && (
-                <p className="text-gray-400 text-sm mb-6">{poll.option1.subtitle}</p>
+                <p className="text-gray-400 text-[10px] sm:text-xs md:text-sm mb-3 sm:mb-4 md:mb-6 text-center line-clamp-1">{poll.option1.subtitle}</p>
               )}
 
               {/* Vote Button */}
@@ -202,7 +203,7 @@ export const VSPollSection: React.FC = () => {
                 onClick={() => handleVote('option1')}
                 disabled={hasVoted}
                 className={`
-                  relative px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300
+                  relative px-4 py-2 sm:px-6 sm:py-3 md:px-8 md:py-4 rounded-lg sm:rounded-xl font-bold text-xs sm:text-sm md:text-lg transition-all duration-300
                   ${hasVoted
                     ? userVote === 'option1'
                       ? 'bg-gradient-to-r from-pink-500 to-pink-600 text-white cursor-default'
@@ -227,7 +228,7 @@ export const VSPollSection: React.FC = () => {
                 <motion.p
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="text-gray-500 text-sm mt-3"
+                  className="text-gray-500 text-[10px] sm:text-xs md:text-sm mt-1 sm:mt-2 md:mt-3"
                 >
                   {votes.option1.toLocaleString()} votes
                 </motion.p>
@@ -236,24 +237,24 @@ export const VSPollSection: React.FC = () => {
 
             {/* Option 2 */}
             <motion.div
-              initial={{ opacity: 0, x: 50 }}
+              initial={{ opacity: 0, x: 30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.3 }}
-              className="relative p-6 md:p-10 flex flex-col items-center justify-center border-t md:border-t-0 md:border-l border-white/10"
+              className="relative p-3 sm:p-5 md:p-10 flex flex-col items-center justify-center border-l border-white/10"
             >
               {/* Image */}
-              <div className="relative mb-6">
+              <div className="relative mb-3 sm:mb-4 md:mb-6">
                 <div
                   className="absolute inset-0 rounded-full blur-2xl opacity-40"
                   style={{ backgroundColor: poll.option2.color || '#3b82f6' }}
                 />
-                <div className="relative w-32 h-32 md:w-44 md:h-44 rounded-full overflow-hidden border-4 border-white/20 shadow-2xl">
+                <div className="relative w-20 h-20 sm:w-28 sm:h-28 md:w-40 md:h-40 rounded-full overflow-hidden border-2 sm:border-4 border-white/20 shadow-2xl">
                   <SafeImage
                     source={poll.option2.image}
                     alt={poll.option2.name}
-                    width={176}
-                    height={176}
+                    width={160}
+                    height={160}
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -261,19 +262,19 @@ export const VSPollSection: React.FC = () => {
                   <motion.div
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
-                    className="absolute -bottom-2 -right-2 w-10 h-10 bg-green-500 rounded-full flex items-center justify-center shadow-lg"
+                    className="absolute -bottom-1 -right-1 sm:-bottom-2 sm:-right-2 w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 bg-green-500 rounded-full flex items-center justify-center shadow-lg"
                   >
-                    <Check size={20} className="text-white" />
+                    <Check size={14} className="text-white sm:w-4 sm:h-4 md:w-5 md:h-5" />
                   </motion.div>
                 )}
               </div>
 
               {/* Info */}
-              <h3 className="text-2xl md:text-3xl font-bold text-white mb-1 text-center">
+              <h3 className="text-base sm:text-xl md:text-2xl font-bold text-white mb-0.5 text-center">
                 {poll.option2.name}
               </h3>
               {poll.option2.subtitle && (
-                <p className="text-gray-400 text-sm mb-6">{poll.option2.subtitle}</p>
+                <p className="text-gray-400 text-[10px] sm:text-xs md:text-sm mb-3 sm:mb-4 md:mb-6 text-center line-clamp-1">{poll.option2.subtitle}</p>
               )}
 
               {/* Vote Button */}
@@ -283,7 +284,7 @@ export const VSPollSection: React.FC = () => {
                 onClick={() => handleVote('option2')}
                 disabled={hasVoted}
                 className={`
-                  relative px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300
+                  relative px-4 py-2 sm:px-6 sm:py-3 md:px-8 md:py-4 rounded-lg sm:rounded-xl font-bold text-xs sm:text-sm md:text-lg transition-all duration-300
                   ${hasVoted
                     ? userVote === 'option2'
                       ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white cursor-default'
@@ -308,7 +309,7 @@ export const VSPollSection: React.FC = () => {
                 <motion.p
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="text-gray-500 text-sm mt-3"
+                  className="text-gray-500 text-[10px] sm:text-xs md:text-sm mt-1 sm:mt-2 md:mt-3"
                 >
                   {votes.option2.toLocaleString()} votes
                 </motion.p>
@@ -350,16 +351,16 @@ export const VSPollSection: React.FC = () => {
           </AnimatePresence>
 
           {/* Footer Stats */}
-          <div className="relative px-6 md:px-10 py-5 border-t border-white/10 bg-black/30 backdrop-blur-sm">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div className="flex items-center gap-6 text-sm text-gray-400">
-                <span className="flex items-center gap-2">
-                  <Users size={16} className="text-pink-400" />
+          <div className="relative px-3 sm:px-6 md:px-10 py-3 sm:py-4 md:py-5 border-t border-white/10 bg-black/30 backdrop-blur-sm">
+            <div className="flex flex-wrap items-center justify-center sm:justify-between gap-2 sm:gap-4">
+              <div className="flex items-center gap-3 sm:gap-6 text-[10px] sm:text-xs md:text-sm text-gray-400">
+                <span className="flex items-center gap-1 sm:gap-2">
+                  <Users size={12} className="text-pink-400 sm:w-4 sm:h-4" />
                   {totalVotes.toLocaleString()} participants
                 </span>
                 {poll.endsAt && (
-                  <span className="flex items-center gap-2">
-                    <Timer size={16} className="text-blue-400" />
+                  <span className="flex items-center gap-1 sm:gap-2">
+                    <Timer size={12} className="text-blue-400 sm:w-4 sm:h-4" />
                     Vote en cours
                   </span>
                 )}

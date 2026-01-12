@@ -5,8 +5,8 @@ import { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Trophy } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { getRecentResults } from '../../services/apiFootball';
-import { getAllActiveCompetitionIds } from '../../config/competitions';
+import { getRecentResults, getLiveMatches } from '../../services/apiFootball';
+import { getMajorCompetitionIds } from '../../config/competitions';
 
 // Clip-paths octogonaux
 const octagonClip = 'polygon(15% 0%, 85% 0%, 100% 15%, 100% 85%, 85% 100%, 15% 100%, 0% 85%, 0% 15%)';
@@ -51,6 +51,12 @@ interface ResultsTickerProps {
   className?: string;
 }
 
+// Helper : vérifier si un match est en cours
+function isLiveMatch(status: string): boolean {
+  const liveStatuses = ['IN_PLAY', 'PAUSED', 'HALFTIME', 'LIVE', '1H', '2H', 'HT', 'ET', 'BT', 'P'];
+  return liveStatuses.includes(status) || status.includes('LIVE');
+}
+
 export default function ResultsTicker({
   title = "Derniers résultats",
   showTitle = true,
@@ -67,9 +73,18 @@ export default function ResultsTicker({
     async function fetchResults() {
       try {
         setLoading(true);
-        const allIds = getAllActiveCompetitionIds();
-        const data = await getRecentResults(allIds, 3);
-        setResults(data.slice(0, maxResults));
+        const majorIds = getMajorCompetitionIds();
+
+        // Récupérer les matchs EN COURS et les résultats TERMINÉS
+        // 5 résultats par ligue pour avoir plus de matchs passés
+        const [liveData, recentData] = await Promise.all([
+          getLiveMatches().catch(() => []),
+          getRecentResults(majorIds, 5),
+        ]);
+
+        // Combiner : LIVE en premier, puis TERMINÉS
+        const combined = [...liveData, ...recentData].slice(0, maxResults);
+        setResults(combined);
       } catch (err) {
         console.error('Erreur chargement résultats:', err);
       } finally {
@@ -78,6 +93,10 @@ export default function ResultsTicker({
     }
 
     fetchResults();
+
+    // Refresh pour les matchs live (toutes les 60 secondes)
+    const interval = setInterval(fetchResults, 60000);
+    return () => clearInterval(interval);
   }, [maxResults]);
 
   // Check scroll state
@@ -130,181 +149,118 @@ export default function ResultsTicker({
     return null;
   }
 
+  // Compter les matchs live
+  const liveCount = results.filter(m => isLiveMatch(m.status)).length;
+
   return (
     <div className={`relative ${className}`}>
-      {/* Titre optionnel */}
-      {showTitle && (
-        <div className="flex items-center justify-between mb-3 px-4">
-          <div className="flex items-center gap-2">
-            <div
-              className="p-1.5 bg-gradient-to-br from-pink-500 to-blue-500"
-              style={{ clipPath: octagonClip }}
-            >
-              <Trophy className="w-3 h-3 text-white" />
-            </div>
-            <h2 className="text-sm font-bold text-white">{title}</h2>
+      {/* Structure inline : Header | Flèche | Carousel | Flèche | CTA */}
+      <div className="flex items-center">
+        {/* Header avec indicateur LIVE - aligné avec les flèches */}
+        <div className="flex items-center gap-2 pl-4 pr-3 py-2 border-r border-white/10 flex-shrink-0 bg-black/50">
+          {/* Indicateur LIVE si matchs en cours */}
+          {liveCount > 0 && (
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+            </span>
+          )}
+          <div className="hidden sm:flex flex-col">
+            <span className="text-[10px] font-bold uppercase tracking-wide text-gray-300">
+              {liveCount > 0 ? 'En direct & Résultats' : 'Résultats'}
+            </span>
+            {liveCount > 0 && (
+              <span className="text-[8px] text-red-400">{liveCount} match{liveCount > 1 ? 's' : ''} en cours</span>
+            )}
           </div>
-          <Link
-            to="/matchs"
-            className="text-xs text-pink-400 hover:text-pink-300 transition-colors"
-          >
-            Tous les matchs →
-          </Link>
         </div>
-      )}
 
-      {/* Container principal */}
-      <div className="relative">
-        {/* Bouton gauche - toujours visible si scroll possible */}
-        <motion.button
-          initial={{ opacity: 0 }}
-          animate={{ opacity: canScrollLeft ? 1 : 0 }}
+        {/* Bouton gauche */}
+        <button
           onClick={() => scroll('left')}
           disabled={!canScrollLeft}
-          className="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-8 h-8 bg-gradient-to-r from-pink-500 to-pink-600 flex items-center justify-center text-white shadow-lg shadow-pink-500/30 hover:shadow-pink-500/50 transition-all disabled:opacity-0 disabled:pointer-events-none"
-          style={{ clipPath: octagonClip }}
+          className="p-1.5 hover:bg-white/5 transition-colors flex-shrink-0 disabled:opacity-30"
         >
-          <ChevronLeft className="w-4 h-4" />
-        </motion.button>
+          <ChevronLeft className="w-3.5 h-3.5 text-gray-500" />
+        </button>
 
-        {/* Gradient fade gauche */}
-        <div
-          className="absolute left-0 top-0 bottom-0 w-12 z-10 pointer-events-none"
-          style={{
-            background: 'linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 50%, transparent 100%)'
-          }}
-        />
-
-        {/* Ticker container - NO SCROLLBAR */}
+        {/* Carousel des matchs */}
         <div
           ref={containerRef}
           onScroll={checkScrollState}
-          className="flex gap-2 px-10 py-2 overflow-x-auto"
-          style={{
-            scrollbarWidth: 'none', /* Firefox */
-            msOverflowStyle: 'none', /* IE/Edge */
-          }}
+          className="flex gap-2 overflow-x-auto py-2 flex-1"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
-          <style>
-            {`
-              div::-webkit-scrollbar {
-                display: none;
-              }
-            `}
-          </style>
+          <style>{`div::-webkit-scrollbar { display: none; }`}</style>
 
           {results.map((match, index) => (
             <motion.div
               key={match.id}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.03 }}
+              transition={{ delay: index * 0.02 }}
             >
-              <Link
-                to={`/match/${match.id}`}
-                className="block flex-shrink-0 group"
-              >
+              <Link to={`/match/${match.id}`} className="block flex-shrink-0 group">
                 <div
-                  className="relative bg-gradient-to-b from-white/[0.08] to-white/[0.02] hover:from-white/[0.12] hover:to-white/[0.06] backdrop-blur-sm border border-white/10 hover:border-pink-500/30 p-3 transition-all duration-300 hover:shadow-lg hover:shadow-pink-500/10"
+                  className="relative bg-gradient-to-b from-white/[0.08] to-white/[0.02] hover:from-white/[0.12] hover:to-white/[0.06] backdrop-blur-sm border border-white/10 hover:border-pink-500/30 p-2.5 transition-all duration-300"
                   style={{ clipPath: octagonClipCard }}
                 >
-                  {/* Contenu du match */}
                   <div className="flex items-center gap-2">
                     {/* Équipe domicile */}
-                    <div className="flex flex-col items-center w-10">
-                      <div className="w-7 h-7 flex items-center justify-center">
-                        <img
-                          src={match.homeTeam.crest}
-                          alt=""
-                          className="w-6 h-6 object-contain"
-                        />
-                      </div>
-                      <span className="text-[9px] text-gray-500 mt-0.5 font-medium tracking-wider">
-                        {getTeamCode(match.homeTeam)}
-                      </span>
+                    <div className="flex flex-col items-center w-9">
+                      <img src={match.homeTeam.crest} alt="" className="w-5 h-5 object-contain" />
+                      <span className="text-[8px] text-gray-500 mt-0.5">{getTeamCode(match.homeTeam)}</span>
                     </div>
-
                     {/* Score */}
-                    <div className="flex flex-col items-center px-1.5">
-                      <div className="flex items-center gap-1 text-white font-bold text-base">
-                        <span className="w-4 text-center">{match.score.fullTime.home ?? 0}</span>
+                    <div className="flex flex-col items-center px-1">
+                      <div className="flex items-center gap-1 text-white font-bold text-sm">
+                        <span className="w-3 text-center">{match.score.fullTime.home ?? 0}</span>
                         <span className="text-pink-500/50">-</span>
-                        <span className="w-4 text-center">{match.score.fullTime.away ?? 0}</span>
+                        <span className="w-3 text-center">{match.score.fullTime.away ?? 0}</span>
                       </div>
-                      <span
-                        className="text-[8px] text-gray-500 uppercase tracking-wider px-1.5 py-0.5 bg-white/5 mt-0.5"
-                        style={{ clipPath: octagonClipSubtle }}
-                      >
-                        terminé
-                      </span>
+                      {isLiveMatch(match.status) ? (
+                        <span className="flex items-center gap-0.5 text-[7px] px-1 py-0.5 bg-red-500/20 rounded mt-0.5">
+                          <span className="relative flex h-1.5 w-1.5">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-500"></span>
+                          </span>
+                          <span className="text-red-400 font-semibold">LIVE</span>
+                        </span>
+                      ) : (
+                        <span className="text-[7px] text-gray-500 uppercase px-1 py-0.5 bg-white/5 mt-0.5 rounded">FT</span>
+                      )}
                     </div>
-
                     {/* Équipe extérieur */}
-                    <div className="flex flex-col items-center w-10">
-                      <div className="w-7 h-7 flex items-center justify-center">
-                        <img
-                          src={match.awayTeam.crest}
-                          alt=""
-                          className="w-6 h-6 object-contain"
-                        />
-                      </div>
-                      <span className="text-[9px] text-gray-500 mt-0.5 font-medium tracking-wider">
-                        {getTeamCode(match.awayTeam)}
-                      </span>
+                    <div className="flex flex-col items-center w-9">
+                      <img src={match.awayTeam.crest} alt="" className="w-5 h-5 object-contain" />
+                      <span className="text-[8px] text-gray-500 mt-0.5">{getTeamCode(match.awayTeam)}</span>
                     </div>
                   </div>
-
-                  {/* Ligne accent au hover */}
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-pink-500 to-blue-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
                 </div>
               </Link>
             </motion.div>
           ))}
-
-          {/* CTA final */}
-          <Link
-            to="/matchs"
-            className="flex-shrink-0 flex items-center"
-          >
-            <div
-              className="relative bg-gradient-to-br from-pink-500/20 to-blue-500/20 hover:from-pink-500/30 hover:to-blue-500/30 border border-pink-500/20 hover:border-pink-500/40 p-3 transition-all duration-300 min-w-[100px] group"
-              style={{ clipPath: octagonClipCard }}
-            >
-              <div className="flex flex-col items-center gap-0.5">
-                <span className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-blue-400">
-                  +{results.length}
-                </span>
-                <span className="text-[9px] text-gray-400 whitespace-nowrap group-hover:text-white transition-colors">
-                  Voir tout
-                </span>
-              </div>
-
-              {/* Glow effect */}
-              <div className="absolute inset-0 bg-gradient-to-r from-pink-500/0 via-pink-500/10 to-pink-500/0 opacity-0 group-hover:opacity-100 transition-opacity" style={{ clipPath: octagonClipCard }} />
-            </div>
-          </Link>
         </div>
 
-        {/* Gradient fade droite */}
-        <div
-          className="absolute right-0 top-0 bottom-0 w-12 z-10 pointer-events-none"
-          style={{
-            background: 'linear-gradient(to left, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 50%, transparent 100%)'
-          }}
-        />
-
-        {/* Bouton droite - toujours visible si scroll possible */}
-        <motion.button
-          initial={{ opacity: 0 }}
-          animate={{ opacity: canScrollRight ? 1 : 0 }}
+        {/* Bouton droite */}
+        <button
           onClick={() => scroll('right')}
           disabled={!canScrollRight}
-          className="absolute right-0 top-1/2 -translate-y-1/2 z-20 w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 transition-all disabled:opacity-0 disabled:pointer-events-none"
-          style={{ clipPath: octagonClip }}
+          className="p-1.5 hover:bg-white/5 transition-colors flex-shrink-0 disabled:opacity-30"
         >
-          <ChevronRight className="w-4 h-4" />
-        </motion.button>
+          <ChevronRight className="w-3.5 h-3.5 text-gray-500" />
+        </button>
+
+        {/* CTA discret */}
+        <Link
+          to="/matchs"
+          className="flex items-center gap-1 px-3 py-1.5 mr-3 text-[10px] text-gray-400 hover:text-white transition-colors flex-shrink-0"
+        >
+          <span className="hidden sm:block">Tous les matchs</span>
+          <ChevronRight className="w-3 h-3" />
+        </Link>
       </div>
+
     </div>
   );
 }

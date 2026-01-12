@@ -133,7 +133,7 @@ export const ResponsiveNavbar = () => {
       <Link
         to={item.path}
         className={`
-          group relative flex items-center gap-2.5 px-4 py-2 rounded-xl
+          group relative flex items-center gap-1.5 xl:gap-2.5 px-2.5 xl:px-4 py-1.5 xl:py-2 rounded-lg xl:rounded-xl
           transition-all duration-300 overflow-hidden
           ${isActive
             ? 'bg-gradient-to-r from-pink-500 to-blue-500 text-white shadow-lg shadow-pink-500/25'
@@ -145,7 +145,7 @@ export const ResponsiveNavbar = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-pink-500/20 to-blue-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
         {/* Icône avec indicateur live optionnel */}
-        <div className="relative z-10 flex items-center gap-2">
+        <div className="relative z-10 flex items-center gap-1.5 xl:gap-2">
           {hasLive && hasLiveMatches && (
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
@@ -156,7 +156,7 @@ export const ResponsiveNavbar = () => {
         </div>
 
         {/* Label */}
-        <span className="relative z-10 text-sm font-semibold tracking-wide">
+        <span className="relative z-10 text-xs xl:text-sm font-semibold tracking-wide whitespace-nowrap">
           {item.label}
         </span>
       </Link>
@@ -175,7 +175,7 @@ export const ResponsiveNavbar = () => {
               <img
                 src={logoMedia}
                 alt="Octogoal"
-                className="h-9 w-auto"
+                className="h-11 xl:h-12 w-auto"
               />
             </Link>
 
@@ -228,7 +228,7 @@ export const ResponsiveNavbar = () => {
                 >
                   <Link
                     to={item.path}
-                    className={`flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors ${
+                    className={`flex items-center gap-1 xl:gap-1.5 px-2 xl:px-3 py-2 text-xs xl:text-sm font-medium transition-colors ${
                       location.pathname.includes(item.path.split('/')[2] || item.path)
                         ? 'text-white'
                         : 'text-gray-400 hover:text-white'
@@ -274,7 +274,7 @@ export const ResponsiveNavbar = () => {
               {/* CTA */}
               <Link
                 to={ctaConfig.path}
-                className="px-5 py-2 bg-gradient-to-r from-pink-500 to-blue-500 text-white text-sm font-semibold rounded-full shadow-lg shadow-pink-500/25 hover:shadow-pink-500/40 hover:scale-105 transition-all duration-300"
+                className="px-3 xl:px-5 py-2 bg-gradient-to-r from-pink-500 to-blue-500 text-white text-xs xl:text-sm font-semibold rounded-full shadow-lg shadow-pink-500/25 hover:shadow-pink-500/40 hover:scale-105 transition-all duration-300 whitespace-nowrap"
               >
                 {ctaConfig.label}
               </Link>

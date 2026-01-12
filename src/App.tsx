@@ -30,6 +30,7 @@ const PlayerPage = lazy(() => import('./pages/PlayerPage'));
 const EuropeanRankingsPage = lazy(() => import('./pages/EuropeanRankingsPage'));
 const JoueursPage = lazy(() => import('./pages/JoueursPage'));
 const FormatsPage = lazy(() => import('./pages/FormatsPage'));
+const BettingPage = lazy(() => import('./pages/BettingPage'));
 
 // Composant de chargement optimisé
 const PageLoader = () => (
@@ -89,6 +90,10 @@ function App() {
                   {/* Route Matchs - Match Center Live */}
                   <Route path="/matchs" element={<MatchsPage />} />
                   <Route path="/match/:id" element={<MatchDetailPage />} />
+
+                  {/* Route Paris / Cotes Winamax */}
+                  <Route path="/actus/paris" element={<BettingPage />} />
+                  <Route path="/paris" element={<BettingPage />} />
 
                   {/* Route Clubs - Club Universe */}
                   <Route path="/clubs" element={<ClubsPage />} />

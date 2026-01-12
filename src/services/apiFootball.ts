@@ -46,7 +46,7 @@ interface CacheEntry {
 }
 
 const cache: Record<string, CacheEntry> = {};
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes en millisecondes
+const CACHE_DURATION = 15 * 60 * 1000; // 15 minutes en millisecondes - augmenté pour éviter le rate limiting
 
 function getCached(key: string): any | null {
   const entry = cache[key];

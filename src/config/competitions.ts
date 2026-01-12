@@ -557,6 +557,27 @@ export function getTopCompetitionIds(): number[] {
 }
 
 /**
+ * Récupère les IDs des compétitions MAJEURES pour le ticker des résultats
+ * - Top 5 championnats européens
+ * - Coupes d'Europe (UCL, UEL, UECL)
+ * - Compétitions internationales (CAN, Euro, Coupe du Monde, Copa America, Nations League)
+ */
+export function getMajorCompetitionIds(): number[] {
+  // Top 5 championnats
+  const top5 = [61, 39, 140, 135, 78]; // L1, PL, Liga, Serie A, Bundesliga
+
+  // Coupes d'Europe
+  const europeanCups = [2, 3, 848]; // UCL, UEL, UECL
+
+  // Compétitions internationales actives
+  const internationalActive = Object.values(COMPETITIONS)
+    .filter(c => c.category === 'international' && c.isActive)
+    .map(c => c.id);
+
+  return [...internationalActive, ...europeanCups, ...top5];
+}
+
+/**
  * Vérifie si une compétition est dans le TOP
  */
 export function isTopCompetition(id: number): boolean {
