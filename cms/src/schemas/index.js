@@ -6,17 +6,18 @@ import debate from './debate'
 import emission from './emission'
 import extrait from './extrait'
 import vsPoll from './vsPoll'
-
-// Schémas existants (à compléter si nécessaire)
-// Note: Ces imports sont fictifs et devront être adaptés aux schémas existants
-// import article from './article'
-// import category from './category'
-// import author from './author'
-// import quote from './quote'
+import seo from './seo'
+import category from './category'
+import subcategory from './subcategory'
 
 // Export de tous les schémas
 export const schemaTypes = [
-  // Nouveaux schémas
+  // Schémas SEO et navigation
+  seo,
+  category,
+  subcategory,
+
+  // Schémas de contenu
   universe,
   clubFeature,
   clubPricing,
@@ -24,10 +25,4 @@ export const schemaTypes = [
   emission,
   extrait,
   vsPoll,
-
-  // Schémas existants (à décommenter et adapter selon les besoins)
-  // article,
-  // category,
-  // author,
-  // quote
 ]

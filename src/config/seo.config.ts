@@ -12,9 +12,8 @@ interface RouteConfig {
   [key: string]: SEOConfig;
 }
 
-// Image par défaut pour Open Graph
-// TODO: Créer une image og-image.jpg (1200x630px) pour un meilleur rendu sur les réseaux
-const DEFAULT_OG_IMAGE = "https://octogoal.media/LOGO_OCTOGOAL.png";
+// Image par défaut pour Open Graph (1200x630px recommandé)
+const DEFAULT_OG_IMAGE = "https://octogoal.media/og-image.svg";
 const LOGO_IMAGE = "https://octogoal.media/LOGO_OCTOGOAL.png";
 
 export const defaultSEO: SEOConfig = {
