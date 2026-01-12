@@ -15,15 +15,10 @@ const SubcategoryPage = lazy(() => import('./pages/SubcategoryPage').then(m => (
 const PodcastPage = lazy(() => import('./pages/PodcastPage').then(m => ({ default: m.PodcastPage })));
 const EmissionsPage = lazy(() => import('./pages/EmissionsPage'));
 const EmissionPage = lazy(() => import('./pages/EmissionPage').then(m => ({ default: m.EmissionPage })));
-const CreateWithRogerPage = lazy(() => import('./pages/CreateWithRogerPage').then(m => ({ default: m.CreateWithRogerPage })));
 const AboutPage = lazy(() => import('./pages/AboutPage').then(m => ({ default: m.AboutPage })));
 const AllArticlesPage = lazy(() => import('./pages/AllArticlesPage').then(m => ({ default: m.AllArticlesPage })));
-const CoachingPage = lazy(() => import('./pages/CoachingPage').then(m => ({ default: m.CoachingPage })));
-const ClubPage = lazy(() => import('./pages/ClubPage').then(m => ({ default: m.ClubPage })));
 const MissionPage = lazy(() => import('./pages/MissionPage').then(m => ({ default: m.MissionPage })));
 const NotFound = lazy(() => import('./pages/NotFound').then(m => ({ default: m.NotFound })));
-const SuccessStoriesPage = lazy(() => import('./pages/SuccessStoriesPage'));
-const BusinessIdeasPage = lazy(() => import('./pages/BusinessIdeasPage'));
 const StandingsPage = lazy(() => import('./pages/StandingsPage'));
 const FootballClubPage = lazy(() => import('./pages/FootballClubPage'));
 const MatchsPage = lazy(() => import('./pages/MatchsPage'));
@@ -64,6 +59,7 @@ function App() {
               <main className="relative z-[1]">
                 <Suspense fallback={<PageLoader />}>
                 <Routes>
+                  {/* Pages principales */}
                   <Route path="/" element={<HomePage />} />
                   <Route path="/articles" element={<AllArticlesPage />} />
                   <Route path="/article/:slug" element={<ArticlePageNEW />} />
@@ -72,15 +68,8 @@ function App() {
                   <Route path="/rubrique/:categorySlug/:subcategorySlug" element={<SubcategoryPage />} />
                   <Route path="/podcasts" element={<PodcastPage />} />
                   <Route path="/emissions" element={<EmissionsPage />} />
-                  <Route path="/club" element={<ClubPage />} />
-                  <Route path="/create-with-roger" element={<CreateWithRogerPage />} />
-                  <Route path="/coaching" element={<CoachingPage />} />
                   <Route path="/about" element={<AboutPage />} />
                   <Route path="/mission" element={<MissionPage />} />
-                  
-                  {/* Nouvelles routes */}
-                  <Route path="/success-stories" element={<SuccessStoriesPage />} />
-                  <Route path="/business-ideas" element={<BusinessIdeasPage />} />
 
                   {/* Route Classements - Tableaux, buteurs, passeurs */}
                   <Route path="/classements" element={<StandingsPage />} />
@@ -114,9 +103,18 @@ function App() {
                   <Route path="/formats" element={<FormatsPage />} />
                   <Route path="/rubrique/formats-octogoal" element={<FormatsPage />} />
 
+                  {/* Redirections anciennes pages vers accueil */}
+                  <Route path="/coaching" element={<Navigate to="/" replace />} />
+                  <Route path="/club" element={<Navigate to="/" replace />} />
+                  <Route path="/create-with-roger" element={<Navigate to="/" replace />} />
+                  <Route path="/success-stories" element={<Navigate to="/" replace />} />
+                  <Route path="/business-ideas" element={<Navigate to="/" replace />} />
+                  <Route path="/guides" element={<Navigate to="/" replace />} />
+                  <Route path="/guides/*" element={<Navigate to="/" replace />} />
+
                   {/* Route de test */}
                   <Route path="/test" element={<TestPage />} />
-                  
+
                   {/* Route 404 - DOIT ÊTRE EN DERNIER */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
