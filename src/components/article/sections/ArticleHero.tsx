@@ -1,8 +1,8 @@
 // src/components/article/sections/ArticleHero.tsx
-// Hero premium style éditorial - Design immersif et élégant
+// Hero compact - Le texte ne dépasse pas le tiers inférieur de l'image
 import React from "react";
 import { Link } from "react-router-dom";
-import { ChevronRight, Calendar, Clock, User } from "lucide-react";
+import { ChevronRight, Calendar, Clock } from "lucide-react";
 import { SanityArticle, VerticalColors } from "../../../types/article.types";
 import { urlFor } from "../../../utils/sanityClient";
 
@@ -46,8 +46,8 @@ const ArticleHero: React.FC<ArticleHeroProps> = ({ article, colors }) => {
   const readingTime = article.readingTime || "5 min";
 
   return (
-    <section className="relative min-h-[85vh] md:min-h-[90vh] flex items-end overflow-hidden">
-      {/* Background Image */}
+    <section className="relative h-[75vh] md:h-[85vh] flex items-end overflow-hidden">
+      {/* Background Image - L'image est visible en entier */}
       <div className="absolute inset-0">
         {imageUrl ? (
           <img
@@ -63,19 +63,19 @@ const ArticleHero: React.FC<ArticleHeroProps> = ({ article, colors }) => {
           <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-black to-gray-900" />
         )}
 
-        {/* Overlay UNIQUEMENT sur le tiers inférieur - pour le texte */}
+        {/* Overlay UNIQUEMENT sur le tiers inférieur */}
         <div
-          className="absolute inset-x-0 bottom-0 h-[55%]"
+          className="absolute inset-x-0 bottom-0 h-[35%]"
           style={{
-            background: 'linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.8) 40%, rgba(0,0,0,0.4) 70%, transparent 100%)'
+            background: 'linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.7) 50%, transparent 100%)'
           }}
         />
 
-        {/* Léger assombrissement des bords pour le header */}
+        {/* Léger assombrissement pour le header/navigation */}
         <div
-          className="absolute inset-x-0 top-0 h-32"
+          className="absolute inset-x-0 top-0 h-24"
           style={{
-            background: 'linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 100%)'
+            background: 'linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, transparent 100%)'
           }}
         />
 
@@ -86,24 +86,24 @@ const ArticleHero: React.FC<ArticleHeroProps> = ({ article, colors }) => {
         />
       </div>
 
-      {/* Contenu Hero - Poussé vers le bas */}
-      <div className="relative container mx-auto px-4 pb-12 md:pb-16">
+      {/* Contenu Hero - Compact, uniquement dans le tiers inférieur */}
+      <div className="relative container mx-auto px-4 pb-6 md:pb-10">
         <div className="max-w-4xl">
-          {/* Breadcrumb */}
-          <nav className="flex items-center gap-2 text-sm mb-8">
+          {/* Breadcrumb compact */}
+          <nav className="flex items-center gap-2 text-xs md:text-sm mb-4">
             <Link
               to="/"
               className="text-gray-400 hover:text-white transition-colors"
             >
               Accueil
             </Link>
-            <ChevronRight size={14} className="text-gray-600" />
 
             {article.categories && article.categories[0] && (
               <>
+                <ChevronRight size={12} className="text-gray-600" />
                 <Link
                   to={`/rubrique/${article.categories[0].slug.current}`}
-                  className="px-3 py-1.5 rounded-full text-sm font-semibold transition-all hover:scale-105"
+                  className="px-2.5 py-1 rounded-full text-xs font-semibold transition-all hover:scale-105"
                   style={{
                     background: colors.primary,
                     color: 'white'
@@ -114,8 +114,8 @@ const ArticleHero: React.FC<ArticleHeroProps> = ({ article, colors }) => {
 
                 {article.subcategories && article.subcategories[0] && (
                   <>
-                    <ChevronRight size={14} className="text-gray-400" />
-                    <span className="px-3 py-1.5 rounded-full text-sm font-medium bg-white/15 backdrop-blur-sm text-white border border-white/10">
+                    <ChevronRight size={12} className="text-gray-400" />
+                    <span className="text-gray-300 text-xs">
                       {article.subcategories[0].title}
                     </span>
                   </>
@@ -124,60 +124,22 @@ const ArticleHero: React.FC<ArticleHeroProps> = ({ article, colors }) => {
             )}
           </nav>
 
-          {/* Titre principal */}
+          {/* Titre principal - Taille réduite */}
           <h1
-            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white mb-8 leading-[1.05] tracking-tight"
+            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-white mb-4 leading-tight tracking-tight"
             style={{
-              textShadow: '0 4px 40px rgba(0,0,0,0.5)'
+              textShadow: '0 2px 20px rgba(0,0,0,0.5)'
             }}
           >
             {article.title}
           </h1>
 
-          {/* Extrait */}
-          {article.excerpt && (
-            <p className="text-lg md:text-xl text-gray-300 mb-10 max-w-3xl leading-relaxed">
-              {article.excerpt}
-            </p>
-          )}
-
-          {/* Meta informations - Design carte */}
-          <div className="flex flex-wrap items-center gap-3">
-            {/* Auteur avec photo */}
-            {article.author && (
-              <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md rounded-full pl-1.5 pr-5 py-1.5 border border-white/10">
-                {article.author.image ? (
-                  <img
-                    src={
-                      article.author.image.asset?.url ||
-                      (article.author.image.asset?._ref
-                        ? urlFor(article.author.image).width(80).height(80).url()
-                        : null)
-                    }
-                    alt={article.author.name}
-                    className="w-9 h-9 rounded-full object-cover ring-2 ring-white/20"
-                  />
-                ) : (
-                  <div
-                    className="w-9 h-9 rounded-full flex items-center justify-center"
-                    style={{ background: colors.bgGradient }}
-                  >
-                    <User size={16} className="text-white" />
-                  </div>
-                )}
-                <span className="text-white font-medium">
-                  {article.author.name}
-                </span>
-              </div>
-            )}
-
-            {/* Séparateur */}
-            <div className="w-px h-6 bg-white/20 hidden sm:block" />
-
+          {/* Meta informations - Ligne compacte */}
+          <div className="flex flex-wrap items-center gap-4 text-xs md:text-sm text-gray-400">
             {/* Date */}
             {article.publishedAt && (
-              <div className="flex items-center gap-2 text-gray-300 text-sm">
-                <Calendar size={15} className="text-gray-400" />
+              <div className="flex items-center gap-1.5">
+                <Calendar size={14} />
                 <span>
                   {new Date(article.publishedAt).toLocaleDateString('fr-FR', {
                     day: 'numeric',
@@ -189,11 +151,11 @@ const ArticleHero: React.FC<ArticleHeroProps> = ({ article, colors }) => {
             )}
 
             {/* Séparateur */}
-            <div className="w-px h-6 bg-white/20 hidden sm:block" />
+            <span className="text-gray-600">|</span>
 
             {/* Temps de lecture */}
-            <div className="flex items-center gap-2 text-gray-300 text-sm">
-              <Clock size={15} className="text-gray-400" />
+            <div className="flex items-center gap-1.5">
+              <Clock size={14} />
               <span>{readingTime} de lecture</span>
             </div>
           </div>
