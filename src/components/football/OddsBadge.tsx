@@ -68,9 +68,11 @@ const OddsBadge: React.FC<OddsBadgeProps> = ({
         className="flex items-center gap-1 text-[10px]"
         title="Cotes Winamax"
       >
-        <div className="w-3.5 h-3.5 rounded bg-gradient-to-br from-red-600 via-orange-500 to-yellow-500 flex items-center justify-center flex-shrink-0">
-          <span className="text-white font-black text-[7px]">W</span>
-        </div>
+        <img
+          src="/images/winamax-logo.png"
+          alt="W"
+          className="w-3.5 h-3.5 rounded object-contain flex-shrink-0"
+        />
         <OddsPill value={winamaxOdds.home} isFavorite={favorite === 'home'} />
         <OddsPill value={winamaxOdds.draw} isFavorite={favorite === 'draw'} />
         <OddsPill value={winamaxOdds.away} isFavorite={favorite === 'away'} />
@@ -78,20 +80,22 @@ const OddsBadge: React.FC<OddsBadgeProps> = ({
     );
   }
 
-  // Version ligne complète avec branding Winamax
+  // Version ligne complète avec branding Winamax - cotes centrées
   return (
     <motion.div
       initial={{ opacity: 0, y: 5 }}
       animate={{ opacity: 1, y: 0 }}
-      className="flex items-center justify-between bg-white/5 rounded-lg px-3 py-2 mt-2"
+      className="flex flex-col items-center bg-white/5 rounded-lg px-3 py-2 mt-2"
     >
-      <div className="flex items-center gap-1.5">
-        <div className="w-4 h-4 rounded bg-gradient-to-br from-red-600 via-orange-500 to-yellow-500 flex items-center justify-center">
-          <span className="text-white font-black text-[8px]">W</span>
-        </div>
+      <div className="flex items-center gap-1.5 mb-2">
+        <img
+          src="/images/winamax-logo.png"
+          alt="Winamax"
+          className="w-4 h-4 rounded object-contain"
+        />
         <span className="text-[10px] text-gray-400">Winamax</span>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center justify-center gap-4">
         <OddsCell label="1" value={winamaxOdds.home} isFavorite={favorite === 'home'} />
         <OddsCell label="N" value={winamaxOdds.draw} isFavorite={favorite === 'draw'} />
         <OddsCell label="2" value={winamaxOdds.away} isFavorite={favorite === 'away'} />

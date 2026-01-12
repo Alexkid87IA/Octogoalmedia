@@ -77,10 +77,12 @@ const OddsWidget: React.FC<OddsWidgetProps> = ({
       {/* Header avec logo Winamax */}
       <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          {/* Logo Winamax stylisé */}
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-red-600 via-orange-500 to-yellow-500 flex items-center justify-center shadow-lg">
-            <span className="text-white font-black text-sm tracking-tight">W</span>
-          </div>
+          {/* Logo Winamax officiel */}
+          <img
+            src="/images/winamax-logo.png"
+            alt="Winamax"
+            className="w-8 h-8 rounded-lg object-contain"
+          />
           <div>
             <span className="text-white font-bold text-sm">Cotes Winamax</span>
             {matchStatus === 'IN_PLAY' && (
