@@ -225,15 +225,15 @@ export default function UnifiedMatchTicker() {
     <div className="relative bg-black/90 backdrop-blur-sm border-b border-white/5">
       <div className="flex items-center">
         {/* Header avec indicateur LIVE ou Winamax */}
-        <div className="flex items-center gap-2 pl-4 pr-3 py-2.5 border-r border-white/10 flex-shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-2 pl-2 sm:pl-4 pr-2 sm:pr-3 py-2 sm:py-2.5 border-r border-white/10 flex-shrink-0">
           {hasLiveMatches ? (
             <>
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
               </span>
-              <span className="text-[10px] font-bold text-red-400 uppercase tracking-wide">
-                En direct
+              <span className="text-[9px] sm:text-[10px] font-bold text-red-400 uppercase tracking-wide">
+                Live
               </span>
             </>
           ) : (
@@ -241,7 +241,7 @@ export default function UnifiedMatchTicker() {
               <img
                 src="/images/winamax-logo.png"
                 alt="Winamax"
-                className="w-5 h-5 rounded object-contain"
+                className="w-4 h-4 sm:w-5 sm:h-5 rounded object-contain"
               />
               <div className="hidden sm:flex flex-col">
                 <span className="text-[10px] font-bold uppercase tracking-wide" style={{ color: '#ED1C24' }}>
@@ -257,9 +257,9 @@ export default function UnifiedMatchTicker() {
         <button
           onClick={() => scroll('left')}
           disabled={!canScrollLeft}
-          className="p-2 hover:bg-white/5 transition-colors flex-shrink-0 disabled:opacity-30"
+          className="p-1 sm:p-2 hover:bg-white/5 transition-colors flex-shrink-0 disabled:opacity-30"
         >
-          <ChevronLeft className="w-4 h-4 text-gray-500" />
+          <ChevronLeft className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500" />
         </button>
 
         {/* Carousel des matchs */}
@@ -284,28 +284,28 @@ export default function UnifiedMatchTicker() {
         <button
           onClick={() => scroll('right')}
           disabled={!canScrollRight}
-          className="p-2 hover:bg-white/5 transition-colors flex-shrink-0 disabled:opacity-30"
+          className="p-1 sm:p-2 hover:bg-white/5 transition-colors flex-shrink-0 disabled:opacity-30"
         >
-          <ChevronRight className="w-4 h-4 text-gray-500" />
+          <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500" />
         </button>
 
         {/* CTA */}
         <Link
           to={hasLiveMatches ? "/matchs" : "/paris"}
-          className="flex items-center gap-2 px-3 py-2 mr-2 hover:bg-white/5 rounded transition-colors flex-shrink-0"
+          className="flex items-center gap-1 sm:gap-2 px-1.5 sm:px-3 py-1.5 sm:py-2 mr-1 sm:mr-2 hover:bg-white/5 rounded transition-colors flex-shrink-0"
         >
-          <span className="flex items-center justify-center w-6 h-6 bg-pink-500/20 text-pink-400 text-[10px] font-bold rounded">
+          <span className="flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 bg-pink-500/20 text-pink-400 text-[9px] sm:text-[10px] font-bold rounded">
             {matches.length}
           </span>
           <span className="text-[11px] text-gray-400 hidden sm:block">
             {hasLiveMatches ? "Voir tous les matchs" : "Tous les paris"}
           </span>
-          <ChevronRight className="w-3.5 h-3.5 text-gray-500 sm:hidden" />
+          <ChevronRight className="w-3 h-3 text-gray-500 sm:hidden" />
         </Link>
 
-        {/* Mention légale pour les cotes */}
+        {/* Mention légale pour les cotes - hidden on mobile */}
         {!hasLiveMatches && (
-          <div className="relative group pr-3 flex-shrink-0">
+          <div className="relative group pr-3 flex-shrink-0 hidden sm:block">
             <span className="text-[9px] text-gray-600 cursor-help border-b border-dotted border-gray-600">
               (i)
             </span>
@@ -401,31 +401,25 @@ function OddsMatchCard({
       transition={{ delay: index * 0.02 }}
     >
       <Link to={`/match/${match.id}`} className="block flex-shrink-0 group">
-        <div className="relative bg-white/[0.04] hover:bg-white/[0.08] rounded-lg px-2.5 py-2 transition-all duration-200 border border-transparent hover:border-white/10 w-[150px]">
+        <div className="relative bg-white/[0.04] hover:bg-white/[0.08] rounded-lg px-2 sm:px-2.5 py-1.5 sm:py-2 transition-all duration-200 border border-transparent hover:border-white/10 w-[120px] sm:w-[150px]">
           {/* Date */}
-          <div className="text-[8px] text-gray-500 text-center mb-1.5">{dateLabel}</div>
+          <div className="text-[7px] sm:text-[8px] text-gray-500 text-center mb-1">{dateLabel}</div>
 
-          {/* Équipes avec logo Winamax au centre */}
-          <div className="flex items-center justify-between gap-1 mb-2">
+          {/* Équipes */}
+          <div className="flex items-center justify-center gap-1.5 mb-1.5">
             {/* Équipe domicile */}
-            <div className="flex items-center gap-1 flex-1 min-w-0">
-              <img src={match.homeTeam.crest} alt="" className="w-5 h-5 object-contain flex-shrink-0" />
-              <span className="text-[9px] text-white truncate">{getTeamCode(match.homeTeam)}</span>
+            <div className="flex items-center gap-1">
+              <img src={match.homeTeam.crest} alt="" className="w-4 h-4 sm:w-5 sm:h-5 object-contain" />
+              <span className="text-[8px] sm:text-[9px] text-white font-medium">{getTeamCode(match.homeTeam)}</span>
             </div>
 
-            {/* Logo Winamax central */}
-            <div className="flex flex-col items-center flex-shrink-0 px-1">
-              <img
-                src="/images/winamax-logo.png"
-                alt="Winamax"
-                className="w-4 h-4 object-contain"
-              />
-            </div>
+            {/* Séparateur */}
+            <span className="text-[8px] text-gray-600">-</span>
 
             {/* Équipe extérieur */}
-            <div className="flex items-center gap-1 flex-1 min-w-0 justify-end">
-              <span className="text-[9px] text-white truncate">{getTeamCode(match.awayTeam)}</span>
-              <img src={match.awayTeam.crest} alt="" className="w-5 h-5 object-contain flex-shrink-0" />
+            <div className="flex items-center gap-1">
+              <span className="text-[8px] sm:text-[9px] text-white font-medium">{getTeamCode(match.awayTeam)}</span>
+              <img src={match.awayTeam.crest} alt="" className="w-4 h-4 sm:w-5 sm:h-5 object-contain" />
             </div>
           </div>
 
@@ -437,7 +431,7 @@ function OddsMatchCard({
               <OddsPill label="2" value={match.odds.away} isMin={match.odds.away === minOdds} />
             </div>
           ) : (
-            <div className="text-[8px] text-gray-500 text-center">Cotes bientôt</div>
+            <div className="text-[7px] sm:text-[8px] text-gray-500 text-center">Cotes bientôt</div>
           )}
         </div>
       </Link>
@@ -453,8 +447,8 @@ function OddsPill({ label, value, isMin }: { label: string; value: number; isMin
         ? 'bg-green-500/20 text-green-400'
         : 'bg-white/5 text-gray-400 hover:bg-white/10'
     }`}>
-      <span className="text-[7px] text-gray-500 block">{label}</span>
-      <span className="text-[10px] font-bold">{formatOdds(value)}</span>
+      <span className="text-[6px] sm:text-[7px] text-gray-500 block">{label}</span>
+      <span className="text-[9px] sm:text-[10px] font-bold">{formatOdds(value)}</span>
     </div>
   );
 }
