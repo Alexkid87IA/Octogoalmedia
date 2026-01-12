@@ -150,9 +150,11 @@ export async function getOddsBySport(sport: SportKey): Promise<MatchOdds[]> {
 export async function getOddsByCompetitionId(competitionId: number): Promise<MatchOdds[]> {
   const sport = COMPETITION_TO_SPORT[competitionId];
   if (!sport) {
-    console.warn(`[OddsService] Compétition ${competitionId} non supportée pour les cotes`);
+    console.warn(`[OddsService] Compétition ${competitionId} non mappée - ID inconnu`);
+    console.log('[OddsService] Compétitions supportées:', Object.keys(COMPETITION_TO_SPORT).join(', '));
     return [];
   }
+  console.log(`[OddsService] Competition ${competitionId} mapped to sport: ${sport}`);
   return getOddsBySport(sport);
 }
 
@@ -184,6 +186,7 @@ export async function findMatchOdds(
 
   const homeNorm = normalize(homeTeam);
   const awayNorm = normalize(awayTeam);
+  console.log(`[OddsService] Searching for: "${homeTeam}" (${homeNorm}) vs "${awayTeam}" (${awayNorm})`);
 
   // Chercher une correspondance
   const match = allOdds.find((m) => {
