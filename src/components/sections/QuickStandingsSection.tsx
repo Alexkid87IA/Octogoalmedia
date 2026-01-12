@@ -38,6 +38,8 @@ export const QuickStandingsSection = () => {
   const [standings, setStandings] = useState<Record<string, TeamStanding[]>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [loadingLeague, setLoadingLeague] = useState<string | null>(null);
+  const [hasError, setHasError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
   const carouselRef = useRef<HTMLDivElement>(null);
 
   const currentLeague = LEAGUE_CONFIG[currentLeagueIndex];
@@ -51,13 +53,21 @@ export const QuickStandingsSection = () => {
       if (standings[leagueKey]) {
         console.log(`[QuickStandings] Cache hit for ${leagueKey}`);
         setIsLoading(false);
+        setHasError(false);
         return;
       }
 
       try {
         setLoadingLeague(leagueKey);
+        setHasError(false);
         const leagueId = LEAGUES[leagueKey];
         console.log(`[QuickStandings] Fetching ${leagueKey} (ID: ${leagueId})...`);
+
+        if (!leagueId) {
+          console.error(`[QuickStandings] No league ID for ${leagueKey}`);
+          setHasError(true);
+          return;
+        }
 
         const data = await getStandings(String(leagueId));
         console.log(`[QuickStandings] Got ${data?.length || 0} teams for ${leagueKey}`);
@@ -68,11 +78,14 @@ export const QuickStandingsSection = () => {
             [leagueKey]: data.slice(0, 5)
           }));
           console.log(`[QuickStandings] Stored ${data.slice(0, 5).length} teams in state`);
+          setHasError(false);
         } else {
           console.warn(`[QuickStandings] No data received for ${leagueKey}`);
+          setHasError(true);
         }
       } catch (error) {
         console.error('[QuickStandings] Error fetching:', error);
+        setHasError(true);
       } finally {
         setIsLoading(false);
         setLoadingLeague(null);
@@ -80,7 +93,7 @@ export const QuickStandingsSection = () => {
     };
 
     fetchStandings();
-  }, [currentLeagueIndex]);
+  }, [currentLeagueIndex, retryCount]);
 
   // Tendance basée sur la forme (5 derniers matchs)
   const getTrend = (form?: string) => {
@@ -242,8 +255,14 @@ export const QuickStandingsSection = () => {
                     <div className="w-8 h-8 border-2 border-pink-500 border-t-transparent rounded-full animate-spin" />
                   </div>
                 ) : currentStandings.length === 0 ? (
-                  <div className="flex items-center justify-center h-[280px] text-gray-500">
-                    Aucune donnée disponible
+                  <div className="flex flex-col items-center justify-center h-[280px] text-gray-500 gap-4">
+                    <span>{hasError ? 'Erreur de chargement' : 'Aucune donnée disponible'}</span>
+                    <button
+                      onClick={() => setRetryCount(c => c + 1)}
+                      className="px-4 py-2 bg-pink-500/20 hover:bg-pink-500/30 text-pink-400 rounded-lg text-sm transition-colors"
+                    >
+                      Réessayer
+                    </button>
                   </div>
                 ) : (
                   <AnimatePresence mode="wait">
