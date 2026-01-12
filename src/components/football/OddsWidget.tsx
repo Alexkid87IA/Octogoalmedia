@@ -72,11 +72,12 @@ const OddsWidget: React.FC<OddsWidgetProps> = ({
 
   return (
     <div className="bg-gray-900/50 rounded-xl border border-white/10 overflow-hidden">
-      {/* Header */}
+      {/* Header avec logo Winamax */}
       <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-green-500 to-emerald-600 flex items-center justify-center">
-            <TrendingUp className="w-4 h-4 text-white" />
+          {/* Logo Winamax stylisé */}
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-red-600 via-orange-500 to-yellow-500 flex items-center justify-center shadow-lg">
+            <span className="text-white font-black text-sm tracking-tight">W</span>
           </div>
           <div>
             <span className="text-white font-bold text-sm">Cotes Winamax</span>
@@ -107,7 +108,7 @@ const OddsWidget: React.FC<OddsWidgetProps> = ({
               exit={{ opacity: 0 }}
               className="flex items-center justify-center py-8"
             >
-              <div className="w-6 h-6 border-2 border-green-500 border-t-transparent rounded-full animate-spin" />
+              <div className="w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
             </motion.div>
           ) : error ? (
             <motion.div

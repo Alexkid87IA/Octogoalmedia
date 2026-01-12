@@ -60,13 +60,17 @@ const OddsBadge: React.FC<OddsBadgeProps> = ({
   const favorite = getFavorite(odds!);
 
   if (variant === 'inline') {
-    // Version compacte (3 valeurs côte à côte)
+    // Version compacte avec mini-logo Winamax
     return (
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         className="flex items-center gap-1 text-[10px]"
+        title="Cotes Winamax"
       >
+        <div className="w-3.5 h-3.5 rounded bg-gradient-to-br from-red-600 via-orange-500 to-yellow-500 flex items-center justify-center flex-shrink-0">
+          <span className="text-white font-black text-[7px]">W</span>
+        </div>
         <OddsPill value={winamaxOdds.home} isFavorite={favorite === 'home'} />
         <OddsPill value={winamaxOdds.draw} isFavorite={favorite === 'draw'} />
         <OddsPill value={winamaxOdds.away} isFavorite={favorite === 'away'} />
@@ -74,14 +78,19 @@ const OddsBadge: React.FC<OddsBadgeProps> = ({
     );
   }
 
-  // Version ligne complète
+  // Version ligne complète avec branding Winamax
   return (
     <motion.div
       initial={{ opacity: 0, y: 5 }}
       animate={{ opacity: 1, y: 0 }}
       className="flex items-center justify-between bg-white/5 rounded-lg px-3 py-2 mt-2"
     >
-      <span className="text-[10px] text-gray-500">Cotes</span>
+      <div className="flex items-center gap-1.5">
+        <div className="w-4 h-4 rounded bg-gradient-to-br from-red-600 via-orange-500 to-yellow-500 flex items-center justify-center">
+          <span className="text-white font-black text-[8px]">W</span>
+        </div>
+        <span className="text-[10px] text-gray-400">Winamax</span>
+      </div>
       <div className="flex items-center gap-2">
         <OddsCell label="1" value={winamaxOdds.home} isFavorite={favorite === 'home'} />
         <OddsCell label="N" value={winamaxOdds.draw} isFavorite={favorite === 'draw'} />
