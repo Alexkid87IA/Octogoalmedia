@@ -30,7 +30,13 @@
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
-# Redirections pour le SPA
+# Proxy API-Football vers la fonction Netlify
+[[redirects]]
+  from = "/api/football/*"
+  to = "/.netlify/functions/api-football/:splat"
+  status = 200
+
+# Redirections pour le SPA (DOIT être après les redirections API)
 [[redirects]]
   from = "/*"
   to = "/index.html"
