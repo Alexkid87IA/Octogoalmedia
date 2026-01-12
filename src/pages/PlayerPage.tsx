@@ -937,34 +937,46 @@ export default function PlayerPage() {
                       Statistiques clés
                     </h3>
                     <div className="space-y-5">
-                      <ProgressBar
-                        label="Précision des passes"
-                        value={weightedPassAccuracy || 0}
-                        max={100}
-                        showPercent
-                        gradient="from-blue-500 to-cyan-500"
-                      />
-                      <ProgressBar
-                        label="Réussite dribbles"
-                        value={aggregatedStats.dribblesAttempts > 0 ? Math.round((aggregatedStats.dribblesSuccess / aggregatedStats.dribblesAttempts) * 100) : 0}
-                        max={100}
-                        showPercent
-                        gradient="from-purple-500 to-pink-500"
-                      />
-                      <ProgressBar
-                        label="Duels gagnés"
-                        value={aggregatedStats.duelsTotal > 0 ? Math.round((aggregatedStats.duelsWon / aggregatedStats.duelsTotal) * 100) : 0}
-                        max={100}
-                        showPercent
-                        gradient="from-green-500 to-emerald-500"
-                      />
-                      <ProgressBar
-                        label="Penaltys convertis"
-                        value={(aggregatedStats.penaltyScored + aggregatedStats.penaltyMissed) > 0 ? Math.round((aggregatedStats.penaltyScored / (aggregatedStats.penaltyScored + aggregatedStats.penaltyMissed)) * 100) : 0}
-                        max={100}
-                        showPercent
-                        gradient="from-orange-500 to-yellow-500"
-                      />
+                      {weightedPassAccuracy !== null && (
+                        <ProgressBar
+                          label="Précision des passes"
+                          value={weightedPassAccuracy}
+                          max={100}
+                          showPercent
+                          gradient="from-blue-500 to-cyan-500"
+                        />
+                      )}
+                      {aggregatedStats.dribblesAttempts > 0 && (
+                        <ProgressBar
+                          label="Réussite dribbles"
+                          value={Math.round((aggregatedStats.dribblesSuccess / aggregatedStats.dribblesAttempts) * 100)}
+                          max={100}
+                          showPercent
+                          gradient="from-purple-500 to-pink-500"
+                        />
+                      )}
+                      {aggregatedStats.duelsTotal > 0 && (
+                        <ProgressBar
+                          label="Duels gagnés"
+                          value={Math.round((aggregatedStats.duelsWon / aggregatedStats.duelsTotal) * 100)}
+                          max={100}
+                          showPercent
+                          gradient="from-green-500 to-emerald-500"
+                        />
+                      )}
+                      {(aggregatedStats.penaltyScored + aggregatedStats.penaltyMissed) > 0 && (
+                        <ProgressBar
+                          label="Penaltys convertis"
+                          value={Math.round((aggregatedStats.penaltyScored / (aggregatedStats.penaltyScored + aggregatedStats.penaltyMissed)) * 100)}
+                          max={100}
+                          showPercent
+                          gradient="from-orange-500 to-yellow-500"
+                        />
+                      )}
+                      {/* Message si aucune stat disponible */}
+                      {weightedPassAccuracy === null && aggregatedStats.dribblesAttempts === 0 && aggregatedStats.duelsTotal === 0 && (aggregatedStats.penaltyScored + aggregatedStats.penaltyMissed) === 0 && (
+                        <p className="text-gray-500 text-sm text-center py-4">Statistiques détaillées non disponibles</p>
+                      )}
                     </div>
                   </div>
                 )}
@@ -1087,7 +1099,17 @@ export default function PlayerPage() {
                   <div className="space-y-5">
                     <ProgressBar label="Passes totales" value={aggregatedStats.passes} max={2500} gradient="from-blue-500 to-indigo-500" />
                     <ProgressBar label="Passes clés" value={aggregatedStats.keyPasses} max={100} gradient="from-pink-500 to-rose-500" />
-                    <ProgressBar label="Précision (%)" value={weightedPassAccuracy || 0} max={100} showPercent gradient="from-green-500 to-teal-500" />
+                    {weightedPassAccuracy !== null ? (
+                      <ProgressBar label="Précision (%)" value={weightedPassAccuracy} max={100} showPercent gradient="from-green-500 to-teal-500" />
+                    ) : (
+                      <div className="space-y-1.5">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-400">Précision (%)</span>
+                          <span className="text-gray-500 font-medium">N/A</span>
+                        </div>
+                        <div className="h-2 bg-white/10 rounded-full overflow-hidden" />
+                      </div>
+                    )}
                     <div className="pt-4 border-t border-white/10">
                       <div className="text-center">
                         <p className="text-4xl font-black bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
