@@ -133,26 +133,26 @@ export default function BettingPage() {
         {/* Header */}
         <div className="relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-b from-red-900/20 via-black to-black" />
-          <div className="relative container mx-auto px-4 py-12">
-            <div className="flex items-center gap-4 mb-6">
+          <div className="relative container mx-auto px-4 py-8 sm:py-12">
+            <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
               <img
                 src="/images/winamax-logo.png"
                 alt="Winamax"
-                className="w-12 h-12 object-contain"
+                className="w-10 h-10 sm:w-12 sm:h-12 object-contain"
               />
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold text-white">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white">
                   Paris & Cotes
                 </h1>
-                <p className="text-gray-400">Cotes fournies par Winamax</p>
+                <p className="text-sm sm:text-base text-gray-400">Cotes fournies par Winamax</p>
               </div>
             </div>
 
-            {/* Filtres par ligue */}
-            <div className="flex flex-wrap gap-2">
+            {/* Filtres par ligue - Scrollable sur mobile */}
+            <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap" style={{ scrollbarWidth: 'none' }}>
               <button
                 onClick={() => setSelectedLeague(null)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all whitespace-nowrap flex-shrink-0 ${
                   selectedLeague === null
                     ? 'bg-white text-black'
                     : 'bg-white/10 text-white hover:bg-white/20'
@@ -167,14 +167,14 @@ export default function BettingPage() {
                   <button
                     key={id}
                     onClick={() => setSelectedLeague(id)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                    className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all whitespace-nowrap flex-shrink-0 ${
                       selectedLeague === id
                         ? 'bg-white text-black'
                         : 'bg-white/10 text-white hover:bg-white/20'
                     }`}
                   >
                     <span>{comp.flag}</span>
-                    <span>{comp.shortName}</span>
+                    <span className="hidden sm:inline">{comp.shortName}</span>
                   </button>
                 );
               })}
@@ -247,7 +247,7 @@ export default function BettingPage() {
   );
 }
 
-// Ligne de match avec cotes
+// Ligne de match avec cotes - Mobile responsive
 function MatchOddsRow({ match }: { match: MatchWithOdds }) {
   const matchDate = new Date(match.utcDate);
   const timeStr = matchDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
@@ -256,68 +256,102 @@ function MatchOddsRow({ match }: { match: MatchWithOdds }) {
   const minOdds = match.odds ? Math.min(match.odds.home, match.odds.draw, match.odds.away) : 0;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="bg-white/[0.03] hover:bg-white/[0.06] rounded-lg p-4 transition-all border border-white/5 hover:border-white/10"
-    >
-      <div className="flex items-center gap-4">
-        {/* Heure et compétition */}
-        <div className="flex flex-col items-center w-16 flex-shrink-0">
-          <div className="flex items-center gap-1 text-xs text-gray-500 mb-1">
-            <Clock className="w-3 h-3" />
-            <span>{timeStr}</span>
+    <Link to={`/match/${match.id}`}>
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white/[0.03] hover:bg-white/[0.06] rounded-lg p-3 sm:p-4 transition-all border border-white/5 hover:border-white/10"
+      >
+        {/* Mobile: Layout vertical */}
+        <div className="sm:hidden">
+          {/* Header: Heure + Compétition + Winamax */}
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2 text-xs text-gray-500">
+              <Clock className="w-3 h-3" />
+              <span>{timeStr}</span>
+              {comp && <span className="text-gray-600">• {comp.shortName}</span>}
+            </div>
+            <img src="/images/winamax-logo.png" alt="Winamax" className="w-5 h-5 object-contain opacity-60" />
           </div>
-          {comp && (
-            <span className="text-[10px] text-gray-600">{comp.shortName}</span>
+
+          {/* Équipes empilées */}
+          <div className="space-y-2 mb-3">
+            <div className="flex items-center gap-2">
+              <img src={match.homeTeam.crest} alt="" className="w-6 h-6 object-contain" />
+              <span className="text-sm text-white flex-1 truncate">{match.homeTeam.name}</span>
+              {match.odds && (
+                <span className={`text-sm font-bold px-2 py-1 rounded ${match.odds.home === minOdds ? 'bg-green-500/20 text-green-400' : 'bg-white/5 text-white'}`}>
+                  {formatOdds(match.odds.home)}
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <img src={match.awayTeam.crest} alt="" className="w-6 h-6 object-contain" />
+              <span className="text-sm text-white flex-1 truncate">{match.awayTeam.name}</span>
+              {match.odds && (
+                <span className={`text-sm font-bold px-2 py-1 rounded ${match.odds.away === minOdds ? 'bg-green-500/20 text-green-400' : 'bg-white/5 text-white'}`}>
+                  {formatOdds(match.odds.away)}
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Cote Nul centrée */}
+          {match.odds && (
+            <div className="flex justify-center">
+              <span className={`text-xs px-3 py-1 rounded ${match.odds.draw === minOdds ? 'bg-green-500/20 text-green-400' : 'bg-white/5 text-gray-400'}`}>
+                Nul: {formatOdds(match.odds.draw)}
+              </span>
+            </div>
           )}
         </div>
 
-        {/* Équipes */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-3">
-            {/* Domicile */}
-            <div className="flex items-center gap-2 flex-1 min-w-0">
-              <img src={match.homeTeam.crest} alt="" className="w-6 h-6 object-contain flex-shrink-0" />
-              <span className="text-sm text-white truncate">{match.homeTeam.name}</span>
+        {/* Desktop: Layout horizontal */}
+        <div className="hidden sm:flex items-center gap-4">
+          {/* Heure et compétition */}
+          <div className="flex flex-col items-center w-16 flex-shrink-0">
+            <div className="flex items-center gap-1 text-xs text-gray-500 mb-1">
+              <Clock className="w-3 h-3" />
+              <span>{timeStr}</span>
             </div>
+            {comp && (
+              <span className="text-[10px] text-gray-600">{comp.shortName}</span>
+            )}
+          </div>
 
-            {/* VS avec logo Winamax */}
-            <div className="flex flex-col items-center flex-shrink-0 px-2">
-              <img
-                src="/images/winamax-logo.png"
-                alt="Winamax"
-                className="w-4 h-4 object-contain opacity-60 mb-0.5"
-              />
-              <span className="text-[10px] text-gray-600">vs</span>
-            </div>
+          {/* Équipes */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 flex-1 min-w-0">
+                <img src={match.homeTeam.crest} alt="" className="w-6 h-6 object-contain flex-shrink-0" />
+                <span className="text-sm text-white truncate">{match.homeTeam.name}</span>
+              </div>
 
-            {/* Extérieur */}
-            <div className="flex items-center gap-2 flex-1 min-w-0 justify-end">
-              <span className="text-sm text-white truncate text-right">{match.awayTeam.name}</span>
-              <img src={match.awayTeam.crest} alt="" className="w-6 h-6 object-contain flex-shrink-0" />
+              <div className="flex flex-col items-center flex-shrink-0 px-2">
+                <img src="/images/winamax-logo.png" alt="Winamax" className="w-4 h-4 object-contain opacity-60 mb-0.5" />
+                <span className="text-[10px] text-gray-600">vs</span>
+              </div>
+
+              <div className="flex items-center gap-2 flex-1 min-w-0 justify-end">
+                <span className="text-sm text-white truncate text-right">{match.awayTeam.name}</span>
+                <img src={match.awayTeam.crest} alt="" className="w-6 h-6 object-contain flex-shrink-0" />
+              </div>
             </div>
           </div>
+
+          {/* Cotes */}
+          {match.odds && (
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <OddsButton label="1" value={match.odds.home} isMin={match.odds.home === minOdds} />
+              <OddsButton label="N" value={match.odds.draw} isMin={match.odds.draw === minOdds} />
+              <OddsButton label="2" value={match.odds.away} isMin={match.odds.away === minOdds} />
+            </div>
+          )}
+
+          <ArrowRight className="w-4 h-4 text-gray-500 flex-shrink-0" />
         </div>
-
-        {/* Cotes */}
-        {match.odds && (
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <OddsButton label="1" value={match.odds.home} isMin={match.odds.home === minOdds} />
-            <OddsButton label="N" value={match.odds.draw} isMin={match.odds.draw === minOdds} />
-            <OddsButton label="2" value={match.odds.away} isMin={match.odds.away === minOdds} />
-          </div>
-        )}
-
-        {/* Lien vers détails */}
-        <Link
-          to={`/match/${match.id}`}
-          className="p-2 hover:bg-white/10 rounded transition-colors flex-shrink-0"
-        >
-          <ArrowRight className="w-4 h-4 text-gray-500" />
-        </Link>
-      </div>
-    </motion.div>
+      </motion.div>
+    </Link>
   );
 }
 

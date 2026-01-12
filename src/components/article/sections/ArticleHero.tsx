@@ -47,8 +47,8 @@ const ArticleHero: React.FC<ArticleHeroProps> = ({ article, colors }) => {
 
   return (
     <section className="relative">
-      {/* Container avec aspect-ratio - montre plus de l'image */}
-      <div className="relative w-full aspect-[16/9] sm:aspect-[16/8] md:aspect-[21/9] lg:aspect-[2.5/1]">
+      {/* Container avec aspect-ratio - hauteur généreuse pour voir les visages */}
+      <div className="relative w-full aspect-[4/3] sm:aspect-[16/10] md:aspect-[16/9] lg:aspect-[16/8]">
         {/* Background Image */}
         {imageUrl ? (
           <img
