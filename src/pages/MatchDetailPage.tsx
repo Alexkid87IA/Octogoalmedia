@@ -31,6 +31,7 @@ import {
   formatDateFR,
 } from '../services/apiFootball';
 import { getCompetition } from '../config/competitions';
+import OddsWidget from '../components/football/OddsWidget';
 
 // =============================================
 // TYPES
@@ -1091,6 +1092,14 @@ export default function MatchDetailPage() {
                       awayTeam={match.awayTeam}
                     />
 
+                    {/* Cotes Winamax */}
+                    <OddsWidget
+                      homeTeam={match.homeTeam.name}
+                      awayTeam={match.awayTeam.name}
+                      competitionId={match.competition?.id || 0}
+                      matchStatus={match.status}
+                    />
+
                     {/* Top buteurs */}
                     <TopScorersSidebar scorers={scorers} competitionId={match.competition?.id} />
 
@@ -1123,6 +1132,14 @@ export default function MatchDetailPage() {
                     awayForm={awayForm}
                     homeTeam={match.homeTeam}
                     awayTeam={match.awayTeam}
+                  />
+
+                  {/* Cotes Winamax */}
+                  <OddsWidget
+                    homeTeam={match.homeTeam.name}
+                    awayTeam={match.awayTeam.name}
+                    competitionId={match.competition?.id || 0}
+                    matchStatus={match.status}
                   />
 
                   {/* Top buteurs */}

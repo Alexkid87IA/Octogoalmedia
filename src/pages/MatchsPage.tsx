@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Radio, Calendar, Clock, ChevronDown, RefreshCw, Trophy } from 'lucide-react';
 import { getLiveMatches, getFixturesByDate } from '../services/apiFootball';
+import OddsBadge from '../components/football/OddsBadge';
 import {
   COMPETITIONS,
   getAllActiveCompetitions,
@@ -182,6 +183,19 @@ const MatchCard = ({ match }: { match: Match }) => {
           />
         </div>
       </div>
+
+      {/* Cotes - seulement pour matchs non terminés */}
+      {!isFinished && (
+        <div className="mt-2 pt-2 border-t border-white/5">
+          <OddsBadge
+            homeTeam={match.homeTeam.name}
+            awayTeam={match.awayTeam.name}
+            competitionId={match.competition.id}
+            matchStatus={match.status}
+            variant="row"
+          />
+        </div>
+      )}
     </Link>
   );
 };
