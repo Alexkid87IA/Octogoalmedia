@@ -32,8 +32,7 @@ export interface MatchOdds {
   awayTeam: string;
   commenceTime: string;
   odds: {
-    winamax?: BookmakerOdds;
-    bestOdds: BestOdds;
+    winamax: BookmakerOdds | null;
   };
 }
 
