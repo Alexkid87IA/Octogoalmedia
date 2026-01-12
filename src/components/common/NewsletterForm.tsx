@@ -15,7 +15,9 @@ export const NewsletterForm = () => {
     // Simulation d'un appel API
     await new Promise(resolve => setTimeout(resolve, 1500));
 
-    if (email.includes('@') && email.includes('.')) { // Validation basique
+    // Validation email avec regex proper
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (emailRegex.test(email)) {
       console.log('Newsletter subscription:', email);
       setStatus('success');
       setMessage('Merci ! Votre inscription a bien été prise en compte.');
@@ -65,14 +67,17 @@ export const NewsletterForm = () => {
 
         {(status === 'idle' || status === 'loading' || status === 'error') && (
           <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4 items-stretch">
+            <label htmlFor="newsletter-email" className="sr-only">Adresse email</label>
             <motion.input
-              initial={{ opacity: 0, width: '80%' }} 
-              animate={{ opacity: 1, width: '100%' }} 
+              id="newsletter-email"
+              initial={{ opacity: 0, width: '80%' }}
+              animate={{ opacity: 1, width: '100%' }}
               transition={{ duration: 0.5, delay: 0.3 }}
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Votre adresse e-mail"
+              aria-describedby="newsletter-privacy"
               className="flex-grow bg-gray-800/60 border border-gray-700/80 rounded-lg px-5 py-3.5 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-accent-violet focus:border-accent-violet transition-all duration-200 shadow-sm text-base"
               required
               disabled={status === 'loading'}
@@ -104,10 +109,11 @@ export const NewsletterForm = () => {
             </motion.button>
           </form>
         )}
-        <motion.p 
+        <motion.p
+          id="newsletter-privacy"
           className="text-xs text-gray-500 mt-6"
-          initial={{ opacity: 0 }} 
-          animate={{ opacity: 1 }} 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.5 }}
         >
           Nous respectons votre vie privée. Désinscription possible à tout moment.

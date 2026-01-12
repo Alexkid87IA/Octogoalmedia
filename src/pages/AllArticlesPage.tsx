@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { SEO } from '../components/common/SEO';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
+import { ArticleGridSkeleton } from '../components/common/Skeleton';
 import { Footer } from '../components/layout/Footer';
 import SafeImage from '../components/common/SafeImage';
 import { getAllArticles } from '../utils/sanityAPI';
@@ -53,14 +54,22 @@ export const AllArticlesPage = () => {
 
     fetchArticles();
 
-    // Charger les favoris
-    const saved = localStorage.getItem('bookmarkedArticles');
-    if (saved) setBookmarkedArticles(JSON.parse(saved));
+    // Charger les favoris (avec try/catch pour mode incognito/SSR)
+    try {
+      const saved = localStorage.getItem('bookmarkedArticles');
+      if (saved) setBookmarkedArticles(JSON.parse(saved));
+    } catch {
+      // localStorage indisponible (mode incognito, SSR, etc.)
+    }
   }, []);
 
-  // Sauvegarder les favoris
+  // Sauvegarder les favoris (avec try/catch pour mode incognito/SSR)
   useEffect(() => {
-    localStorage.setItem('bookmarkedArticles', JSON.stringify(bookmarkedArticles));
+    try {
+      localStorage.setItem('bookmarkedArticles', JSON.stringify(bookmarkedArticles));
+    } catch {
+      // localStorage indisponible
+    }
   }, [bookmarkedArticles]);
 
   const toggleBookmark = (slug: string) => {
@@ -213,9 +222,7 @@ export const AllArticlesPage = () => {
         {/* Contenu principal */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
           {isLoading ? (
-            <div className="flex justify-center py-20">
-              <LoadingSpinner />
-            </div>
+            <ArticleGridSkeleton count={9} />
           ) : filteredArticles.length > 0 ? (
             <div
               className={

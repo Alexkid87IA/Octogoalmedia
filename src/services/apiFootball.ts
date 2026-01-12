@@ -20,20 +20,37 @@ export type LeagueKey = keyof typeof LEAGUES;
 // En prod: utiliser les Vercel Serverless Functions
 const BASE_URL = '/api/football';
 
-// Fonction fetch pour les appels API
+// Timeout pour les appels API (5 secondes)
+const API_TIMEOUT = 5000;
+
+// Fonction fetch pour les appels API avec timeout
 async function apiFetch(endpoint: string): Promise<Response> {
   // endpoint commence par "/" donc on le concatène directement
   const url = `${BASE_URL}${endpoint}`;
   console.log('[API] Fetching:', url);
 
-  const response = await fetch(url);
+  // AbortController pour timeout
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
 
-  // Log the response status
-  if (!response.ok) {
-    console.error('[API] HTTP Error:', response.status, response.statusText);
+  try {
+    const response = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeoutId);
+
+    // Log the response status
+    if (!response.ok) {
+      console.error('[API] HTTP Error:', response.status, response.statusText);
+    }
+
+    return response;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error instanceof Error && error.name === 'AbortError') {
+      console.error('[API] Request timeout after', API_TIMEOUT, 'ms:', url);
+      throw new Error(`API timeout: ${endpoint}`);
+    }
+    throw error;
   }
-
-  return response;
 }
 
 // =============================================

@@ -56,8 +56,15 @@ function App() {
         <DataProvider>
           <ErrorBoundary>
             <div className="relative min-h-screen bg-black overflow-x-hidden">
+              {/* Skip navigation pour accessibilité */}
+              <a
+                href="#main-content"
+                className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-white focus:text-black focus:rounded-lg focus:font-medium"
+              >
+                Aller au contenu principal
+              </a>
               <ResponsiveNavbar />
-              <main className="relative z-[1]">
+              <main id="main-content" className="relative z-[1]">
                 <Suspense fallback={<PageLoader />}>
                 <Routes>
                   {/* Pages principales */}

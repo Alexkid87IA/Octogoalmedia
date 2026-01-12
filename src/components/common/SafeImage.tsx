@@ -1,8 +1,21 @@
 import React from 'react';
 import { urlFor } from '../../utils/sanityClient';
 
+// Type pour les sources d'images Sanity
+interface SanityImageSource {
+  asset?: {
+    _ref?: string;
+    url?: string;
+  } | string;
+  url?: string;
+  hotspot?: { x: number; y: number };
+  crop?: { top: number; bottom: number; left: number; right: number };
+}
+
+type ImageSource = SanityImageSource | string | null | undefined;
+
 interface SafeImageProps {
-  source: any;
+  source: ImageSource;
   alt: string;
   className?: string;
   width?: number;
@@ -12,123 +25,168 @@ interface SafeImageProps {
   fallbackText?: string;
 }
 
-export default function SafeImage({ 
-  source, 
-  alt, 
-  className = '', 
-  width = 800, 
+// SVG placeholder inline - pas de requête réseau
+function getPlaceholderSvg(width: number, height: number, text: string = 'Image'): string {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+    <rect width="100%" height="100%" fill="#1a1a1a"/>
+    <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="system-ui, sans-serif" font-size="14" fill="#666">${text}</text>
+  </svg>`;
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+}
+
+export default function SafeImage({
+  source,
+  alt,
+  className = '',
+  width = 800,
   height = 600,
   loading = 'lazy',
   onError,
-  fallbackText
+  fallbackText = 'Image'
 }: SafeImageProps) {
-  // Réduire les logs en production
-  if (import.meta.env.DEV) {
-    console.log('SafeImage debug:', {
-      source,
-      alt,
-      hasAsset: source?.asset,
-      hasUrl: source?.asset?.url,
-      hasRef: source?.asset?._ref,
-      sourceType: typeof source
-    });
-  }
+  const placeholder = getPlaceholderSvg(width, height, fallbackText);
 
-  // Si pas de source du tout, retourner une image placeholder
+  // Si pas de source du tout, retourner placeholder
   if (!source) {
-    return <img src={`https://placehold.co/${width || 400}x${height || 300}?text=No+Image`} alt={alt} className={className} loading={loading} />;
+    return <img src={placeholder} alt={alt || ''} className={className} loading={loading} />;
   }
 
-  // Si c'est déjà une URL, l'utiliser directement
+  // Si c'est déjà une URL string
   if (typeof source === 'string') {
-    // Vérifier que l'URL n'est pas vide
     if (!source || source.trim() === '') {
-      return <img src={`https://placehold.co/${width || 400}x${height || 300}?text=No+Image`} alt={alt} className={className} loading={loading} />;
+      return <img src={placeholder} alt={alt || ''} className={className} loading={loading} />;
     }
-    return <img src={source} alt={alt} className={className} loading={loading} />;
+    return (
+      <img
+        src={source}
+        alt={alt}
+        className={className}
+        loading={loading}
+        onError={(e) => {
+          (e.target as HTMLImageElement).src = placeholder;
+          onError?.();
+        }}
+      />
+    );
   }
 
   try {
+    const imgSource = source as SanityImageSource;
+
     // Si c'est un objet Sanity avec asset
-    if (source?.asset) {
-      
-      // NOUVEAU: Vérifier d'abord si on a une URL directe dans asset.url
-      if (source.asset.url) {
-        if (import.meta.env.DEV) {
-          console.log('Using direct URL from asset.url:', source.asset.url);
-        }
-        return <img src={source.asset.url} alt={alt} className={className} loading={loading} />;
+    if (imgSource?.asset) {
+      // Vérifier d'abord si on a une URL directe dans asset.url
+      if (typeof imgSource.asset === 'object' && imgSource.asset.url) {
+        return (
+          <img
+            src={imgSource.asset.url}
+            alt={alt}
+            className={className}
+            loading={loading}
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = placeholder;
+              onError?.();
+            }}
+          />
+        );
       }
-      
+
       // Si asset est directement une string URL
-      if (typeof source.asset === 'string' && source.asset.startsWith('http')) {
-        return <img src={source.asset} alt={alt} className={className} loading={loading} />;
+      if (typeof imgSource.asset === 'string' && imgSource.asset.startsWith('http')) {
+        return (
+          <img
+            src={imgSource.asset}
+            alt={alt}
+            className={className}
+            loading={loading}
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = placeholder;
+              onError?.();
+            }}
+          />
+        );
       }
-      
+
       // Si on a asset._ref
-      if (source.asset._ref) {
-        const ref = source.asset._ref;
-        
-        // IMPORTANT: Vérifier que _ref n'est pas vide
-        if (!ref || ref === '' || ref === null || ref === undefined) {
-          console.warn('Empty asset reference detected for image:', alt);
-          return <img src={`https://placehold.co/${width || 400}x${height || 300}?text=Invalid+Reference`} alt={alt} className={className} loading={loading} />;
+      if (typeof imgSource.asset === 'object' && imgSource.asset._ref) {
+        const ref = imgSource.asset._ref;
+
+        // Vérifier que _ref n'est pas vide
+        if (!ref || ref === '') {
+          return <img src={placeholder} alt={alt || ''} className={className} loading={loading} />;
         }
-        
-        // Vérifier si c'est une URL ou une vraie référence Sanity
+
+        // Vérifier si c'est une URL
         if (ref.startsWith('http')) {
-          return <img src={ref} alt={alt} className={className} loading={loading} />;
+          return (
+            <img
+              src={ref}
+              alt={alt}
+              className={className}
+              loading={loading}
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = placeholder;
+                onError?.();
+              }}
+            />
+          );
         }
-        
+
         // Si c'est une vraie référence Sanity (format: image-xxx-xxx-xxx)
         if (ref.includes('image-')) {
           try {
             const imageUrl = urlFor(source)
-              .width(width || 800)
-              .height(height || 600)
+              .width(width)
+              .height(height)
+              .auto('format')
               .url();
-            
-            // Vérifier que l'URL générée n'est pas vide
+
             if (!imageUrl) {
-              throw new Error('Empty URL generated from Sanity reference');
+              return <img src={placeholder} alt={alt || ''} className={className} loading={loading} />;
             }
-            
+
             return (
-              <img 
-                src={imageUrl} 
-                alt={alt} 
-                className={className} 
+              <img
+                src={imageUrl}
+                alt={alt}
+                className={className}
                 loading={loading}
                 onError={(e) => {
-                  console.error('Failed to load Sanity image:', imageUrl);
-                  if (onError) onError();
-                  // Fallback sur placeholder
-                  (e.target as HTMLImageElement).src = `https://placehold.co/${width || 400}x${height || 300}?text=${encodeURIComponent(fallbackText || 'Image Error')}`;
+                  (e.target as HTMLImageElement).src = placeholder;
+                  onError?.();
                 }}
               />
             );
-          } catch (error) {
-            console.error('Error generating Sanity URL:', error);
-            return <img src={`https://placehold.co/${width || 400}x${height || 300}?text=Sanity+Error`} alt={alt} className={className} loading={loading} />;
+          } catch {
+            return <img src={placeholder} alt={alt || ''} className={className} loading={loading} />;
           }
         }
-        
+
         // Si _ref n'est ni une URL ni une référence Sanity valide
-        console.warn('Invalid reference format:', ref);
-        return <img src={`https://placehold.co/${width || 400}x${height || 300}?text=Invalid+Format`} alt={alt} className={className} loading={loading} />;
+        return <img src={placeholder} alt={alt || ''} className={className} loading={loading} />;
       }
     }
-    
+
     // Si c'est un objet avec une propriété url directement
-    if (source?.url) {
-      return <img src={source.url} alt={alt} className={className} loading={loading} />;
+    if (imgSource?.url) {
+      return (
+        <img
+          src={imgSource.url}
+          alt={alt}
+          className={className}
+          loading={loading}
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = placeholder;
+            onError?.();
+          }}
+        />
+      );
     }
-    
+
     // Fallback
-    return <img src={`https://placehold.co/${width || 400}x${height || 300}?text=Image`} alt={alt} className={className} loading={loading} />;
-  } catch (error) {
-    console.error('Erreur SafeImage:', error);
-    if (onError) onError();
-    return <img src={`https://placehold.co/${width || 400}x${height || 300}?text=Erreur`} alt={alt} className={className} loading={loading} />;
+    return <img src={placeholder} alt={alt || ''} className={className} loading={loading} />;
+  } catch {
+    onError?.();
+    return <img src={placeholder} alt={alt || ''} className={className} loading={loading} />;
   }
 }

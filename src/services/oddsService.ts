@@ -112,7 +112,12 @@ export async function getOddsBySport(sport: SportKey): Promise<MatchOdds[]> {
   try {
     console.log(`[OddsService] Fetching ${sport} depuis l'API (consomme 1 requête)...`);
 
-    const response = await fetch(`${BASE_URL}?sport=${sport}`);
+    // Timeout de 5 secondes
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+    const response = await fetch(`${BASE_URL}?sport=${sport}`, { signal: controller.signal });
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       console.error(`[OddsService] Erreur HTTP ${response.status}`);
@@ -139,7 +144,11 @@ export async function getOddsBySport(sport: SportKey): Promise<MatchOdds[]> {
 
     return result.data;
   } catch (error) {
-    console.error(`[OddsService] Erreur fetch ${sport}:`, error);
+    if (error instanceof Error && error.name === 'AbortError') {
+      console.error(`[OddsService] Timeout fetch ${sport} (5s)`);
+    } else {
+      console.error(`[OddsService] Erreur fetch ${sport}:`, error);
+    }
     return [];
   }
 }
