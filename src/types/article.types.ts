@@ -35,26 +35,87 @@ export interface SanityArticle {
   body?: any[];
   content?: any[];
   mainImage?: SanityImage; // Utilise le nouveau type avec hotspot
+  mainImageUrl?: string;   // URL directe de l'image (fallback)
   publishedAt?: string;
   author?: {
+    _id?: string;
     name: string;
-    image?: SanityImage; // L'image de l'auteur peut aussi avoir un hotspot
+    image?: SanityImage;
+    imageUrl?: string;
     bio?: string;
+    role?: string;
   };
   categories?: Array<{
     _id: string;
     title: string;
     slug: { current: string };
   }>;
+  subcategories?: Array<{
+    _id: string;
+    title: string;
+    slug: { current: string };
+    parentCategory?: {
+      _id: string;
+      title: string;
+      slug: { current: string };
+    };
+  }>;
   tags?: Array<{
+    _id?: string;
     title: string;
     slug: { current: string };
   }>;
-  readingTime?: number;
+  readingTime?: number | string;
   views?: number;
   likes?: number;
   keyPoints?: string[];
   videoUrl?: string;
+  // Champs v2.1
+  contentType?: 'actu' | 'emission' | 'flash' | 'analyse' | 'portrait' | 'meme' | 'top';
+  isFeatured?: boolean;
+  isTrending?: boolean;
+  isEssential?: boolean;
+  duration?: string;
+  guest?: string;
+  stats?: {
+    views?: number;
+    likes?: number;
+    comments?: number;
+  };
+  // Liens joueurs/clubs v2.1
+  linkedPlayers?: Array<{
+    _key?: string;
+    player: {
+      _id: string;
+      name: string;
+      apiFootballId: number;
+    };
+  }>;
+  linkedClubs?: Array<{
+    _key?: string;
+    club: {
+      _id: string;
+      name: string;
+      apiFootballId: number;
+      slug: { current: string };
+    };
+  }>;
+  // Infos match v2.1 (pour analyses)
+  matchInfo?: {
+    homeTeam?: {
+      _id: string;
+      name: string;
+      apiFootballId: number;
+    };
+    awayTeam?: {
+      _id: string;
+      name: string;
+      apiFootballId: number;
+    };
+    score?: string;
+    competition?: string;
+    matchDate?: string;
+  };
 }
 
 // Type pour les couleurs de verticale

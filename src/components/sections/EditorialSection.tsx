@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  ArrowRight, 
-  ArrowUpRight, 
-  Zap, 
-  Newspaper, 
-  Trophy, 
-  Users, 
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import {
+  ArrowRight,
+  ArrowUpRight,
+  Zap,
+  Newspaper,
+  Trophy,
+  Users,
   Laugh,
   TrendingUp,
   Star,
@@ -21,9 +21,12 @@ import {
   Globe,
   Award
 } from 'lucide-react';
-import { getUniverses, getSubcategoriesGrouped } from '../../utils/sanityAPI';
-import { LoadingSpinner } from '../common/LoadingSpinner';
 import ErrorBoundary from '../common/ErrorBoundary';
+
+// Clip-paths octogonaux
+const octagonClip = 'polygon(15% 0%, 85% 0%, 100% 15%, 100% 85%, 85% 100%, 15% 100%, 0% 85%, 0% 15%)';
+const octagonClipSubtle = 'polygon(8% 0%, 92% 0%, 100% 8%, 100% 92%, 92% 100%, 8% 100%, 0% 92%, 0% 8%)';
+const octagonClipCard = 'polygon(4% 0%, 96% 0%, 100% 4%, 100% 96%, 96% 100%, 4% 100%, 0% 96%, 0% 4%)';
 
 // Configuration des univers OCTOGOAL
 const universeConfig = [
@@ -93,61 +96,45 @@ const universeConfig = [
   }
 ];
 
-// Styles par univers
-const universeStyles = {
-  actus: {
-    gradient: 'from-rose-500 to-pink-600',
-    lightGradient: 'from-rose-500/20 to-pink-600/20',
-    glow: 'shadow-rose-500/20',
-    border: 'border-rose-500/30',
-    hoverBorder: 'hover:border-rose-400/50',
-    text: 'text-rose-400',
-    bg: 'bg-rose-500/10'
-  },
-  matchs: {
-    gradient: 'from-blue-500 to-indigo-600',
-    lightGradient: 'from-blue-500/20 to-indigo-600/20',
-    glow: 'shadow-blue-500/20',
-    border: 'border-blue-500/30',
-    hoverBorder: 'hover:border-blue-400/50',
-    text: 'text-blue-400',
-    bg: 'bg-blue-500/10'
-  },
-  joueurs: {
-    gradient: 'from-emerald-500 to-teal-600',
-    lightGradient: 'from-emerald-500/20 to-teal-600/20',
-    glow: 'shadow-emerald-500/20',
-    border: 'border-emerald-500/30',
-    hoverBorder: 'hover:border-emerald-400/50',
-    text: 'text-emerald-400',
-    bg: 'bg-emerald-500/10'
-  },
-  memes: {
-    gradient: 'from-amber-500 to-orange-600',
-    lightGradient: 'from-amber-500/20 to-orange-600/20',
-    glow: 'shadow-amber-500/20',
-    border: 'border-amber-500/30',
-    hoverBorder: 'hover:border-amber-400/50',
-    text: 'text-amber-400',
-    bg: 'bg-amber-500/10'
-  }
+// Style unifié OCTOGOAL - Pink to Blue
+const unifiedStyle = {
+  gradient: 'from-pink-500 to-blue-500',
+  lightGradient: 'from-pink-500/20 to-blue-500/20',
+  glow: 'shadow-pink-500/20',
+  border: 'border-pink-500/30',
+  hoverBorder: 'hover:border-pink-400/50',
+  text: 'text-pink-400',
+  bg: 'bg-pink-500/10'
 };
 
 export const EditorialSection = () => {
   const [activeUniverse, setActiveUniverse] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const getStyle = (slug: string) => {
-    return universeStyles[slug as keyof typeof universeStyles] || universeStyles.actus;
-  };
+  // Toujours retourner le style unifié pink-to-blue
+  const getStyle = () => unifiedStyle;
 
   return (
     <ErrorBoundary>
       <section className="relative py-24 overflow-hidden">
-        {/* Background */}
+        {/* Background avec formes octogonales */}
         <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-b from-black via-neutral-950 to-black" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black via-gray-950 to-black" />
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-pink-500/5 to-blue-500/5 rounded-full blur-3xl" />
+
+          {/* Formes octogonales décoratives */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 0.03 }}
+            className="absolute top-20 right-20 w-[300px] h-[300px] border-2 border-pink-500/30"
+            style={{ clipPath: octagonClip }}
+          />
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 0.02 }}
+            className="absolute bottom-20 left-20 w-[400px] h-[400px] border-2 border-blue-500/20"
+            style={{ clipPath: octagonClip }}
+          />
         </div>
 
         <div className="container relative z-10 max-w-7xl mx-auto px-4">
@@ -161,12 +148,13 @@ export const EditorialSection = () => {
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full mb-8"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-pink-500/20 to-blue-500/20 backdrop-blur-sm border border-pink-500/30 mb-8"
+              style={{ clipPath: octagonClipSubtle }}
             >
               <Zap className="w-4 h-4 text-pink-400" />
-              <span className="text-sm text-gray-300 font-medium">Explore nos univers</span>
+              <span className="text-sm text-white font-medium">Explore nos univers</span>
             </motion.div>
-            
+
             <h2 className="text-5xl md:text-6xl lg:text-7xl font-black mb-6 tracking-tight">
               <span className="text-white">Tout le </span>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400">
@@ -175,16 +163,16 @@ export const EditorialSection = () => {
               <br />
               <span className="text-white">en un clic</span>
             </h2>
-            
+
             <p className="text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed">
               Actus, matchs, joueurs, mèmes... Choisis ton univers et plonge dans le meilleur du foot
             </p>
           </motion.div>
 
-          {/* Grille des univers */}
+          {/* Grille des univers avec design octogonal */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
             {universeConfig.map((universe, index) => {
-              const style = getStyle(universe.slug.current);
+              const style = getStyle();
               const Icon = universe.icon;
               const isActive = activeUniverse === universe.slug.current;
 
@@ -198,42 +186,54 @@ export const EditorialSection = () => {
                   onMouseEnter={() => setActiveUniverse(universe.slug.current)}
                   onMouseLeave={() => setActiveUniverse(null)}
                 >
-                  <Link
-                    to={`/rubrique/${universe.slug.current}`}
-                    className="block h-full"
+                  <div
+                    onClick={() => navigate(`/rubrique/${universe.slug.current}`)}
+                    className="block h-full cursor-pointer"
                   >
-                    <div className={`
-                      relative h-full p-6 rounded-2xl
-                      bg-gradient-to-b from-white/[0.08] to-white/[0.02]
-                      backdrop-blur-xl
-                      border ${style.border} ${style.hoverBorder}
-                      transition-all duration-500
-                      hover:shadow-2xl ${style.glow}
-                      hover:-translate-y-2
-                      group
-                    `}>
+                    <div
+                      className={`
+                        relative h-full p-6
+                        bg-gradient-to-b from-white/[0.08] to-white/[0.02]
+                        backdrop-blur-xl
+                        border ${style.border} ${style.hoverBorder}
+                        transition-all duration-500
+                        hover:shadow-2xl ${style.glow}
+                        hover:-translate-y-2
+                        group overflow-hidden
+                      `}
+                      style={{ clipPath: octagonClipCard }}
+                    >
                       {/* Glow effect on hover */}
-                      <div className={`
-                        absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500
-                        bg-gradient-to-b ${style.lightGradient}
-                      `} />
-                      
+                      <div
+                        className={`
+                          absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500
+                          bg-gradient-to-b ${style.lightGradient}
+                        `}
+                        style={{ clipPath: octagonClipCard }}
+                      />
+
                       {/* Content */}
                       <div className="relative z-10">
                         {/* Header */}
                         <div className="flex items-start justify-between mb-6">
-                          <div className={`
-                            p-3 rounded-xl bg-gradient-to-br ${style.gradient}
-                            shadow-lg group-hover:scale-110 transition-transform duration-300
-                          `}>
+                          <div
+                            className={`
+                              p-3 bg-gradient-to-br ${style.gradient}
+                              shadow-lg group-hover:scale-110 transition-transform duration-300
+                            `}
+                            style={{ clipPath: octagonClip }}
+                          >
                             <Icon className="w-6 h-6 text-white" />
                           </div>
-                          
-                          <span className={`
-                            text-xs font-medium px-3 py-1 rounded-full
-                            bg-white/5 border border-white/10
-                            ${style.text}
-                          `}>
+
+                          <span
+                            className={`
+                              text-xs font-medium px-3 py-1
+                              bg-white/5 border border-white/10
+                              ${style.text}
+                            `}
+                            style={{ clipPath: octagonClipSubtle }}
+                          >
                             {universe.stats}
                           </span>
                         </div>
@@ -259,39 +259,45 @@ export const EditorialSection = () => {
                           {universe.subcategories.slice(0, 5).map((subcat, idx) => {
                             const SubIcon = subcat.icon;
                             return (
-                              <Link
+                              <div
                                 key={subcat.slug}
-                                to={`/rubrique/${universe.slug.current}/${subcat.slug}`}
-                                onClick={(e) => e.stopPropagation()}
-                                className="block group/sub"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate(`/rubrique/${universe.slug.current}/${subcat.slug}`);
+                                }}
+                                className="block group/sub cursor-pointer"
                               >
                                 <motion.div
                                   initial={{ opacity: 0, x: -10 }}
                                   whileInView={{ opacity: 1, x: 0 }}
                                   transition={{ delay: idx * 0.05 }}
                                   className={`
-                                    flex items-center gap-3 p-2.5 rounded-xl
+                                    flex items-center gap-3 p-2.5
                                     bg-white/[0.03] border border-white/5
                                     hover:bg-white/[0.08] hover:border-white/10
                                     transition-all duration-300
                                     group-hover/sub:translate-x-1
                                   `}
+                                  style={{ clipPath: octagonClipSubtle }}
                                 >
-                                  <div className={`
-                                    w-8 h-8 rounded-lg flex items-center justify-center
-                                    bg-gradient-to-br ${style.lightGradient}
-                                  `}>
+                                  <div
+                                    className={`
+                                      w-8 h-8 flex items-center justify-center
+                                      bg-gradient-to-br ${style.lightGradient}
+                                    `}
+                                    style={{ clipPath: octagonClip }}
+                                  >
                                     <SubIcon className={`w-4 h-4 ${style.text}`} />
                                   </div>
                                   <span className="text-sm text-gray-300 flex-1 font-medium">
                                     {subcat.title}
                                   </span>
                                   <ArrowUpRight className={`
-                                    w-4 h-4 ${style.text} opacity-0 
+                                    w-4 h-4 ${style.text} opacity-0
                                     group-hover/sub:opacity-100 transition-opacity
                                   `} />
                                 </motion.div>
-                              </Link>
+                              </div>
                             );
                           })}
                         </div>
@@ -308,19 +314,19 @@ export const EditorialSection = () => {
 
                       {/* Bottom accent line */}
                       <div className={`
-                        absolute bottom-0 left-0 right-0 h-1 rounded-b-2xl
+                        absolute bottom-0 left-0 right-0 h-1
                         bg-gradient-to-r ${style.gradient}
                         transform scale-x-0 group-hover:scale-x-100
                         transition-transform duration-500 origin-left
                       `} />
                     </div>
-                  </Link>
+                  </div>
                 </motion.div>
               );
             })}
           </div>
 
-          {/* Navigation Pills */}
+          {/* Navigation Pills octogonaux */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -328,22 +334,23 @@ export const EditorialSection = () => {
             className="flex flex-wrap justify-center gap-3"
           >
             {universeConfig.map((universe) => {
-              const style = getStyle(universe.slug.current);
+              const style = getStyle();
               const Icon = universe.icon;
               const isActive = activeUniverse === universe.slug.current;
-              
+
               return (
                 <Link
                   key={universe._id}
                   to={`/rubrique/${universe.slug.current}`}
                   className={`
-                    inline-flex items-center gap-2 px-5 py-2.5 rounded-full
+                    inline-flex items-center gap-2 px-5 py-2.5
                     font-medium text-sm transition-all duration-300
-                    ${isActive 
-                      ? `bg-gradient-to-r ${style.gradient} text-white shadow-lg ${style.glow}` 
+                    ${isActive
+                      ? `bg-gradient-to-r ${style.gradient} text-white shadow-lg ${style.glow}`
                       : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white border border-white/10'
                     }
                   `}
+                  style={{ clipPath: octagonClipSubtle }}
                   onMouseEnter={() => setActiveUniverse(universe.slug.current)}
                   onMouseLeave={() => setActiveUniverse(null)}
                 >

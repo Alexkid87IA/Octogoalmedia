@@ -1,5 +1,5 @@
 // src/pages/ArticlePageNEW.tsx - Version refactorisée et modulaire pour test
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, Share2 } from "lucide-react";
 
@@ -198,15 +198,15 @@ const ArticlePageNEW: React.FC<{ isEmission?: boolean }> = ({ isEmission = false
     window.scrollTo(0, 0);
   }, [slug]);
 
-  // Gestionnaires
-  const handleLike = () => {
-    setIsLiked(!isLiked);
-    setLocalLikes(isLiked ? localLikes - 1 : localLikes + 1);
-  };
+  // Gestionnaires - mémorisés pour éviter les re-renders
+  const handleLike = useCallback(() => {
+    setIsLiked(prev => !prev);
+    setLocalLikes(prev => isLiked ? prev - 1 : prev + 1);
+  }, [isLiked]);
 
-  const handleBookmark = () => {
+  const handleBookmark = useCallback(() => {
     if (!article) return;
-    
+
     const savedBookmarks = JSON.parse(localStorage.getItem('bookmarks') || '[]');
     if (isBookmarked) {
       const filtered = savedBookmarks.filter((id: string) => id !== article._id);
@@ -215,16 +215,16 @@ const ArticlePageNEW: React.FC<{ isEmission?: boolean }> = ({ isEmission = false
       savedBookmarks.push(article._id);
       localStorage.setItem('bookmarks', JSON.stringify(savedBookmarks));
     }
-    setIsBookmarked(!isBookmarked);
-  };
+    setIsBookmarked(prev => !prev);
+  }, [article, isBookmarked]);
 
-  const handleShare = () => {
+  const handleShare = useCallback(() => {
     setShowSharePopup(true);
-  };
+  }, []);
 
-  // Variables dérivées
-  const colors = getVerticalColors(article);
-  const headings = generateTableOfContents(article);
+  // Variables dérivées - mémorisées pour éviter les re-renders
+  const colors = useMemo(() => getVerticalColors(article), [article]);
+  const headings = useMemo(() => generateTableOfContents(article), [article]);
   const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
   const shareTitle = article?.title || '';
   const shareText = article?.excerpt || '';
@@ -390,6 +390,7 @@ const ArticlePageNEW: React.FC<{ isEmission?: boolean }> = ({ isEmission = false
             <span className="text-sm font-medium">Partager cet article</span>
           </button>
         </div>
+
       </div>
 
       {/* Footer */}

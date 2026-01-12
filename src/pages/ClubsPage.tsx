@@ -163,7 +163,7 @@ const ClubCard = ({
         transition={{ delay: index * 0.05 }}
         className="group"
       >
-        <Link to={`/football/club/${team.id}`}>
+        <Link to={`/classements/club/${team.id}`}>
           <div className="relative bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4 hover:bg-white/10 hover:border-white/20 transition-all duration-300">
             <div className="flex items-center gap-4">
               {/* Position */}
@@ -265,7 +265,7 @@ const ClubCard = ({
       onHoverEnd={() => setIsHovered(false)}
       className="group relative"
     >
-      <Link to={`/football/club/${team.id}`}>
+      <Link to={`/classements/club/${team.id}`}>
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl border border-white/10 hover:border-white/20 transition-all duration-500">
           {/* Gradient overlay based on club colors */}
           <div className={`absolute inset-0 bg-gradient-to-br ${getClubGradient()} opacity-10 group-hover:opacity-20 transition-opacity`} />
@@ -445,7 +445,7 @@ const SearchModal = ({
               return (
                 <Link
                   key={team.id}
-                  to={`/football/club/${team.id}`}
+                  to={`/classements/club/${team.id}`}
                   onClick={onClose}
                   className="flex items-center gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors"
                 >
@@ -751,7 +751,7 @@ export default function ClubsPage() {
               <div>
                 <h2 className="text-3xl md:text-4xl font-black text-white mb-2">{leagueInfo.name}</h2>
                 <p className="text-white/70">
-                  {teams.length} clubs • Saison 2024/25
+                  {teams.length} clubs • Saison {new Date().getMonth() < 7 ? `${new Date().getFullYear() - 1}/${String(new Date().getFullYear()).slice(-2)}` : `${new Date().getFullYear()}/${String(new Date().getFullYear() + 1).slice(-2)}`}
                 </p>
               </div>
             </div>

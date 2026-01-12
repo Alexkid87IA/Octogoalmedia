@@ -307,7 +307,7 @@ export function SubcategoryPage() {
 
                           {/* Content */}
                           <div className="p-6">
-                            <h3 className="text-xl font-bold text-white mb-2 line-clamp-2 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:${config.gradient} transition-all">
+                            <h3 className="text-xl font-bold text-white mb-2 line-clamp-2 group-hover:text-pink-400 transition-colors">
                               {article.title}
                             </h3>
                             
@@ -361,7 +361,7 @@ export function SubcategoryPage() {
                                 />
                               )}
 
-                              <h3 className="text-2xl font-bold text-white mb-2 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:${config.gradient} transition-all">
+                              <h3 className="text-2xl font-bold text-white mb-2 group-hover:text-pink-400 transition-colors">
                                 {article.title}
                               </h3>
                               

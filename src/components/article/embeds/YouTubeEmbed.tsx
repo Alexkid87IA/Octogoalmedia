@@ -1,5 +1,5 @@
 // src/components/article/embeds/YouTubeEmbed.tsx
-import React, { useState } from "react";
+import React, { useState, useMemo, memo } from "react";
 import { ArrowRight, ChevronDown } from "lucide-react";
 
 interface YouTubeEmbedProps {
@@ -11,7 +11,7 @@ interface YouTubeEmbedProps {
   };
 }
 
-const YouTubeEmbed: React.FC<YouTubeEmbedProps> = ({ value }) => {
+const YouTubeEmbed: React.FC<YouTubeEmbedProps> = memo(({ value }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [cookiesAccepted, setCookiesAccepted] = useState(() => {
     // Vérifier si les cookies YouTube ont déjà été acceptés
@@ -90,18 +90,21 @@ const YouTubeEmbed: React.FC<YouTubeEmbedProps> = ({ value }) => {
     );
   }
   
-  // Construire l'URL d'embed avec les paramètres
-  const embedUrl = new URL(`https://www.youtube.com/embed/${videoId}`);
-  if (value?.startTime) embedUrl.searchParams.set('start', value.startTime.toString());
-  if (value?.autoplay) {
-    embedUrl.searchParams.set('autoplay', '1');
-    embedUrl.searchParams.set('mute', '1');
-  }
-  embedUrl.searchParams.set('rel', '0');
-  embedUrl.searchParams.set('modestbranding', '1');
-  embedUrl.searchParams.set('controls', '1');
-  embedUrl.searchParams.set('showinfo', '0');
-  embedUrl.searchParams.set('iv_load_policy', '3'); // Masquer les annotations
+  // Construire l'URL d'embed avec les paramètres (mémoïsé pour éviter les re-renders)
+  const embedUrl = useMemo(() => {
+    const url = new URL(`https://www.youtube.com/embed/${videoId}`);
+    if (value?.startTime) url.searchParams.set('start', value.startTime.toString());
+    if (value?.autoplay) {
+      url.searchParams.set('autoplay', '1');
+      url.searchParams.set('mute', '1');
+    }
+    url.searchParams.set('rel', '0');
+    url.searchParams.set('modestbranding', '1');
+    url.searchParams.set('controls', '1');
+    url.searchParams.set('showinfo', '0');
+    url.searchParams.set('iv_load_policy', '3'); // Masquer les annotations
+    return url.toString();
+  }, [videoId, value?.startTime, value?.autoplay]);
   
   return (
     <div className="my-10 max-w-4xl mx-auto px-4 sm:px-0">
@@ -118,7 +121,7 @@ const YouTubeEmbed: React.FC<YouTubeEmbedProps> = ({ value }) => {
         
         {/* YouTube iframe */}
         <iframe
-          src={embedUrl.toString()}
+          src={embedUrl}
           title={value?.caption || `YouTube video ${videoId}`}
           className={`absolute top-0 left-0 w-full h-full ${
             isLoading ? 'opacity-0' : 'opacity-100'
@@ -154,6 +157,6 @@ const YouTubeEmbed: React.FC<YouTubeEmbedProps> = ({ value }) => {
       </div>
     </div>
   );
-};
+});
 
 export default YouTubeEmbed;

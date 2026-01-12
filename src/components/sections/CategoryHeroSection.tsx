@@ -1,34 +1,46 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Newspaper, Trophy, Users, Laugh, Globe } from 'lucide-react';
+
+// Clip-paths octogonaux
+const octagonClip = 'polygon(15% 0%, 85% 0%, 100% 15%, 100% 85%, 85% 100%, 15% 100%, 0% 85%, 0% 15%)';
+const octagonClipSubtle = 'polygon(8% 0%, 92% 0%, 100% 8%, 100% 92%, 92% 100%, 8% 100%, 0% 92%, 0% 8%)';
 
 interface CategoryHeroSectionProps {
   categorySlug?: string;
 }
 
+// Configuration unifiée avec couleurs pink-to-blue
 const categoryDetails = {
-  mental: {
-    title: "Développez votre mental de champion",
-    description: "Découvrez les clés mentales qui font la différence entre réussite et échec. Stratégies mentales, résilience et développement personnel.",
-    image: "https://images.unsplash.com/photo-1533227268428-f9ed0900fb3b?auto=format&fit=crop&q=80",
-    gradient: "from-purple-500 to-violet-500"
+  actus: {
+    title: "Toute l'actu foot",
+    description: "Les dernières news du football français et européen. Transferts, résultats, déclarations et buzz.",
+    icon: Newspaper,
+    stats: { articles: '200+', lecteurs: '100K+', updates: 'Live' }
   },
-  business: {
-    title: "Business & Innovation",
-    description: "Explorez les nouvelles frontières du business et de l'innovation. Analyses, success stories et insights sur les mutations qui façonnent le monde des affaires.",
-    image: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80",
-    gradient: "from-blue-500 to-cyan-500"
+  matchs: {
+    title: "Les matchs en direct",
+    description: "Notes, analyses, avant-matchs, résultats. Tout pour suivre les matchs comme un vrai supporter.",
+    icon: Trophy,
+    stats: { articles: '150+', matchs: '500+', analyses: '100+' }
   },
-  story: {
-    title: "Récits inspirants",
-    description: "Des histoires authentiques qui redéfinissent le possible. Parcours inspirants et transformations remarquables.",
-    image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&q=80",
-    gradient: "from-amber-500 to-orange-500"
+  joueurs: {
+    title: "Les stars du ballon",
+    description: "Portraits, tops, stats. Découvre les joueurs qui font vibrer le foot mondial.",
+    icon: Users,
+    stats: { profils: '100+', tops: '50+', legendes: '25+' }
   },
-  society: {
-    title: "Culture & Société",
-    description: "Décryptez les tendances culturelles et les mouvements qui façonnent notre société contemporaine.",
-    image: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80",
-    gradient: "from-emerald-500 to-teal-500"
+  memes: {
+    title: "Le meilleur du LOL",
+    description: "Les mèmes, les réactions, les moments viraux. La culture Internet du foot avec Mohamed Henni.",
+    icon: Laugh,
+    stats: { memes: '300+', reactions: '500+', viraux: '100+' }
+  },
+  clubs: {
+    title: "Tous les clubs",
+    description: "Infos, actualités et analyses sur tous les clubs du football français et européen.",
+    icon: Globe,
+    stats: { clubs: '50+', ligues: '10+', pays: '15+' }
   }
 };
 
@@ -37,61 +49,112 @@ export const CategoryHeroSection = ({ categorySlug }: CategoryHeroSectionProps) 
 
   if (!category) return null;
 
+  const Icon = category.icon;
+  const statsEntries = Object.entries(category.stats);
+
   return (
-    <section className="relative min-h-[60vh] flex items-center pt-32 pb-20">
-      {/* Background Image & Effects */}
+    <section className="relative min-h-[50vh] flex items-center pt-32 pb-16 overflow-hidden">
+      {/* Background */}
       <div className="absolute inset-0">
-        <img
-          src={category.image}
-          alt={category.title}
-          className="absolute inset-0 w-full h-full object-cover opacity-20"
+        <div className="absolute inset-0 bg-gradient-to-b from-black via-gray-950 to-black" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-gradient-to-b from-pink-500/10 via-blue-500/5 to-transparent blur-3xl" />
+
+        {/* Formes octogonales décoratives */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 0.05, scale: 1 }}
+          transition={{ duration: 1 }}
+          className="absolute top-20 right-10 w-[300px] h-[300px] border-2 border-pink-500/30"
+          style={{ clipPath: octagonClip }}
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-black via-black/95 to-transparent" />
-        <div className={`absolute inset-0 bg-gradient-to-br ${category.gradient} opacity-5`} />
-        <div className="absolute inset-0 backdrop-blur-sm" />
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 0.03, scale: 1 }}
+          transition={{ duration: 1, delay: 0.2 }}
+          className="absolute bottom-10 left-10 w-[200px] h-[200px] border border-blue-500/20"
+          style={{ clipPath: octagonClip }}
+        />
       </div>
 
-      <div className="container relative">
+      <div className="container relative max-w-7xl mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="max-w-3xl"
         >
-          {/* Category Badge */}
-          <div className={`inline-block relative mb-6`}>
-            <div className={`absolute -inset-1 bg-gradient-to-r ${category.gradient} rounded-full blur opacity-75`}></div>
-            <span className="relative inline-block px-6 py-3 bg-black rounded-full text-white font-medium">
+          {/* Category Badge octogonal */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.1 }}
+            className="inline-flex items-center gap-3 mb-6"
+          >
+            <div
+              className="p-3 bg-gradient-to-br from-pink-500 to-blue-500 shadow-lg shadow-pink-500/30"
+              style={{ clipPath: octagonClip }}
+            >
+              <Icon className="w-6 h-6 text-white" />
+            </div>
+            <span
+              className="px-4 py-2 bg-gradient-to-r from-pink-500/20 to-blue-500/20 border border-pink-500/30 text-white font-bold uppercase tracking-wider text-sm"
+              style={{ clipPath: octagonClipSubtle }}
+            >
               {categorySlug?.charAt(0).toUpperCase()}{categorySlug?.slice(1)}
             </span>
-          </div>
+          </motion.div>
 
-          {/* Title with Gradient */}
-          <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold mb-6 leading-tight">
-            {category.title}
+          {/* Title */}
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black mb-6 leading-tight">
+            <span className="text-white">{category.title.split(' ').slice(0, -1).join(' ')} </span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-blue-400">
+              {category.title.split(' ').slice(-1)}
+            </span>
           </h1>
 
           {/* Description */}
-          <p className="text-xl text-gray-300 max-w-2xl">
+          <p className="text-xl text-gray-400 max-w-2xl mb-10">
             {category.description}
           </p>
 
-          {/* Stats */}
-          <div className="grid grid-cols-3 gap-6 mt-12">
-            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4 text-center">
-              <div className="text-2xl font-bold text-white mb-1">150+</div>
-              <div className="text-sm text-gray-400">Articles</div>
-            </div>
-            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4 text-center">
-              <div className="text-2xl font-bold text-white mb-1">50k+</div>
-              <div className="text-sm text-gray-400">Lecteurs</div>
-            </div>
-            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4 text-center">
-              <div className="text-2xl font-bold text-white mb-1">15h+</div>
-              <div className="text-sm text-gray-400">De lecture</div>
-            </div>
+          {/* Stats octogonaux */}
+          <div className="flex flex-wrap gap-4">
+            {statsEntries.map(([label, value], index) => (
+              <motion.div
+                key={label}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 + index * 0.1 }}
+                className="bg-white/5 backdrop-blur-sm border border-white/10 px-6 py-4 text-center"
+                style={{ clipPath: octagonClipSubtle }}
+              >
+                <div className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-blue-400">
+                  {value}
+                </div>
+                <div className="text-xs text-gray-500 uppercase tracking-wider mt-1">
+                  {label}
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Icône flottante décorative */}
+        <motion.div
+          initial={{ opacity: 0, x: 50 }}
+          animate={{ opacity: 0.1, x: 0 }}
+          transition={{ duration: 1, delay: 0.5 }}
+          className="hidden lg:block absolute right-10 top-1/2 -translate-y-1/2"
+        >
+          <div
+            className="w-48 h-48 bg-gradient-to-br from-pink-500/20 to-blue-500/20 flex items-center justify-center"
+            style={{ clipPath: octagonClip }}
+          >
+            <Icon className="w-24 h-24 text-white/30" />
           </div>
         </motion.div>
       </div>
     </section>
   );
 };
+
+export default CategoryHeroSection;

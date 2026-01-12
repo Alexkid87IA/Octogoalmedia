@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://rogerormieres.fr/sitemap.xml
+Sitemap: https://octogoal.media/sitemap.xml

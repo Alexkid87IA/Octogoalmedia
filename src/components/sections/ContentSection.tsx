@@ -8,6 +8,11 @@ import { LoadingSpinner } from '../common/LoadingSpinner';
 import SafeImage from '../common/SafeImage';
 import ErrorBoundary from '../common/ErrorBoundary';
 
+// Clip-paths octogonaux
+const octagonClip = 'polygon(15% 0%, 85% 0%, 100% 15%, 100% 85%, 85% 100%, 15% 100%, 0% 85%, 0% 15%)';
+const octagonClipSubtle = 'polygon(8% 0%, 92% 0%, 100% 8%, 100% 92%, 92% 100%, 8% 100%, 0% 92%, 0% 8%)';
+const octagonClipCard = 'polygon(4% 0%, 96% 0%, 100% 4%, 100% 96%, 96% 100%, 4% 100%, 0% 96%, 0% 4%)';
+
 interface ContentSectionProps {
   title?: string;
   description?: string;
@@ -142,19 +147,22 @@ const ContentSection: React.FC<ContentSectionProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [dataSource, setDataSource] = useState<'cms' | 'mock'>('cms');
 
-  // Configuration OCTOGOAL - Textes hardcodés (ignore les props title/description)
+  // Configuration OCTOGOAL - Style unifié pink-to-blue
   const getTypeConfig = () => {
+    // Style unifié pour toutes les sections
+    const baseStyle = {
+      gradient: 'from-pink-500 to-blue-500',
+      bgGradient: 'from-pink-900/20 via-blue-900/10 to-transparent',
+      borderColor: 'border-pink-500/20'
+    };
+
     switch (sectionType) {
       case 'emission':
         return {
+          ...baseStyle,
           icon: PlayCircle,
-          accentIcon: Flame,
-          color: 'pink',
-          gradient: 'from-pink-500 to-rose-600',
-          bgGradient: 'from-pink-900/20 via-rose-900/10 to-transparent',
-          borderColor: 'border-pink-500/20',
-          link: '/rubrique/videos',
-          label: '🎬 Émissions Octogoal',
+          link: '/emissions',
+          label: 'Émissions Octogoal',
           title: 'Les émissions Octogoal',
           description: 'Réactions live, débats enflammés et analyses décalées',
           emptyMessage: 'Nouvelles émissions en préparation',
@@ -162,14 +170,10 @@ const ContentSection: React.FC<ContentSectionProps> = ({
         };
       case 'business-idea':
         return {
+          ...baseStyle,
           icon: Trophy,
-          accentIcon: Zap,
-          color: 'blue',
-          gradient: 'from-blue-500 to-indigo-500',
-          bgGradient: 'from-blue-900/20 via-indigo-900/10 to-transparent',
-          borderColor: 'border-blue-500/20',
           link: '/rubrique/matchs',
-          label: '⚽ Matchs & Analyses',
+          label: 'Matchs & Analyses',
           title: 'Les matchs du moment',
           description: 'Notes, compos, stats et analyses des rencontres',
           emptyMessage: 'Analyses en cours',
@@ -177,14 +181,10 @@ const ContentSection: React.FC<ContentSectionProps> = ({
         };
       case 'success-story':
         return {
+          ...baseStyle,
           icon: Star,
-          accentIcon: Sparkles,
-          color: 'emerald',
-          gradient: 'from-emerald-500 to-teal-500',
-          bgGradient: 'from-emerald-900/20 via-teal-900/10 to-transparent',
-          borderColor: 'border-emerald-500/20',
           link: '/rubrique/joueurs',
-          label: '👤 Portraits de joueurs',
+          label: 'Portraits de joueurs',
           title: 'Les joueurs qui marquent l\'histoire',
           description: 'Parcours, stats et moments légendaires des stars du foot',
           emptyMessage: 'Nouveaux portraits en préparation',
@@ -192,12 +192,8 @@ const ContentSection: React.FC<ContentSectionProps> = ({
         };
       default:
         return {
+          ...baseStyle,
           icon: PlayCircle,
-          accentIcon: Sparkles,
-          color: 'pink',
-          gradient: 'from-pink-500 to-blue-500',
-          bgGradient: 'from-pink-900/20 to-transparent',
-          borderColor: 'border-pink-500/20',
           link: '/articles',
           label: 'Contenus',
           title: 'Nos contenus',
@@ -294,13 +290,16 @@ const ContentSection: React.FC<ContentSectionProps> = ({
           >
             <div className="flex items-start justify-between mb-8">
               <div className="flex-1 max-w-3xl">
-                {/* Badge */}
-                <motion.div 
+                {/* Badge octogonal */}
+                <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   whileInView={{ opacity: 1, x: 0 }}
-                  className="inline-flex items-center gap-2 mb-6"
+                  className="inline-flex items-center gap-3 mb-6"
                 >
-                  <div className={`p-2 rounded-xl bg-gradient-to-r ${config.gradient} shadow-xl`}>
+                  <div
+                    className={`p-2.5 bg-gradient-to-br ${config.gradient} shadow-xl`}
+                    style={{ clipPath: octagonClip }}
+                  >
                     <Icon className="w-5 h-5 text-white" />
                   </div>
                   <span className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
@@ -319,12 +318,13 @@ const ContentSection: React.FC<ContentSectionProps> = ({
                 </p>
               </div>
 
-              {/* Indicateur live */}
+              {/* Indicateur live octogonal */}
               {dataSource === 'cms' && (
                 <motion.div
                   animate={{ opacity: [0.5, 1, 0.5] }}
                   transition={{ duration: 2, repeat: Infinity }}
-                  className="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-pink-500/10 border border-pink-500/20 rounded-full"
+                  className="hidden lg:flex items-center gap-2 px-4 py-2 bg-pink-500/10 border border-pink-500/20"
+                  style={{ clipPath: octagonClipSubtle }}
                 >
                   <div className="w-2 h-2 bg-pink-500 rounded-full" />
                   <span className="text-xs text-pink-400 font-medium">Live</span>
@@ -348,12 +348,15 @@ const ContentSection: React.FC<ContentSectionProps> = ({
                 }}
                 className="group"
               >
-                <Link 
+                <Link
                   to={`/article/${item.slug?.current}`}
                   className="block h-full"
                 >
-                  <div className={`relative h-full bg-gradient-to-b from-gray-900/50 to-black/50 backdrop-blur-sm rounded-2xl overflow-hidden border ${config.borderColor} hover:border-white/30 transition-all duration-500 hover:shadow-2xl hover:-translate-y-1`}>
-                    
+                  <div
+                    className={`relative h-full bg-gradient-to-b from-gray-900/50 to-black/50 backdrop-blur-sm overflow-hidden border ${config.borderColor} hover:border-white/30 transition-all duration-500 hover:shadow-2xl hover:-translate-y-1`}
+                    style={{ clipPath: octagonClipCard }}
+                  >
+
                     {/* Image */}
                     <div className="relative aspect-[16/9] overflow-hidden">
                       <SafeImage
@@ -361,27 +364,33 @@ const ContentSection: React.FC<ContentSectionProps> = ({
                         alt={item.title}
                         className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-110"
                       />
-                      
+
                       {/* Overlay */}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60" />
-                      
-                      {/* Play button pour émissions */}
+
+                      {/* Play button pour émissions - octogonal */}
                       {sectionType === 'emission' && (
-                        <motion.div 
+                        <motion.div
                           initial={{ scale: 0 }}
                           whileHover={{ scale: 1.1 }}
                           className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300"
                         >
-                          <div className={`p-5 rounded-full bg-gradient-to-r ${config.gradient} shadow-2xl`}>
+                          <div
+                            className={`p-5 bg-gradient-to-br ${config.gradient} shadow-2xl`}
+                            style={{ clipPath: octagonClip }}
+                          >
                             <PlayCircle className="w-10 h-10 text-white" />
                           </div>
                         </motion.div>
                       )}
-                      
-                      {/* Badge durée/temps */}
+
+                      {/* Badge durée/temps - octogonal */}
                       {(item.duration || item.readingTime) && (
                         <div className="absolute top-4 right-4">
-                          <div className="px-3 py-1.5 bg-black/80 backdrop-blur-md rounded-lg border border-white/10">
+                          <div
+                            className="px-3 py-1.5 bg-black/80 backdrop-blur-md border border-white/10"
+                            style={{ clipPath: octagonClipSubtle }}
+                          >
                             <span className="text-xs text-white font-medium flex items-center gap-1">
                               <Clock className="w-3 h-3" />
                               {item.duration || `${item.readingTime} min`}
@@ -393,13 +402,9 @@ const ContentSection: React.FC<ContentSectionProps> = ({
 
                     {/* Contenu */}
                     <div className="p-6 space-y-4">
-                      {/* Guest/Category */}
+                      {/* Guest/Category - Style unifié */}
                       {(item.guest || item.categories?.[0]) && (
-                        <div className={`text-xs font-semibold uppercase tracking-wider ${
-                          sectionType === 'emission' ? 'text-pink-400' :
-                          sectionType === 'business-idea' ? 'text-blue-400' :
-                          'text-emerald-400'
-                        }`}>
+                        <div className="text-xs font-semibold uppercase tracking-wider text-pink-400">
                           {item.guest ? `Avec ${item.guest}` : item.categories[0].title}
                         </div>
                       )}
@@ -423,12 +428,8 @@ const ContentSection: React.FC<ContentSectionProps> = ({
                           })}
                         </time>
                         
-                        <motion.span 
-                          className={`flex items-center gap-2 text-xs font-medium ${
-                            sectionType === 'emission' ? 'text-pink-400' :
-                            sectionType === 'business-idea' ? 'text-blue-400' :
-                            'text-emerald-400'
-                          }`}
+                        <motion.span
+                          className="flex items-center gap-2 text-xs font-medium text-pink-400"
                           whileHover={{ x: 5 }}
                         >
                           {config.actionText}
@@ -445,7 +446,7 @@ const ContentSection: React.FC<ContentSectionProps> = ({
             ))}
           </div>
 
-          {/* CTA */}
+          {/* CTA octogonal */}
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
@@ -454,13 +455,17 @@ const ContentSection: React.FC<ContentSectionProps> = ({
           >
             <Link
               to={config.link}
-              className={`group relative inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r ${config.gradient} rounded-xl font-semibold text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-0.5`}
+              className={`group relative inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r ${config.gradient} font-semibold text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-0.5`}
+              style={{ clipPath: octagonClipSubtle }}
             >
               <span>Voir tout</span>
               <ArrowRight className="w-5 h-5 transform group-hover:translate-x-1 transition-transform" />
-              
+
               {/* Shine effect */}
-              <div className="absolute inset-0 rounded-xl overflow-hidden">
+              <div
+                className="absolute inset-0 overflow-hidden"
+                style={{ clipPath: octagonClipSubtle }}
+              >
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
               </div>
             </Link>

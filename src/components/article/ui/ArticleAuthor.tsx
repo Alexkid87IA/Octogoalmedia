@@ -1,7 +1,9 @@
 // src/components/article/ui/ArticleAuthor.tsx
+// Composant auteur moderne style Octogoal
 import React from "react";
 import { Link } from "react-router-dom";
-import { Calendar, User } from "lucide-react";
+import { motion } from "framer-motion";
+import { Calendar, User, ChevronRight, PenTool } from "lucide-react";
 import { urlFor } from "../../../utils/sanityClient";
 import { VerticalColors } from "../../../types/article.types";
 
@@ -17,78 +19,43 @@ interface ArticleAuthorProps {
   variant?: 'desktop' | 'mobile';
 }
 
-const ArticleAuthor: React.FC<ArticleAuthorProps> = ({ 
-  author, 
-  publishedAt, 
-  colors, 
-  variant = 'desktop' 
-}) => {
-  // Styles conditionnels selon la variante
-  const containerStyles = variant === 'mobile' 
-    ? "lg:hidden mb-10"
-    : "bg-gradient-to-br from-gray-900/80 to-gray-800/50 backdrop-blur-md rounded-2xl border border-gray-700/50 p-6";
-  
-  const innerContainerStyles = variant === 'mobile'
-    ? "bg-gradient-to-br from-gray-900/50 to-gray-800/30 backdrop-blur-sm rounded-xl border border-gray-700/30 p-5"
-    : "";
-  
-  const avatarSize = variant === 'mobile' 
-    ? { width: 64, height: 64, iconSize: 24, className: "w-16 h-16" }
-    : { width: 80, height: 80, iconSize: 32, className: "w-20 h-20" };
+// Clip-path octogonal
+const octagonClip = 'polygon(15% 0, 85% 0, 100% 15%, 100% 85%, 85% 100%, 15% 100%, 0 85%, 0 15%)';
 
-  // Fonction pour obtenir l'URL de l'image - VERSION CORRIGÉE
+const ArticleAuthor: React.FC<ArticleAuthorProps> = ({
+  author,
+  publishedAt,
+  colors,
+  variant = 'desktop'
+}) => {
+  const avatarSize = variant === 'mobile'
+    ? { width: 64, height: 64, iconSize: 24, className: "w-16 h-16" }
+    : { width: 72, height: 72, iconSize: 28, className: "w-[72px] h-[72px]" };
+
+  // Fonction pour obtenir l'URL de l'image
   const getAuthorImageUrl = React.useMemo(() => {
     try {
-      // Debug amélioré - on log seulement une fois
-      if (import.meta.env.DEV) {
-        console.log('Author data:', {
-          name: author.name,
-          hasImage: !!author.image,
-          hasImageUrl: !!author.imageUrl,
-          imageStructure: author.image ? JSON.stringify(author.image, null, 2) : 'no image',
-          imageUrlValue: author.imageUrl || 'no imageUrl'
-        });
+      if (author.imageUrl && typeof author.imageUrl === 'string' && author.imageUrl.startsWith('http')) {
+        return author.imageUrl;
       }
-      
-      // 1. Priorité à imageUrl s'il existe
-      if (author.imageUrl && typeof author.imageUrl === 'string' && author.imageUrl.length > 0) {
-        // Vérifier que c'est une URL valide
-        if (author.imageUrl.startsWith('http') || author.imageUrl.startsWith('//')) {
-          return author.imageUrl;
-        }
-      }
-      
-      // 2. Ensuite vérifier image avec différentes structures
+
       if (author.image) {
-        // Si c'est directement une string URL
         if (typeof author.image === 'string' && author.image.startsWith('http')) {
           return author.image;
         }
-        
-        // Si c'est un objet avec asset
+
         if (author.image.asset) {
-          // Si asset est une string URL
           if (typeof author.image.asset === 'string' && author.image.asset.startsWith('http')) {
             return author.image.asset;
           }
-          
-          // Si asset a _ref qui est une URL
-          if (author.image.asset._ref && 
-              typeof author.image.asset._ref === 'string' && 
-              author.image.asset._ref.startsWith('http')) {
-            return author.image.asset._ref;
-          }
-          
-          // Si c'est une vraie référence Sanity (format: image-xxx-xxx-xxx)
-          if (author.image.asset._ref && 
-              typeof author.image.asset._ref === 'string' && 
-              author.image.asset._ref.includes('image-')) {
+
+          if (author.image.asset._ref && author.image.asset._ref.includes('image-')) {
             try {
               const url = urlFor(author.image)
-                .width(avatarSize.width * 2) // x2 pour la rétine
+                .width(avatarSize.width * 2)
                 .height(avatarSize.height * 2)
                 .url();
-              
+
               if (url && !url.includes('undefined')) {
                 return url;
               }
@@ -97,133 +64,176 @@ const ArticleAuthor: React.FC<ArticleAuthorProps> = ({
             }
           }
         }
-        
-        // Si image a directement une propriété url
+
         if (author.image.url && typeof author.image.url === 'string') {
           return author.image.url;
         }
       }
-      
-      // Pas d'image trouvée
+
       return null;
     } catch (error) {
-      console.error('Error in getAuthorImageUrl:', error);
       return null;
     }
-  }, [author.image, author.imageUrl, author.name, avatarSize.width, avatarSize.height]);
+  }, [author.image, author.imageUrl, avatarSize.width, avatarSize.height]);
 
-  return (
-    <div className={containerStyles}>
-      <div className={innerContainerStyles}>
-        <div className={`flex ${variant === 'mobile' ? 'items-start' : 'items-center'} gap-4 ${variant === 'desktop' ? 'mb-4' : ''}`}>
-          {getAuthorImageUrl ? (
-            <img 
-              src={getAuthorImageUrl}
-              alt={author.name}
-              className={`${avatarSize.className} rounded-full object-cover flex-shrink-0 ring-2 ring-white/10`}
-              loading="lazy"
-              onError={(e) => {
-                // Remplacer l'image par le fallback en cas d'erreur
-                const target = e.currentTarget as HTMLImageElement;
-                target.style.display = 'none';
-                
-                // Afficher le fallback
-                const parent = target.parentElement;
-                if (parent && !parent.querySelector('.author-fallback')) {
-                  const fallback = document.createElement('div');
-                  fallback.className = `author-fallback ${avatarSize.className} rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-white/10`;
-                  fallback.style.background = colors.bgGradient || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-                  fallback.innerHTML = `
-                    <svg width="${avatarSize.iconSize}" height="${avatarSize.iconSize}" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                      <circle cx="12" cy="7" r="4"/>
-                    </svg>
-                  `;
-                  parent.appendChild(fallback);
-                }
-              }}
-            />
-          ) : (
-            <div 
-              className={`${avatarSize.className} rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-white/10`}
-              style={{ background: colors.bgGradient || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}
-            >
-              <User size={avatarSize.iconSize} className="text-white" />
-            </div>
-          )}
-          
-          <div className="flex-1 min-w-0">
-            <p className={`${variant === 'mobile' ? 'text-xs' : 'text-xs'} text-gray-400 ${variant === 'mobile' ? 'mb-0.5' : 'mb-1'}`}>
-              Écrit par
-            </p>
-            <h3 className={`${variant === 'mobile' ? 'text-base' : 'text-lg'} font-semibold text-white mb-1`}>
-              {author.name}
-            </h3>
-            {variant === 'desktop' && publishedAt && (
-              <div className="flex items-center gap-3 text-xs text-gray-500">
-                <span className="flex items-center gap-1">
-                  <Calendar size={12} />
-                  <span>
-                    {new Date(publishedAt).toLocaleDateString('fr-FR', { 
-                      day: 'numeric', 
-                      month: 'short' 
-                    })}
-                  </span>
-                </span>
+  // Version mobile
+  if (variant === 'mobile') {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="lg:hidden mb-8"
+      >
+        <div
+          className="flex items-center gap-4 p-4 rounded-2xl"
+          style={{
+            background: `linear-gradient(135deg, ${colors.bgLight} 0%, rgba(0,0,0,0.3) 100%)`,
+            border: `1px solid ${colors.borderColor}`
+          }}
+        >
+          {/* Avatar octogonal */}
+          <div className="relative flex-shrink-0">
+            {getAuthorImageUrl ? (
+              <div
+                className={`${avatarSize.className} overflow-hidden`}
+                style={{ clipPath: octagonClip }}
+              >
+                <img
+                  src={getAuthorImageUrl}
+                  alt={author.name}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
               </div>
-            )}
-            {variant === 'mobile' && author.bio && (
-              <p className="text-xs text-gray-300 leading-relaxed mt-2">
-                {author.bio}
-              </p>
-            )}
-            {variant === 'mobile' && (
-              <Link 
-                to={`/auteur/${author.name.toLowerCase().replace(/\s+/g, '-')}`}
-                className="inline-block mt-3 text-xs font-medium transition-colors"
-                style={{ color: colors.textColor }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = colors.primary;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = colors.textColor;
+            ) : (
+              <div
+                className={`${avatarSize.className} flex items-center justify-center`}
+                style={{
+                  clipPath: octagonClip,
+                  background: colors.bgGradient
                 }}
               >
-                Voir tous ses articles →
-              </Link>
+                <User size={avatarSize.iconSize} className="text-white" />
+              </div>
+            )}
+          </div>
+
+          {/* Infos */}
+          <div className="flex-1 min-w-0">
+            <p className="text-xs text-gray-500 mb-1">Écrit par</p>
+            <h3 className="text-base font-bold text-white">{author.name}</h3>
+            {publishedAt && (
+              <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
+                <Calendar size={10} />
+                {new Date(publishedAt).toLocaleDateString('fr-FR', {
+                  day: 'numeric',
+                  month: 'long',
+                  year: 'numeric'
+                })}
+              </p>
             )}
           </div>
         </div>
-        
-        {variant === 'desktop' && (
-          <>
-            {author.bio && (
-              <p className="text-sm text-gray-300 leading-relaxed mt-4">
-                {author.bio}
-              </p>
-            )}
-            <div className="mt-4 pt-4 border-t border-gray-700/50">
-              <Link 
-                to={`/auteur/${author.name.toLowerCase().replace(/\s+/g, '-')}`}
-                className="block w-full py-2 px-4 rounded-lg text-sm font-medium transition-colors text-center"
+      </motion.div>
+    );
+  }
+
+  // Version desktop
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-gray-900/80 backdrop-blur-xl rounded-2xl border border-white/10 overflow-hidden"
+    >
+      {/* Header avec icône */}
+      <div className="p-4 border-b border-white/5 flex items-center gap-2">
+        <div
+          className="w-8 h-8 rounded-lg flex items-center justify-center"
+          style={{ background: colors.bgGradient }}
+        >
+          <PenTool size={14} className="text-white" />
+        </div>
+        <span className="text-sm font-semibold text-white">L'auteur</span>
+      </div>
+
+      {/* Contenu */}
+      <div className="p-4">
+        <div className="flex items-center gap-4">
+          {/* Avatar octogonal */}
+          <div className="relative flex-shrink-0">
+            {getAuthorImageUrl ? (
+              <div
+                className={`${avatarSize.className} overflow-hidden`}
+                style={{ clipPath: octagonClip }}
+              >
+                <img
+                  src={getAuthorImageUrl}
+                  alt={author.name}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
+              </div>
+            ) : (
+              <div
+                className={`${avatarSize.className} flex items-center justify-center`}
                 style={{
-                  background: colors.bgLight || 'rgba(255, 255, 255, 0.05)',
-                  color: colors.textColor || '#fff'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = colors.bgMedium || 'rgba(255, 255, 255, 0.1)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = colors.bgLight || 'rgba(255, 255, 255, 0.05)';
+                  clipPath: octagonClip,
+                  background: colors.bgGradient
                 }}
               >
-                Voir tous ses articles
-              </Link>
+                <User size={avatarSize.iconSize} className="text-white" />
+              </div>
+            )}
+
+            {/* Badge rédacteur */}
+            <div
+              className="absolute -bottom-1 -right-1 w-5 h-5 rounded-md flex items-center justify-center"
+              style={{ background: colors.primary }}
+            >
+              <PenTool size={10} className="text-white" />
             </div>
-          </>
+          </div>
+
+          {/* Infos */}
+          <div className="flex-1 min-w-0">
+            <h3 className="text-lg font-bold text-white">{author.name}</h3>
+            {publishedAt && (
+              <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
+                <Calendar size={10} />
+                {new Date(publishedAt).toLocaleDateString('fr-FR', {
+                  day: 'numeric',
+                  month: 'short',
+                  year: 'numeric'
+                })}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Bio */}
+        {author.bio && (
+          <p className="text-sm text-gray-400 leading-relaxed mt-4 line-clamp-3">
+            {author.bio}
+          </p>
         )}
+
+        {/* Lien vers profil */}
+        <Link
+          to={`/auteur/${author.name.toLowerCase().replace(/\s+/g, '-')}`}
+          className="group flex items-center justify-between mt-4 p-3 rounded-xl transition-all hover:bg-white/5"
+          style={{ border: `1px solid ${colors.borderColor}` }}
+        >
+          <span className="text-sm font-medium" style={{ color: colors.textColor }}>
+            Voir ses articles
+          </span>
+          <ChevronRight
+            size={16}
+            className="group-hover:translate-x-1 transition-transform"
+            style={{ color: colors.textColor }}
+          />
+        </Link>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

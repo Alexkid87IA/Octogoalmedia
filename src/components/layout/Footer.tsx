@@ -1,35 +1,44 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  ArrowRight,
+import {
   Mail,
-  Heart,
   CheckCircle,
   Twitter,
   Instagram,
   Youtube,
-  Linkedin,
-  Send,
-  Sparkles,
   X,
-  Clock
+  Trophy,
+  Newspaper,
+  Users,
+  Laugh,
+  Play,
+  MessageCircle
 } from 'lucide-react';
 
 // Logo Octogoal
 import logoOctogoal from '../../assets/logos/LOGO_OCTOGOAL.png';
 
+// Clip-paths octogonaux
+const octagonClip = 'polygon(15% 0%, 85% 0%, 100% 15%, 100% 85%, 85% 100%, 15% 100%, 0% 85%, 0% 15%)';
+const octagonClipSubtle = 'polygon(8% 0%, 92% 0%, 100% 8%, 100% 92%, 92% 100%, 8% 100%, 0% 92%, 0% 8%)';
+
+// TikTok icon (not in lucide)
+const TikTokIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+  </svg>
+);
+
 export const Footer = () => {
   const [email, setEmail] = useState('');
   const [isSubscribed, setIsSubscribed] = useState(false);
-  const [showComingSoonModal, setShowComingSoonModal] = useState(false);
-  const [comingSoonFeature, setComingSoonFeature] = useState('');
 
   const socialLinks = [
-    { icon: Twitter, url: 'https://twitter.com/octogoal' },
-    { icon: Instagram, url: 'https://instagram.com/octogoal' },
-    { icon: Youtube, url: 'https://youtube.com/octogoal' },
-    { icon: Linkedin, url: 'https://linkedin.com/company/octogoal' }
+    { icon: Twitter, url: 'https://twitter.com/octogoal', label: 'Twitter' },
+    { icon: Instagram, url: 'https://instagram.com/octogoal', label: 'Instagram' },
+    { icon: Youtube, url: 'https://youtube.com/@octogoal', label: 'YouTube' },
+    { icon: TikTokIcon, url: 'https://tiktok.com/@octogoal', label: 'TikTok' }
   ];
 
   const handleSubscribe = (e: React.FormEvent) => {
@@ -43,417 +52,288 @@ export const Footer = () => {
     }
   };
 
-  const handleComingSoon = (feature: string) => {
-    setComingSoonFeature(feature);
-    setShowComingSoonModal(true);
-  };
-
-  // Modal "Bientôt disponible"
-  const ComingSoonModal = () => (
-    <AnimatePresence>
-      {showComingSoonModal && (
-        <>
-          {/* Overlay */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setShowComingSoonModal(false)}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50"
-          />
-          
-          {/* Modal */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[90%] max-w-md"
-          >
-            <div className="relative bg-gradient-to-b from-gray-900 to-black border border-gray-800 rounded-2xl p-6 md:p-8 shadow-2xl">
-              {/* Bouton fermer */}
-              <button
-                onClick={() => setShowComingSoonModal(false)}
-                className="absolute top-4 right-4 p-2 rounded-lg hover:bg-white/5 transition-colors"
-              >
-                <X className="w-5 h-5 text-gray-400" />
-              </button>
-              
-              {/* Contenu */}
-              <div className="text-center">
-                {/* Icône animée */}
-                <div className="mx-auto w-16 h-16 bg-gradient-to-br from-gray-600 to-gray-800 rounded-2xl flex items-center justify-center mb-4">
-                  <Clock className="w-8 h-8 text-white" />
-                </div>
-                
-                {/* Titre */}
-                <h3 className="text-2xl font-bold text-white mb-2">
-                  Bientôt disponible
-                </h3>
-                
-                {/* Feature name */}
-                <p className="text-gray-300 mb-4">
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-300 to-gray-500 font-semibold">
-                    {comingSoonFeature}
-                  </span>
-                </p>
-                
-                {/* Description */}
-                <p className="text-sm text-gray-400 mb-6">
-                  Cette fonctionnalité arrive très prochainement. Inscrivez-vous à notre newsletter pour être informé dès sa sortie !
-                </p>
-                
-                {/* CTA */}
-                <button
-                  onClick={() => {
-                    setShowComingSoonModal(false);
-                    // Scroll vers le formulaire newsletter
-                    document.querySelector('#newsletter-form')?.scrollIntoView({ behavior: 'smooth' });
-                  }}
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-500 hover:to-gray-600 text-white rounded-lg font-medium transition-all"
-                >
-                  <Mail className="w-4 h-4" />
-                  Me tenir informé
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
-  );
-
   return (
-    <>
-      {/* Modal */}
-      <ComingSoonModal />
-      
-      <footer className="relative bg-black border-t border-white/5">
-        {/* Background avec effet argent métallique subtil */}
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 to-black" />
-          {/* Mesh gradient argent très subtil */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1400px] h-[600px]">
-            <div className="absolute inset-0 bg-gradient-radial from-gray-400/[0.03] via-gray-500/[0.02] to-transparent blur-3xl" />
-            {/* Effet de brillance métallique */}
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,transparent,rgba(255,255,255,0.01)_50%,transparent)] animate-shimmer" />
-          </div>
+    <footer className="relative bg-black border-t border-white/5">
+      {/* Background avec effet dégradé */}
+      <div className="absolute inset-0">
+        <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 to-black" />
+        {/* Glow effect */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[400px]">
+          <div className="absolute inset-0 bg-gradient-to-b from-pink-500/5 to-transparent blur-3xl" />
         </div>
+        {/* Forme octogonale décorative */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 0.02 }}
+          className="absolute top-10 right-10 w-[200px] h-[200px] border border-pink-500/20"
+          style={{ clipPath: octagonClip }}
+        />
+      </div>
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          
-          {/* SECTION PRINCIPALE : Newsletter + Navigation */}
-          <div className="py-12 lg:py-16">
-            <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
-              
-              {/* GAUCHE : Newsletter avec effet argent */}
-              <div id="newsletter-form">
-                {/* Header newsletter avec badge argent */}
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="p-1.5 bg-gradient-to-br from-gray-300/20 to-gray-400/20 rounded-lg backdrop-blur-sm">
-                    <Mail className="w-4 h-4 text-gray-300" />
-                  </div>
-                  <span className="text-xs font-bold text-transparent bg-clip-text bg-gradient-to-r from-gray-300 to-gray-400 uppercase tracking-wider">
-                    Newsletter Premium
-                  </span>
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        {/* SECTION PRINCIPALE : Newsletter + Navigation */}
+        <div className="py-12 lg:py-16">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
+
+            {/* GAUCHE : Newsletter */}
+            <div id="newsletter-form">
+              {/* Header newsletter avec badge octogonal */}
+              <div className="flex items-center gap-3 mb-4">
+                <div
+                  className="p-2 bg-gradient-to-br from-pink-500 to-blue-500"
+                  style={{ clipPath: octagonClip }}
+                >
+                  <Mail className="w-4 h-4 text-white" />
                 </div>
-                
-                <h3 className="text-xl font-bold text-white mb-2">
-                  Une longueur d'avance, chaque semaine
-                </h3>
-                
-                <p className="text-gray-400 text-sm mb-6">
-                  Rejoignez 15,000+ leaders qui reçoivent nos analyses exclusives et insights premium.
-                </p>
-
-                {/* Formulaire avec effet métallique */}
-                <form onSubmit={handleSubscribe} className="space-y-3">
-                  <div className="flex gap-2">
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="Votre meilleur email"
-                      required
-                      className="flex-1 px-4 py-2.5 bg-white/[0.02] border border-gray-700/50 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-gray-500 focus:bg-white/[0.03] transition-all text-sm"
-                    />
-                    <motion.button
-                      type="submit"
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      disabled={isSubscribed}
-                      className="relative px-5 py-2.5 rounded-lg text-white font-medium text-sm disabled:opacity-50 overflow-hidden group"
-                    >
-                      {/* Background métallique animé */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-gray-600 via-gray-400 to-gray-600 animate-shimmer-slow" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-gray-700 to-transparent opacity-50" />
-                      <span className="relative flex items-center gap-2">
-                        {isSubscribed ? <CheckCircle className="w-4 h-4" /> : 'S\'inscrire'}
-                      </span>
-                    </motion.button>
-                  </div>
-                  
-                  <AnimatePresence>
-                    {isSubscribed ? (
-                      <motion.p
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0 }}
-                        className="text-green-400 text-xs"
-                      >
-                        ✓ Inscription confirmée !
-                      </motion.p>
-                    ) : (
-                      <p className="text-xs text-gray-500">
-                        Zéro spam. Désinscription en 1 clic.
-                      </p>
-                    )}
-                  </AnimatePresence>
-                </form>
-
-                {/* Points clés avec checks argentés */}
-                <div className="flex flex-wrap gap-4 mt-6">
-                  {['Analyses exclusives', 'Cas pratiques', 'Accès communauté'].map((item) => (
-                    <div key={item} className="flex items-center gap-1.5">
-                      <CheckCircle className="w-3 h-3 text-gray-400" />
-                      <span className="text-xs text-gray-400">{item}</span>
-                    </div>
-                  ))}
-                </div>
+                <span className="text-xs font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-blue-400 uppercase tracking-wider">
+                  Newsletter Octogoal
+                </span>
               </div>
 
-              {/* DROITE : Navigation structurée */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-8 gap-y-6">
-                {/* Rubriques */}
-                <div>
-                  <h4 className="text-white font-semibold text-sm mb-3">Rubriques</h4>
-                  <ul className="space-y-2">
-                    {[
-                      { label: 'Actus', path: '/rubrique/actus' },
-                      { label: 'Matchs', path: '/rubrique/matchs' },
-                      { label: 'Clubs', path: '/rubrique/clubs' },
-                      { label: 'Joueurs', path: '/rubrique/joueurs' }
-                    ].map((item) => (
-                      <li key={item.path}>
-                        <Link
-                          to={item.path}
-                          className="text-sm text-gray-400 hover:text-gray-200 transition-colors"
-                        >
-                          {item.label}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+              <h3 className="text-xl font-bold text-white mb-2">
+                Toute l'actu foot dans ta boîte mail
+              </h3>
 
-                {/* Contenus */}
-                <div>
-                  <h4 className="text-white font-semibold text-sm mb-3">Contenus</h4>
-                  <ul className="space-y-2">
-                    <li>
-                      <Link
-                        to="/articles"
-                        className="text-sm text-gray-400 hover:text-gray-200 transition-colors"
-                      >
-                        Tous les articles
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        to="/podcasts"
-                        className="flex items-center gap-2 text-sm text-gray-400 hover:text-gray-200 transition-colors"
-                      >
-                        <span>Podcasts</span>
-                        <span className="px-1.5 py-0.5 text-[9px] font-bold bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded">
-                          NEW
-                        </span>
-                      </Link>
-                    </li>
-                    <li>
-                      <button
-                        onClick={() => handleComingSoon('Vidéos')}
-                        className="text-sm text-gray-400 hover:text-gray-200 transition-colors text-left"
-                      >
-                        Vidéos
-                      </button>
-                    </li>
-                    <li>
-                      <Link
-                        to="/guides"
-                        className="text-sm text-gray-400 hover:text-gray-200 transition-colors"
-                      >
-                        Guides premium
-                      </Link>
-                    </li>
-                  </ul>
-                </div>
+              <p className="text-gray-400 text-sm mb-6">
+                Rejoins la communauté Octogoal et reçois chaque semaine les meilleurs moments, mèmes et analyses.
+              </p>
 
-                {/* Communauté */}
-                <div>
-                  <h4 className="text-white font-semibold text-sm mb-3">Communauté</h4>
-                  <ul className="space-y-2">
-                    <li>
-                      <Link
-                        to="/club"
-                        className="flex items-center gap-2 text-sm text-gray-400 hover:text-gray-200 transition-colors"
-                      >
-                        <span>Le Club Elite</span>
-                        <span className="px-1.5 py-0.5 text-[9px] font-bold bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded">
-                          NEW
-                        </span>
-                      </Link>
-                    </li>
-                    <li>
-                      <button
-                        onClick={() => handleComingSoon('Events')}
-                        className="text-sm text-gray-400 hover:text-gray-200 transition-colors text-left"
-                      >
-                        Events
-                      </button>
-                    </li>
-                    <li>
-                      <button
-                        onClick={() => handleComingSoon('Masterclass')}
-                        className="text-sm text-gray-400 hover:text-gray-200 transition-colors text-left"
-                      >
-                        Masterclass
-                      </button>
-                    </li>
-                    <li>
-                      <button
-                        onClick={() => handleComingSoon('Forums')}
-                        className="text-sm text-gray-400 hover:text-gray-200 transition-colors text-left"
-                      >
-                        Forums
-                      </button>
-                    </li>
-                  </ul>
-                </div>
-
-                {/* À propos */}
-                <div>
-                  <h4 className="text-white font-semibold text-sm mb-3">À propos</h4>
-                  <ul className="space-y-2">
-                    {[
-                      { label: 'Notre mission', path: '/mission' },
-                      { label: 'L\'équipe', path: '/team' },
-                      { label: 'Contact', path: '/contact' }
-                    ].map((item) => (
-                      <li key={item.path}>
-                        <Link
-                          to={item.path}
-                          className="text-sm text-gray-400 hover:text-gray-200 transition-colors"
-                        >
-                          {item.label}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* SECTION BOTTOM : Logo, Stats, Socials et Legal */}
-          <div className="py-8 border-t border-white/5">
-            <div className="grid lg:grid-cols-3 gap-8 items-center">
-              
-              {/* Logo et social */}
-              <div className="flex items-center gap-6">
-                <Link to="/" className="inline-block">
-                  <img
-                    src={logoOctogoal}
-                    alt="Octogoal"
-                    className="h-10 w-auto opacity-90 hover:opacity-100 transition-opacity"
-                  />
-                </Link>
-                
+              {/* Formulaire avec style octogonal */}
+              <form onSubmit={handleSubscribe} className="space-y-3">
                 <div className="flex gap-2">
-                  {socialLinks.map((social, index) => (
-                    <a
-                      key={index}
-                      href={social.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-1.5 text-gray-500 hover:text-gray-300 transition-colors"
-                    >
-                      <social.icon className="w-4 h-4" />
-                    </a>
-                  ))}
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Ton meilleur email"
+                    required
+                    className="flex-1 px-4 py-2.5 bg-white/[0.02] border border-gray-700/50 text-white placeholder-gray-500 focus:outline-none focus:border-pink-500/50 focus:bg-white/[0.03] transition-all text-sm"
+                    style={{ clipPath: octagonClipSubtle }}
+                  />
+                  <motion.button
+                    type="submit"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    disabled={isSubscribed}
+                    className="relative px-5 py-2.5 text-white font-medium text-sm disabled:opacity-50 overflow-hidden bg-gradient-to-r from-pink-500 to-blue-500 hover:from-pink-400 hover:to-blue-400 transition-all"
+                    style={{ clipPath: octagonClipSubtle }}
+                  >
+                    <span className="relative flex items-center gap-2">
+                      {isSubscribed ? <CheckCircle className="w-4 h-4" /> : 'Go !'}
+                    </span>
+                  </motion.button>
                 </div>
-              </div>
 
-              {/* Stats centrées avec effet métallique */}
-              <div className="flex justify-center gap-8">
-                {[
-                  { value: '50K+', label: 'LECTEURS ACTIFS' },
-                  { value: '500+', label: 'ARTICLES PREMIUM' }
-                ].map((stat) => (
-                  <div key={stat.label} className="text-center">
-                    <div className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-b from-white via-gray-300 to-gray-500">
-                      {stat.value}
-                    </div>
-                    <div className="text-[10px] text-gray-500 uppercase tracking-wider">{stat.label}</div>
+                <AnimatePresence>
+                  {isSubscribed ? (
+                    <motion.p
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      className="text-green-400 text-xs"
+                    >
+                      Bienvenue dans l'équipe !
+                    </motion.p>
+                  ) : (
+                    <p className="text-xs text-gray-500">
+                      Zéro spam. Que du foot.
+                    </p>
+                  )}
+                </AnimatePresence>
+              </form>
+
+              {/* Points clés */}
+              <div className="flex flex-wrap gap-4 mt-6">
+                {['Actus exclusives', 'Best of mèmes', 'Réactions Momo'].map((item) => (
+                  <div key={item} className="flex items-center gap-1.5">
+                    <CheckCircle className="w-3 h-3 text-pink-400" />
+                    <span className="text-xs text-gray-400">{item}</span>
                   </div>
                 ))}
               </div>
+            </div>
 
-              {/* Copyright et legal */}
-              <div className="text-right">
-                <div className="text-xs text-gray-500 mb-2">
-                  © {new Date().getFullYear()} Octogoal Media • Built with ❤️ by 
-                  <a
-                    href="https://www.instagram.com/alex______kid/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-400 hover:text-gray-300 transition-colors ml-1"
-                  >
-                    @alexkid
-                  </a>
-                </div>
-                <div className="flex justify-end gap-4">
-                  {['Mentions légales', 'Confidentialité', 'CGV'].map((item) => (
-                    <Link
-                      key={item}
-                      to={`/${item.toLowerCase().replace(' ', '-')}`}
-                      className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
-                    >
-                      {item}
-                    </Link>
+            {/* DROITE : Navigation structurée */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-8 gap-y-6">
+              {/* Rubriques */}
+              <div>
+                <h4 className="text-white font-semibold text-sm mb-3 flex items-center gap-2">
+                  <Newspaper className="w-4 h-4 text-pink-400" />
+                  Rubriques
+                </h4>
+                <ul className="space-y-2">
+                  {[
+                    { label: 'Actus', path: '/rubrique/actus', icon: Newspaper },
+                    { label: 'Matchs', path: '/rubrique/matchs', icon: Trophy },
+                    { label: 'Joueurs', path: '/joueurs', icon: Users },
+                    { label: 'Mèmes', path: '/rubrique/memes', icon: Laugh }
+                  ].map((item) => (
+                    <li key={item.path}>
+                      <Link
+                        to={item.path}
+                        className="text-sm text-gray-400 hover:text-pink-400 transition-colors"
+                      >
+                        {item.label}
+                      </Link>
+                    </li>
                   ))}
-                </div>
+                </ul>
+              </div>
+
+              {/* Contenus */}
+              <div>
+                <h4 className="text-white font-semibold text-sm mb-3 flex items-center gap-2">
+                  <Play className="w-4 h-4 text-blue-400" />
+                  Contenus
+                </h4>
+                <ul className="space-y-2">
+                  <li>
+                    <Link
+                      to="/articles"
+                      className="text-sm text-gray-400 hover:text-blue-400 transition-colors"
+                    >
+                      Tous les articles
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      to="/emissions"
+                      className="flex items-center gap-2 text-sm text-gray-400 hover:text-blue-400 transition-colors"
+                    >
+                      <span>Émissions Octogoal</span>
+                      <span
+                        className="px-1.5 py-0.5 text-[9px] font-bold bg-gradient-to-r from-pink-500 to-blue-500 text-white"
+                        style={{ clipPath: octagonClipSubtle }}
+                      >
+                        HOT
+                      </span>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      to="/classements"
+                      className="text-sm text-gray-400 hover:text-blue-400 transition-colors"
+                    >
+                      Classements
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      to="/calendrier"
+                      className="text-sm text-gray-400 hover:text-blue-400 transition-colors"
+                    >
+                      Calendrier
+                    </Link>
+                  </li>
+                </ul>
+              </div>
+
+              {/* À propos */}
+              <div>
+                <h4 className="text-white font-semibold text-sm mb-3 flex items-center gap-2">
+                  <MessageCircle className="w-4 h-4 text-emerald-400" />
+                  À propos
+                </h4>
+                <ul className="space-y-2">
+                  {[
+                    { label: 'Qui sommes-nous', path: '/a-propos' },
+                    { label: 'Contact', path: '/contact' },
+                    { label: 'Participer', path: '/participer' }
+                  ].map((item) => (
+                    <li key={item.path}>
+                      <Link
+                        to={item.path}
+                        className="text-sm text-gray-400 hover:text-emerald-400 transition-colors"
+                      >
+                        {item.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Styles pour l'animation shimmer métallique */}
-        <style jsx>{`
-          @keyframes shimmer {
-            0% {
-              transform: translateX(-100%);
-            }
-            100% {
-              transform: translateX(200%);
-            }
-          }
-          .animate-shimmer {
-            animation: shimmer 8s infinite;
-          }
-          .animate-shimmer-slow {
-            background-size: 200% 100%;
-            animation: shimmer-gradient 3s linear infinite;
-          }
-          @keyframes shimmer-gradient {
-            0% {
-              background-position: -200% center;
-            }
-            100% {
-              background-position: 200% center;
-            }
-          }
-        `}</style>
-      </footer>
-    </>
+        {/* SECTION BOTTOM : Logo, Stats, Socials et Legal */}
+        <div className="py-8 border-t border-white/5">
+          <div className="grid lg:grid-cols-3 gap-8 items-center">
+
+            {/* Logo avec cadre octogonal */}
+            <div className="flex items-center gap-6">
+              <Link to="/" className="inline-block group">
+                <div
+                  className="p-1 bg-gradient-to-br from-pink-500/20 to-blue-500/20 group-hover:from-pink-500/30 group-hover:to-blue-500/30 transition-all"
+                  style={{ clipPath: octagonClipSubtle }}
+                >
+                  <img
+                    src={logoOctogoal}
+                    alt="Octogoal"
+                    className="h-10 w-auto opacity-90 group-hover:opacity-100 transition-opacity"
+                  />
+                </div>
+              </Link>
+
+              {/* Social links */}
+              <div className="flex gap-2">
+                {socialLinks.map((social, index) => (
+                  <a
+                    key={index}
+                    href={social.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={social.label}
+                    className="p-2 text-gray-500 hover:text-pink-400 transition-colors bg-white/5 hover:bg-white/10"
+                    style={{ clipPath: octagonClipSubtle }}
+                  >
+                    <social.icon />
+                  </a>
+                ))}
+              </div>
+            </div>
+
+            {/* Stats centrées */}
+            <div className="flex justify-center gap-8">
+              {[
+                { value: '100K+', label: 'SUPPORTERS' },
+                { value: '500+', label: 'ARTICLES' },
+                { value: '50+', label: 'ÉMISSIONS' }
+              ].map((stat) => (
+                <div key={stat.label} className="text-center">
+                  <div className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white via-pink-200 to-pink-400">
+                    {stat.value}
+                  </div>
+                  <div className="text-[10px] text-gray-500 uppercase tracking-wider">{stat.label}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Copyright et legal */}
+            <div className="text-right">
+              <div className="text-xs text-gray-500 mb-2">
+                © {new Date().getFullYear()} Octogoal Media
+              </div>
+              <div className="flex justify-end gap-4">
+                {[
+                  { label: 'Mentions légales', path: '/mentions-legales' },
+                  { label: 'Confidentialité', path: '/confidentialite' },
+                  { label: 'CGU', path: '/cgu' }
+                ].map((item) => (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
   );
 };
 

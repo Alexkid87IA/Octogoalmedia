@@ -1,8 +1,8 @@
 // src/components/article/sections/ArticleHero.tsx
+// Hero premium style éditorial - Design immersif et élégant
 import React from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import { ChevronRight, Calendar } from "lucide-react";
+import { ChevronRight, Calendar, Clock, User } from "lucide-react";
 import { SanityArticle, VerticalColors } from "../../../types/article.types";
 import { urlFor } from "../../../utils/sanityClient";
 
@@ -13,179 +13,191 @@ interface ArticleHeroProps {
 
 // Fonction pour calculer la position de l'image basée sur le hotspot
 const getHotspotPosition = (hotspot: any) => {
-  if (!hotspot) {
-    // Position par défaut si pas de hotspot
-    return 'center center';
-  }
-  
-  // Convertir les coordonnées du hotspot (0-1) en pourcentages CSS
+  if (!hotspot) return 'center center';
   const x = Math.round(hotspot.x * 100);
   const y = Math.round(hotspot.y * 100);
-  
   return `${x}% ${y}%`;
 };
 
 const ArticleHero: React.FC<ArticleHeroProps> = ({ article, colors }) => {
-  // Debug : afficher ce qu'on reçoit
-  console.log('ArticleHero - mainImage data:', {
-    mainImage: article.mainImage,
-    hasAsset: !!article.mainImage?.asset,
-    assetUrl: article.mainImage?.asset?.url,
-    assetRef: article.mainImage?.asset?._ref,
-    hasHotspot: !!article.mainImage?.hotspot,
-    hotspotValues: article.mainImage?.hotspot,
-    hasCrop: !!article.mainImage?.crop,
-    cropValues: article.mainImage?.crop
-  });
-  
-  // Récupérer le hotspot s'il existe
   const hotspot = article.mainImage?.hotspot;
   const imagePosition = getHotspotPosition(hotspot);
-  
-  console.log('ArticleHero - Calculated position:', imagePosition);
-  
+
   // Fonction pour obtenir l'URL de l'image
   const getImageUrl = () => {
-    if (!article.mainImage || !article.mainImage.asset) {
-      return null;
-    }
-    
-    // 1. Si on a directement une URL
+    if (!article.mainImage || !article.mainImage.asset) return null;
+
     if (article.mainImage.asset.url) {
-      console.log('Using direct URL:', article.mainImage.asset.url);
       return article.mainImage.asset.url;
     }
-    
-    // 2. Si on a une référence Sanity
+
     if (article.mainImage.asset._ref) {
       try {
-        // Utiliser urlFor de Sanity
-        const url = urlFor(article.mainImage)
-          .width(1920)
-          .height(1080)
-          .quality(90)
-          .url();
-        console.log('Generated URL from ref:', url);
-        return url;
+        return urlFor(article.mainImage).width(1920).height(1080).quality(90).url();
       } catch (error) {
         console.error('Error generating URL from ref:', error);
       }
     }
-    
+
     return null;
   };
-  
+
   const imageUrl = getImageUrl();
-  
+  const readingTime = article.readingTime || "5 min";
+
   return (
-    <section className="relative min-h-[80vh] md:min-h-[90vh] flex items-end overflow-hidden bg-gradient-to-br from-gray-900 to-black">
-      {/* Container de l'image avec hotspot */}
+    <section className="relative min-h-[85vh] md:min-h-[90vh] flex items-end overflow-hidden">
+      {/* Background Image */}
       <div className="absolute inset-0">
         {imageUrl ? (
-          <>
-            {/* Image unique avec hotspot pour desktop et mobile */}
-            <img 
-              src={imageUrl}
-              alt={article.title}
-              className="absolute inset-0 w-full h-full object-cover"
-              style={{ 
-                opacity: 0.9,
-                // Utilise la position du hotspot définie dans Sanity
-                objectPosition: imagePosition
-              }}
-              onError={(e) => {
-                console.error("Erreur chargement image:", imageUrl);
-                (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80";
-              }}
-            />
-            
-            {/* Debug info - À enlever en production */}
-            {process.env.NODE_ENV === 'development' && hotspot && (
-              <div className="absolute top-4 right-4 bg-black/70 text-white text-xs p-2 rounded z-10">
-                Hotspot: {Math.round(hotspot.x * 100)}% x {Math.round(hotspot.y * 100)}%
-              </div>
-            )}
-          </>
-        ) : (
-          <img 
-            src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80"
-            alt="Article background"
+          <img
+            src={imageUrl}
+            alt={article.title}
             className="absolute inset-0 w-full h-full object-cover"
-            style={{ 
-              opacity: 0.9,
-              objectPosition: 'center 30%'
+            style={{ objectPosition: imagePosition }}
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&q=80";
             }}
           />
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-black to-gray-900" />
         )}
-        
-        {/* Gradients très légers pour bien voir l'image */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-        
-        {/* Overlay minimal uniquement sur le tiers inférieur pour le texte */}
-        <div className="absolute bottom-0 left-0 right-0 h-1/4 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
+
+        {/* Overlay UNIQUEMENT sur le tiers inférieur - pour le texte */}
+        <div
+          className="absolute inset-x-0 bottom-0 h-[55%]"
+          style={{
+            background: 'linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.8) 40%, rgba(0,0,0,0.4) 70%, transparent 100%)'
+          }}
+        />
+
+        {/* Léger assombrissement des bords pour le header */}
+        <div
+          className="absolute inset-x-0 top-0 h-32"
+          style={{
+            background: 'linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 100%)'
+          }}
+        />
+
+        {/* Ligne d'accent colorée en bas */}
+        <div
+          className="absolute bottom-0 left-0 right-0 h-[3px]"
+          style={{ background: colors.bgGradient }}
+        />
       </div>
 
-      {/* Contenu Hero avec plus d'espace */}
-      <div className="relative container mx-auto px-4 pb-16 pt-48">
-        {/* Breadcrumb plus visible avec meilleur contraste */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-2 text-sm mb-8 backdrop-blur-md bg-black/50 rounded-full px-5 py-2.5 w-fit border border-white/20"
-        >
-          <Link to="/" className="text-white font-medium hover:text-gray-200 transition-colors">Accueil</Link>
-          <ChevronRight size={16} className="text-gray-400" />
-          <Link to="/articles" className="text-white font-medium hover:text-gray-200 transition-colors">Articles</Link>
-          {article.categories && article.categories[0] && (
-            <>
-              <ChevronRight size={16} className="text-gray-400" />
-              <Link 
-                to={`/rubrique/${article.categories[0].slug.current}`}
-                className="font-semibold transition-colors"
-                style={{ color: colors.textColor }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = colors.primary;
-                  e.currentTarget.style.textShadow = `0 0 20px ${colors.primary}50`;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = colors.textColor;
-                  e.currentTarget.style.textShadow = 'none';
-                }}
-              >
-                {article.categories[0].title}
-              </Link>
-            </>
-          )}
-        </motion.div>
+      {/* Contenu Hero - Poussé vers le bas */}
+      <div className="relative container mx-auto px-4 pb-12 md:pb-16">
+        <div className="max-w-4xl">
+          {/* Breadcrumb */}
+          <nav className="flex items-center gap-2 text-sm mb-8">
+            <Link
+              to="/"
+              className="text-gray-400 hover:text-white transition-colors"
+            >
+              Accueil
+            </Link>
+            <ChevronRight size={14} className="text-gray-600" />
 
-        {/* Titre qui prend toute la largeur */}
-        <motion.h1 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white mb-6 max-w-full lg:max-w-[90%] leading-[1.1] tracking-tight"
-        >
-          {article.title}
-        </motion.h1>
+            {article.categories && article.categories[0] && (
+              <>
+                <Link
+                  to={`/rubrique/${article.categories[0].slug.current}`}
+                  className="px-3 py-1.5 rounded-full text-sm font-semibold transition-all hover:scale-105"
+                  style={{
+                    background: colors.primary,
+                    color: 'white'
+                  }}
+                >
+                  {article.categories[0].title}
+                </Link>
 
-        {/* Meta info simplifiée - seulement date */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="flex flex-wrap items-center gap-4 text-gray-300 text-sm"
-        >
-          {article.publishedAt && (
-            <span className="flex items-center gap-2 bg-black/30 backdrop-blur-sm px-3 py-1.5 rounded-full">
-              <Calendar size={14} />
-              {new Date(article.publishedAt).toLocaleDateString('fr-FR', { 
-                day: 'numeric', 
-                month: 'long', 
-                year: 'numeric' 
-              })}
-            </span>
+                {article.subcategories && article.subcategories[0] && (
+                  <>
+                    <ChevronRight size={14} className="text-gray-400" />
+                    <span className="px-3 py-1.5 rounded-full text-sm font-medium bg-white/15 backdrop-blur-sm text-white border border-white/10">
+                      {article.subcategories[0].title}
+                    </span>
+                  </>
+                )}
+              </>
+            )}
+          </nav>
+
+          {/* Titre principal */}
+          <h1
+            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white mb-8 leading-[1.05] tracking-tight"
+            style={{
+              textShadow: '0 4px 40px rgba(0,0,0,0.5)'
+            }}
+          >
+            {article.title}
+          </h1>
+
+          {/* Extrait */}
+          {article.excerpt && (
+            <p className="text-lg md:text-xl text-gray-300 mb-10 max-w-3xl leading-relaxed">
+              {article.excerpt}
+            </p>
           )}
-        </motion.div>
+
+          {/* Meta informations - Design carte */}
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Auteur avec photo */}
+            {article.author && (
+              <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md rounded-full pl-1.5 pr-5 py-1.5 border border-white/10">
+                {article.author.image ? (
+                  <img
+                    src={
+                      article.author.image.asset?.url ||
+                      (article.author.image.asset?._ref
+                        ? urlFor(article.author.image).width(80).height(80).url()
+                        : null)
+                    }
+                    alt={article.author.name}
+                    className="w-9 h-9 rounded-full object-cover ring-2 ring-white/20"
+                  />
+                ) : (
+                  <div
+                    className="w-9 h-9 rounded-full flex items-center justify-center"
+                    style={{ background: colors.bgGradient }}
+                  >
+                    <User size={16} className="text-white" />
+                  </div>
+                )}
+                <span className="text-white font-medium">
+                  {article.author.name}
+                </span>
+              </div>
+            )}
+
+            {/* Séparateur */}
+            <div className="w-px h-6 bg-white/20 hidden sm:block" />
+
+            {/* Date */}
+            {article.publishedAt && (
+              <div className="flex items-center gap-2 text-gray-300 text-sm">
+                <Calendar size={15} className="text-gray-400" />
+                <span>
+                  {new Date(article.publishedAt).toLocaleDateString('fr-FR', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
+                  })}
+                </span>
+              </div>
+            )}
+
+            {/* Séparateur */}
+            <div className="w-px h-6 bg-white/20 hidden sm:block" />
+
+            {/* Temps de lecture */}
+            <div className="flex items-center gap-2 text-gray-300 text-sm">
+              <Clock size={15} className="text-gray-400" />
+              <span>{readingTime} de lecture</span>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );

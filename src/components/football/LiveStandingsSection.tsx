@@ -213,7 +213,7 @@ export default function LiveStandingsSection() {
                       <span className="text-2xl">{currentLeague.flag}</span>
                       <h3 className="text-white font-bold text-xl">{currentLeague.name}</h3>
                     </div>
-                    <span className="text-white/60 text-sm">Saison 2024-25</span>
+                    <span className="text-white/60 text-sm">Saison {new Date().getMonth() < 7 ? `${new Date().getFullYear() - 1}-${String(new Date().getFullYear()).slice(-2)}` : `${new Date().getFullYear()}-${String(new Date().getFullYear() + 1).slice(-2)}`}</span>
                   </div>
                 </div>
 

@@ -55,18 +55,19 @@ export const RecentArticlesSection = ({ articles = [] }) => {
     fetchRecentArticles();
   }, [articles]);
 
-  // Couleurs par catégorie - OCTOGOAL
+  // Style unifié OCTOGOAL - Pink gradient pour toutes les catégories
+  const unifiedStyle = { bg: 'bg-gradient-to-r from-pink-500 to-blue-500', text: 'text-white' };
   const categoryColors = {
-    'Actus': { bg: 'bg-pink-500', text: 'text-white' },
-    'Matchs': { bg: 'bg-blue-500', text: 'text-white' },
-    'Clubs': { bg: 'bg-purple-500', text: 'text-white' },
-    'Joueurs': { bg: 'bg-emerald-500', text: 'text-white' },
-    'Formats Octogoal': { bg: 'bg-orange-500', text: 'text-white' },
-    'Vidéos': { bg: 'bg-red-500', text: 'text-white' },
-    'Carrousels': { bg: 'bg-cyan-500', text: 'text-white' },
-    'Mèmes': { bg: 'bg-yellow-500', text: 'text-black' },
-    'Sponsors': { bg: 'bg-gray-500', text: 'text-white' },
-    'default': { bg: 'bg-gray-500', text: 'text-white' }
+    'Actus': unifiedStyle,
+    'Matchs': unifiedStyle,
+    'Clubs': unifiedStyle,
+    'Joueurs': unifiedStyle,
+    'Formats Octogoal': unifiedStyle,
+    'Vidéos': unifiedStyle,
+    'Carrousels': unifiedStyle,
+    'Mèmes': unifiedStyle,
+    'Sponsors': unifiedStyle,
+    'default': unifiedStyle
   };
 
   const getCategoryStyle = (category) => {
@@ -299,7 +300,7 @@ export const RecentArticlesSection = ({ articles = [] }) => {
         </div>
       </div>
 
-      <style jsx>{`
+      <style>{`
         .no-scrollbar {
           -ms-overflow-style: none;
           scrollbar-width: none;

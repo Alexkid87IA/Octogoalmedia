@@ -14,16 +14,17 @@ interface TableOfContentsProps {
   setMobileMenuOpen?: (open: boolean) => void;
 }
 
-const TableOfContents: React.FC<TableOfContentsProps> = ({ 
-  headings, 
-  activeSection, 
+const TableOfContents: React.FC<TableOfContentsProps> = ({
+  headings,
+  activeSection,
   scrollProgress,
-  colors, 
+  colors,
   variant = 'desktop',
   mobileMenuOpen = false,
   setMobileMenuOpen
 }) => {
   const [expandedSections, setExpandedSections] = useState<{[key: string]: boolean}>({});
+  const [isCollapsed, setIsCollapsed] = useState(true); // Réduit par défaut
 
   if (!headings || headings.length === 0) return null;
 
@@ -181,25 +182,28 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({
   // Version desktop
   return (
     <div className="bg-gradient-to-br from-gray-900/50 to-gray-800/30 backdrop-blur-md rounded-2xl border border-gray-700/50 overflow-hidden">
-      {/* Header fixe avec design amélioré */}
-      <div 
-        className="p-5 border-b"
-        style={{ borderColor: colors.borderColor + '30' }}
+      {/* Header cliquable pour ouvrir/fermer */}
+      <button
+        onClick={() => setIsCollapsed(!isCollapsed)}
+        className="w-full p-5 flex items-center justify-between hover:bg-white/5 transition-colors"
+        style={{ borderBottom: isCollapsed ? 'none' : `1px solid ${colors.borderColor}30` }}
       >
         <div className="flex items-center gap-3">
           <div className="relative">
-            <div 
+            <div
               className="w-10 h-10 rounded-xl flex items-center justify-center"
               style={{ background: colors.bgGradient }}
             >
               <BookOpen size={18} className="text-white" />
             </div>
-            <div 
-              className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full bg-white/20 animate-pulse"
-              style={{ background: colors.primary + '40' }}
-            />
+            {!isCollapsed && (
+              <div
+                className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full bg-white/20 animate-pulse"
+                style={{ background: colors.primary + '40' }}
+              />
+            )}
           </div>
-          <div>
+          <div className="text-left">
             <h3 className="text-lg font-semibold text-white">
               Table des matières
             </h3>
@@ -208,9 +212,21 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({
             </p>
           </div>
         </div>
-      </div>
-      
-      {/* Contenu avec scroll si nécessaire */}
+        <ChevronDown
+          size={20}
+          className={`text-gray-400 transition-transform duration-300 ${!isCollapsed ? 'rotate-180' : ''}`}
+        />
+      </button>
+
+      {/* Contenu repliable */}
+      <AnimatePresence>
+        {!isCollapsed && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
       <nav className="p-4 max-h-[600px] overflow-y-auto custom-scrollbar">
         <div className="space-y-2">
           {headings.map((section, sectionIndex) => {
@@ -353,29 +369,32 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({
           })}
         </div>
       </nav>
-      
-      {/* Footer avec progression */}
-      <div 
-        className="p-4 border-t"
-        style={{ borderColor: colors.borderColor + '30' }}
-      >
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-xs text-gray-500">Progression de lecture</span>
-          <span className="text-xs font-medium" style={{ color: colors.textColor }}>
-            {Math.round(scrollProgress)}%
-          </span>
-        </div>
-        <div className="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden">
-          <motion.div
-            className="h-full rounded-full"
-            style={{ 
-              background: colors.bgGradient,
-              width: `${scrollProgress}%`
-            }}
-            transition={{ duration: 0.1 }}
-          />
-        </div>
-      </div>
+
+            {/* Footer avec progression */}
+            <div
+              className="p-4 border-t"
+              style={{ borderColor: colors.borderColor + '30' }}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs text-gray-500">Progression de lecture</span>
+                <span className="text-xs font-medium" style={{ color: colors.textColor }}>
+                  {Math.round(scrollProgress)}%
+                </span>
+              </div>
+              <div className="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                <motion.div
+                  className="h-full rounded-full"
+                  style={{
+                    background: colors.bgGradient,
+                    width: `${scrollProgress}%`
+                  }}
+                  transition={{ duration: 0.1 }}
+                />
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

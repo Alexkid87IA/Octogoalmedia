@@ -1,13 +1,35 @@
 // src/components/article/sections/ArticleSidebar.tsx
+// Sidebar intelligente et optimisée
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { 
-  Zap, TrendingUp, Tv, Clock, ChevronUp, ChevronDown
+import { motion } from "framer-motion";
+import {
+  Zap, Clock, ChevronRight, Flame, Sparkles, Play, ExternalLink,
+  Youtube, Instagram, Twitter, Star
 } from "lucide-react";
 import { SanityArticle, VerticalColors, TableOfContentsHeading } from "../../../types/article.types";
 import ArticleAuthor from "../ui/ArticleAuthor";
 import TableOfContents from "../ui/TableOfContents";
 import { getAllArticles } from "../../../utils/sanityAPI";
+import { urlFor } from "../../../utils/sanityClient";
+
+// Encart Publicitaire
+const SidebarAd: React.FC<{ format?: 'rectangle' | 'skyscraper'; className?: string }> = ({
+  format = 'rectangle',
+  className = ''
+}) => (
+  <div className={`relative ${className}`}>
+    <div className={`
+      p-4 bg-gray-900/50 border border-dashed border-gray-700 rounded-xl
+      flex flex-col items-center justify-center text-center
+      ${format === 'skyscraper' ? 'min-h-[600px]' : 'min-h-[250px]'}
+    `}>
+      <p className="text-[10px] uppercase tracking-widest text-gray-600">
+        Publicité
+      </p>
+    </div>
+  </div>
+);
 
 interface ArticleSidebarProps {
   article: SanityArticle;
@@ -20,7 +42,6 @@ interface ArticleSidebarProps {
   onShare: () => void;
 }
 
-// Types pour les onglets du widget Flash
 type FlashTab = 'flash' | 'trending' | 'emissions';
 
 const ArticleSidebar: React.FC<ArticleSidebarProps> = ({
@@ -37,257 +58,352 @@ const ArticleSidebar: React.FC<ArticleSidebarProps> = ({
   const [flashArticles, setFlashArticles] = useState<SanityArticle[]>([]);
   const [trendingArticles, setTrendingArticles] = useState<SanityArticle[]>([]);
   const [emissionArticles, setEmissionArticles] = useState<SanityArticle[]>([]);
+  const [featuredArticle, setFeaturedArticle] = useState<SanityArticle | null>(null);
+  const [latestEmission, setLatestEmission] = useState<SanityArticle | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Charger les articles pour le widget Flash
+  // Déterminer si l'article est "long" (beaucoup de headings)
+  const isLongArticle = (headings?.length || 0) >= 3;
+
   useEffect(() => {
     const loadArticles = async () => {
       try {
         setIsLoading(true);
         const allArticles = await getAllArticles();
-        
+
         if (allArticles && allArticles.length > 0) {
-          // Flash : 10 derniers articles (tous types)
-          setFlashArticles(allArticles.slice(0, 10));
-          
-          // Trending : articles avec isTrending = true
-          const trending = allArticles.filter(a => a.isTrending).slice(0, 10);
+          // Flash articles
+          setFlashArticles(allArticles.slice(0, 6));
+
+          // Trending
+          const trending = allArticles.filter(a => a.isTrending).slice(0, 6);
           setTrendingArticles(trending.length > 0 ? trending : allArticles.slice(0, 5));
-          
-          // Émissions : articles de type emission
-          const emissions = allArticles.filter(a => a.contentType === 'emission').slice(0, 10);
-          setEmissionArticles(emissions);
+
+          // Emissions
+          const emissions = allArticles.filter(a => a.contentType === 'emission');
+          setEmissionArticles(emissions.slice(0, 6));
+          setLatestEmission(emissions[0] || null);
+
+          // Article à la une (le plus récent trending ou le premier)
+          const featured = allArticles.find(a => a.isTrending && a._id !== article._id) ||
+                          allArticles.find(a => a._id !== article._id);
+          setFeaturedArticle(featured || null);
         }
       } catch (error) {
-        console.error("Erreur chargement articles Flash:", error);
+        console.error("Erreur chargement articles:", error);
       } finally {
         setIsLoading(false);
       }
     };
-    
-    loadArticles();
-  }, []);
 
-  // Fonction pour formater l'heure relative
+    loadArticles();
+  }, [article._id]);
+
   const getRelativeTime = (date: string) => {
     const now = new Date();
     const publishedDate = new Date(date);
-    const diffInMs = now.getTime() - publishedDate.getTime();
-    const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
-    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
-    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-    
-    if (diffInMinutes < 60) return `${diffInMinutes} min`;
+    const diffInHours = Math.floor((now.getTime() - publishedDate.getTime()) / (1000 * 60 * 60));
+    const diffInDays = Math.floor(diffInHours / 24);
+
+    if (diffInHours < 1) return "À l'instant";
     if (diffInHours < 24) return `${diffInHours}h`;
     if (diffInDays === 1) return "Hier";
     if (diffInDays < 7) return `${diffInDays}j`;
-    
-    return publishedDate.toLocaleDateString('fr-FR', { 
-      day: 'numeric', 
-      month: 'short' 
-    });
+    return publishedDate.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
   };
 
-  // Fonction pour formater l'heure exacte (style Foot Mercato)
-  const getExactTime = (date: string) => {
-    const publishedDate = new Date(date);
-    return publishedDate.toLocaleTimeString('fr-FR', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
-  };
-
-  // Articles à afficher selon l'onglet actif
   const getDisplayedArticles = () => {
     switch (activeTab) {
-      case 'flash':
-        return flashArticles;
-      case 'trending':
-        return trendingArticles;
-      case 'emissions':
-        return emissionArticles;
-      default:
-        return flashArticles;
+      case 'flash': return flashArticles;
+      case 'trending': return trendingArticles;
+      case 'emissions': return emissionArticles;
+      default: return flashArticles;
     }
   };
 
-  const displayedArticles = getDisplayedArticles();
+  const getArticleImage = (art: SanityArticle, size: number = 200) => {
+    try {
+      // Cas 1: mainImage avec asset URL directe (format dé-référencé)
+      if (art.mainImage?.asset?.url) {
+        return art.mainImage.asset.url;
+      }
+      // Cas 2: mainImage avec asset._ref (format Sanity référence)
+      if (art.mainImage?.asset?._ref) {
+        return urlFor(art.mainImage).width(size).height(size).url();
+      }
+      // Cas 3: mainImage a juste un asset (essayer urlFor)
+      if (art.mainImage?.asset) {
+        try {
+          return urlFor(art.mainImage).width(size).height(size).url();
+        } catch {
+          // Si urlFor échoue, continuer
+        }
+      }
+      // Cas 4: mainImage est une string URL
+      if (typeof art.mainImage === 'string' && art.mainImage.startsWith('http')) {
+        return art.mainImage;
+      }
+      // Cas 5: mainImageUrl direct
+      if (art.mainImageUrl) return art.mainImageUrl;
+      // Cas 6: image dans le champ image (fallback)
+      if ((art as any).image?.asset?.url) {
+        return (art as any).image.asset.url;
+      }
+      if ((art as any).image?.asset?._ref) {
+        return urlFor((art as any).image).width(size).height(size).url();
+      }
+      return null;
+    } catch (e) {
+      console.error('Error getting article image:', e);
+      return null;
+    }
+  };
 
-  // Configuration des onglets
   const tabs = [
-    { id: 'flash' as FlashTab, label: 'Flash', icon: Zap, color: 'text-yellow-400' },
-    { id: 'trending' as FlashTab, label: 'Tendances', icon: TrendingUp, color: 'text-pink-500' },
-    { id: 'emissions' as FlashTab, label: 'Émissions', icon: Tv, color: 'text-blue-400' },
+    { id: 'flash' as FlashTab, label: 'Flash', icon: Zap },
+    { id: 'trending' as FlashTab, label: 'Tendances', icon: Flame },
+    { id: 'emissions' as FlashTab, label: 'Vidéos', icon: Play },
   ];
-  
+
   return (
     <div className="space-y-6">
-      
-      {/* Encart Auteur - Compact */}
+      {/* Auteur */}
       {article.author && (
-        <ArticleAuthor 
+        <ArticleAuthor
           author={article.author}
           publishedAt={article.publishedAt}
           colors={colors}
           variant="desktop"
         />
       )}
-      
-      {/* Table des matières - Sticky */}
-      {headings && headings.length > 0 && (
-        <div className="sticky top-24">
-          <TableOfContents
-            headings={headings}
-            activeSection={activeSection}
-            scrollProgress={scrollProgress}
-            colors={colors}
-            variant="desktop"
-          />
-        </div>
+
+      {/* Table des matières (si article long) */}
+      {isLongArticle && headings && headings.length > 0 && (
+        <TableOfContents
+          headings={headings}
+          activeSection={activeSection}
+          scrollProgress={scrollProgress}
+          colors={colors}
+          variant="desktop"
+        />
       )}
 
-      {/* EMPLACEMENT PUB 1 */}
-      <div className="bg-gray-900/50 border border-dashed border-gray-700 rounded-xl p-4 flex items-center justify-center min-h-[250px]">
-        <span className="text-gray-500 text-sm">Emplacement Pub (300x250)</span>
-      </div>
-
-      {/* Widget Flash - Style Foot Mercato */}
-      <div className="bg-gray-900/50 backdrop-blur-md rounded-2xl border border-gray-700/50 overflow-hidden">
-        
-        {/* Header avec onglets */}
-        <div className="border-b border-gray-700/50">
-          <div className="flex">
+      {/* Widget Flash Info */}
+      <div className="bg-gray-900/80 backdrop-blur-sm rounded-xl border border-white/10 overflow-hidden">
+        {/* Onglets */}
+        <div className="p-1 bg-black/30">
+          <div className="flex gap-1">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
-              
               return (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-3 text-sm font-medium transition-all relative ${
-                    isActive 
-                      ? 'text-white bg-white/5' 
+                  className={`
+                    flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg
+                    text-sm font-medium transition-all
+                    ${isActive
+                      ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white'
                       : 'text-gray-400 hover:text-white hover:bg-white/5'
-                  }`}
+                    }
+                  `}
                 >
-                  <Icon size={14} className={isActive ? tab.color : ''} />
+                  <Icon size={14} />
                   <span className="hidden sm:inline">{tab.label}</span>
-                  
-                  {/* Indicateur actif */}
-                  {isActive && (
-                    <div 
-                      className="absolute bottom-0 left-0 right-0 h-0.5"
-                      style={{ 
-                        background: `linear-gradient(to right, ${colors.primary}, ${colors.secondary || colors.primary})` 
-                      }}
-                    />
-                  )}
                 </button>
               );
             })}
           </div>
         </div>
-        
-        {/* Liste des articles */}
-        <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
+
+        {/* Liste */}
+        <div className="max-h-[300px] overflow-y-auto">
           {isLoading ? (
             <div className="p-6 text-center">
-              <div className="animate-spin w-6 h-6 border-2 border-pink-500 border-t-transparent rounded-full mx-auto"></div>
-              <p className="text-gray-400 text-sm mt-2">Chargement...</p>
-            </div>
-          ) : displayedArticles.length === 0 ? (
-            <div className="p-6 text-center text-gray-400 text-sm">
-              Aucun article disponible
+              <div className="w-6 h-6 border-2 border-pink-500 border-t-transparent rounded-full animate-spin mx-auto" />
             </div>
           ) : (
-            <div className="divide-y divide-gray-800/50">
-              {displayedArticles.map((item, index) => (
-                <Link
-                  key={item._id}
-                  to={`/article/${item.slug.current}`}
-                  className="flex items-start gap-3 p-3 hover:bg-white/5 transition-colors group"
-                >
-                  {/* Heure */}
-                  <span className="text-xs text-gray-500 font-mono w-12 flex-shrink-0 pt-0.5">
-                    {getExactTime(item.publishedAt || new Date().toISOString())}
-                  </span>
-                  
-                  {/* Titre */}
-                  <div className="flex-1 min-w-0">
-                    <h4 className="text-sm text-gray-300 group-hover:text-white transition-colors line-clamp-2 leading-snug">
-                      {item.title}
-                    </h4>
-                    
-                    {/* Badge catégorie */}
-                    {item.categories && item.categories[0] && (
-                      <span className="inline-block mt-1 text-xs text-gray-500">
-                        {item.categories[0].title}
-                      </span>
+            <div className="p-2 space-y-1">
+              {getDisplayedArticles().map((item) => {
+                const imageUrl = getArticleImage(item);
+                return (
+                  <Link
+                    key={item._id}
+                    to={`/article/${item.slug.current}`}
+                    className="group flex items-start gap-3 p-2 rounded-lg hover:bg-white/5 transition-all"
+                  >
+                    {imageUrl && (
+                      <div className="w-14 h-10 rounded-md overflow-hidden flex-shrink-0 bg-gray-800">
+                        <img src={imageUrl} alt="" className="w-full h-full object-cover" />
+                      </div>
                     )}
-                  </div>
-                </Link>
-              ))}
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-sm text-gray-300 group-hover:text-white transition-colors line-clamp-2 leading-snug">
+                        {item.title}
+                      </h4>
+                      <span className="text-xs text-gray-500">{getRelativeTime(item.publishedAt || '')}</span>
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           )}
         </div>
-        
-        {/* Footer - Voir tous */}
-        <div className="border-t border-gray-700/50 p-3">
-          <Link 
-            to="/articles"
-            className="flex items-center justify-center gap-2 text-sm text-gray-400 hover:text-white transition-colors"
-          >
-            <span>Voir tous les articles</span>
-            <ChevronDown size={14} />
+
+        <Link
+          to="/articles"
+          className="flex items-center justify-center gap-2 text-sm text-gray-400 hover:text-white p-3 border-t border-white/5"
+        >
+          Voir tous les articles <ChevronRight size={14} />
+        </Link>
+      </div>
+
+      {/* À la une - Article vedette */}
+      {featuredArticle && (
+        <Link
+          to={`/article/${featuredArticle.slug.current}`}
+          className="block group rounded-xl overflow-hidden bg-gray-900/80 border border-white/10"
+        >
+          {/* Image grande */}
+          <div className="relative aspect-video overflow-hidden">
+            {getArticleImage(featuredArticle, 600) ? (
+              <img
+                src={getArticleImage(featuredArticle, 600)!}
+                alt=""
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-pink-500/20 to-gray-900" />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+
+            {/* Badge */}
+            <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2 py-1 bg-pink-500 rounded-md">
+              <Star size={12} className="text-white" />
+              <span className="text-xs font-bold text-white">À la une</span>
+            </div>
+          </div>
+
+          {/* Contenu */}
+          <div className="p-4">
+            <h3 className="text-base font-bold text-white group-hover:text-pink-400 transition-colors line-clamp-2">
+              {featuredArticle.title}
+            </h3>
+            {featuredArticle.excerpt && (
+              <p className="text-sm text-gray-400 mt-2 line-clamp-2">{featuredArticle.excerpt}</p>
+            )}
+          </div>
+        </Link>
+      )}
+
+      {/* Dernière émission Octogoal */}
+      {latestEmission && (
+        <div className="rounded-xl overflow-hidden bg-gray-900/80 border border-white/10">
+          <div className="p-3 border-b border-white/5 flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-pink-500 to-rose-500 flex items-center justify-center">
+              <Play size={14} className="text-white" />
+            </div>
+            <span className="text-sm font-bold text-white">Dernière émission</span>
+          </div>
+
+          <Link to={`/article/${latestEmission.slug.current}`} className="block group">
+            <div className="relative aspect-video">
+              {getArticleImage(latestEmission, 600) ? (
+                <img
+                  src={getArticleImage(latestEmission, 600)!}
+                  alt=""
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-pink-500/20 to-gray-900" />
+              )}
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center group-hover:bg-black/20 transition-colors">
+                <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur flex items-center justify-center">
+                  <Play size={24} className="text-white ml-1" />
+                </div>
+              </div>
+            </div>
+            <div className="p-3">
+              <h4 className="text-sm font-medium text-white group-hover:text-pink-400 transition-colors line-clamp-2">
+                {latestEmission.title}
+              </h4>
+            </div>
           </Link>
+        </div>
+      )}
+
+      {/* Réseaux sociaux */}
+      <div className="rounded-xl bg-gray-900/80 border border-white/10 p-4">
+        <h3 className="text-sm font-bold text-white mb-4">Suivez-nous</h3>
+        <div className="grid grid-cols-3 gap-2">
+          <a
+            href="https://youtube.com/@octogoal"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex flex-col items-center gap-2 p-3 rounded-lg bg-red-500/10 hover:bg-red-500/20 transition-colors group"
+          >
+            <Youtube size={20} className="text-red-500" />
+            <span className="text-xs text-gray-400 group-hover:text-white">YouTube</span>
+          </a>
+          <a
+            href="https://instagram.com/octogoal"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex flex-col items-center gap-2 p-3 rounded-lg bg-pink-500/10 hover:bg-pink-500/20 transition-colors group"
+          >
+            <Instagram size={20} className="text-pink-500" />
+            <span className="text-xs text-gray-400 group-hover:text-white">Instagram</span>
+          </a>
+          <a
+            href="https://twitter.com/octogoal"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex flex-col items-center gap-2 p-3 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 transition-colors group"
+          >
+            <Twitter size={20} className="text-blue-500" />
+            <span className="text-xs text-gray-400 group-hover:text-white">Twitter</span>
+          </a>
         </div>
       </div>
 
-      {/* EMPLACEMENT PUB 2 */}
-      <div className="bg-gray-900/50 border border-dashed border-gray-700 rounded-xl p-4 flex items-center justify-center min-h-[250px]">
-        <span className="text-gray-500 text-sm">Emplacement Pub (300x250)</span>
-      </div>
-
-      {/* Articles similaires - Version compacte (3 max) */}
-      {relatedArticles.length > 0 && (
-        <div className="bg-gray-900/30 backdrop-blur-md rounded-2xl border border-gray-700/50 p-4">
-          <h3 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
-            <span>📰</span> À lire aussi
-          </h3>
-          
-          <div className="space-y-3">
-            {relatedArticles.slice(0, 3).map((related) => (
-              <Link
-                key={related._id}
-                to={`/article/${related.slug.current}`}
-                className="group block"
-              >
-                <div className="flex gap-3 p-2 rounded-lg hover:bg-white/5 transition-all">
-                  {/* Miniature */}
-                  {related.mainImage && related.mainImage.asset && related.mainImage.asset._ref && (
-                    <img 
-                      src={`https://cdn.sanity.io/images/5rn8u6ed/production/${related.mainImage.asset._ref.replace('image-', '').replace('-jpg', '.jpg').replace('-png', '.png').replace('-webp', '.webp')}?w=80&h=60&fit=crop&auto=format`}
-                      alt={related.title}
-                      className="w-16 h-12 object-cover rounded flex-shrink-0"
-                    />
-                  )}
-                  
-                  {/* Titre */}
-                  <h4 className="text-xs text-gray-300 group-hover:text-white transition-colors line-clamp-2 flex-1">
+      {/* À lire aussi (si article long) */}
+      {isLongArticle && relatedArticles.length > 0 && (
+        <div className="rounded-xl bg-gray-900/80 border border-white/10 overflow-hidden">
+          <div className="p-3 border-b border-white/5 flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-pink-500 to-rose-500 flex items-center justify-center">
+              <Sparkles size={14} className="text-white" />
+            </div>
+            <span className="text-sm font-bold text-white">À lire aussi</span>
+          </div>
+          <div className="p-2 space-y-1">
+            {relatedArticles.slice(0, 4).map((related) => {
+              const imageUrl = getArticleImage(related);
+              return (
+                <Link
+                  key={related._id}
+                  to={`/article/${related.slug.current}`}
+                  className="group flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 transition-all"
+                >
+                  <div className="w-14 h-10 rounded-md overflow-hidden flex-shrink-0 bg-gray-800">
+                    {imageUrl ? (
+                      <img src={imageUrl} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-gray-700" />
+                    )}
+                  </div>
+                  <h4 className="flex-1 text-sm text-gray-300 group-hover:text-white transition-colors line-clamp-2">
                     {related.title}
                   </h4>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              );
+            })}
           </div>
         </div>
       )}
 
-      {/* EMPLACEMENT PUB 3 - Format vertical (optionnel) */}
-      <div className="bg-gray-900/50 border border-dashed border-gray-700 rounded-xl p-4 flex items-center justify-center min-h-[600px]">
-        <span className="text-gray-500 text-sm text-center">Emplacement Pub<br/>(300x600)</span>
-      </div>
+      {/* Pub Skyscraper en fin de sidebar */}
+      <SidebarAd format="skyscraper" />
 
     </div>
   );

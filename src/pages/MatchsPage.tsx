@@ -1,902 +1,713 @@
-import { useEffect, useState, useRef } from 'react';
-import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
-import { Link } from 'react-router-dom';
-import {
-  getTodayFixtures,
-  getMatchesByMatchday,
-  getNextFixtures,
-  getLastResults,
-  getCurrentMatchday,
-  getStandings,
-  LEAGUES,
-  LEAGUE_INFO,
-  formatDateFR,
-} from '../services/apiFootball';
-import {
-  Play,
-  Calendar,
-  Trophy,
-  TrendingUp,
-  Clock,
-  ChevronLeft,
-  ChevronRight,
-  Zap,
-  Target,
-  Users,
-  Filter,
-  X,
-  Maximize2,
-  RefreshCw,
-  Bell,
-  Star
-} from 'lucide-react';
+// src/pages/MatchsPage.tsx
+// Match Center - Toutes les compétitions organisées par catégorie
 
-// Types
+import { useEffect, useState, useCallback, useRef } from 'react';
+import { Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Radio, Calendar, Clock, ChevronDown, RefreshCw, Trophy } from 'lucide-react';
+import { getLiveMatches, getFixturesByDate } from '../services/apiFootball';
+import {
+  COMPETITIONS,
+  getAllActiveCompetitions,
+  getMatchesDisplayOrder,
+} from '../config/competitions';
+
+// =============================================
+// TYPES
+// =============================================
+
 interface Match {
   id: number;
-  matchday: number;
   utcDate: string;
-  status: 'SCHEDULED' | 'TIMED' | 'IN_PLAY' | 'PAUSED' | 'FINISHED' | 'POSTPONED' | 'CANCELLED';
-  homeTeam: {
-    id: number;
-    name: string;
-    shortName: string;
-    crest: string;
-  };
-  awayTeam: {
-    id: number;
-    name: string;
-    shortName: string;
-    crest: string;
-  };
-  score: {
-    fullTime: { home: number | null; away: number | null };
-    halfTime: { home: number | null; away: number | null };
-  };
-  competition: {
-    id: number;
-    name: string;
-    code: string;
-    emblem: string;
-  };
+  status: string;
+  minute?: number;
+  homeTeam: { id: number; name: string; crest: string };
+  awayTeam: { id: number; name: string; crest: string };
+  score: { fullTime: { home: number | null; away: number | null } };
+  competition: { id: number; name: string; emblem: string };
+  venue?: string;
 }
 
-type LeagueKey = keyof typeof LEAGUES;
-type ViewMode = 'live' | 'today' | 'upcoming' | 'results' | 'matchday';
+// =============================================
+// HELPERS
+// =============================================
 
-// Particle component for background effects
-const Particles = () => {
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {[...Array(20)].map((_, i) => (
-        <motion.div
-          key={i}
-          className="absolute w-1 h-1 bg-pink-500/30 rounded-full"
-          initial={{
-            x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1000),
-            y: Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 800),
-          }}
-          animate={{
-            y: [null, Math.random() * -500],
-            opacity: [0, 1, 0],
-          }}
-          transition={{
-            duration: Math.random() * 10 + 10,
-            repeat: Infinity,
-            ease: "linear",
-          }}
-        />
-      ))}
-    </div>
-  );
-};
+function getDateString(date: Date): string {
+  return date.toISOString().split('T')[0];
+}
 
-// Live Score Ticker Component
-const LiveScoreTicker = ({ matches }: { matches: Match[] }) => {
-  const liveMatches = matches.filter(m => m.status === 'IN_PLAY' || m.status === 'PAUSED');
-  const tickerRef = useRef<HTMLDivElement>(null);
+function getDayLabel(date: Date): string {
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
 
-  if (liveMatches.length === 0) {
-    return (
-      <div className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 py-3 border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-4 flex items-center justify-center gap-3">
-          <div className="w-2 h-2 bg-gray-500 rounded-full" />
-          <span className="text-gray-400 text-sm">Aucun match en direct actuellement</span>
-        </div>
-      </div>
-    );
+  if (getDateString(date) === getDateString(today)) return 'Aujourd\'hui';
+  if (getDateString(date) === getDateString(yesterday)) return 'Hier';
+  if (getDateString(date) === getDateString(tomorrow)) return 'Demain';
+
+  return date.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric' });
+}
+
+// Génère les jours navigables: 7 jours passés + aujourd'hui + 7 jours futurs
+function getNavigableDays(): { date: Date; label: string; dateStr: string; isPast: boolean }[] {
+  const days = [];
+
+  // 7 jours passés
+  for (let i = 7; i >= 1; i--) {
+    const date = new Date();
+    date.setDate(date.getDate() - i);
+    days.push({
+      date,
+      label: getDayLabel(date),
+      dateStr: getDateString(date),
+      isPast: true,
+    });
   }
 
-  return (
-    <div className="relative bg-gradient-to-r from-red-900/50 via-pink-900/50 to-red-900/50 py-3 border-b border-red-500/30 overflow-hidden">
-      {/* Pulsing background */}
-      <div className="absolute inset-0 bg-gradient-to-r from-red-500/10 via-transparent to-red-500/10 animate-pulse" />
+  // Aujourd'hui + 7 jours futurs
+  for (let i = 0; i < 7; i++) {
+    const date = new Date();
+    date.setDate(date.getDate() + i);
+    days.push({
+      date,
+      label: getDayLabel(date),
+      dateStr: getDateString(date),
+      isPast: false,
+    });
+  }
 
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="flex items-center gap-4">
-          {/* Live indicator */}
-          <div className="flex items-center gap-2 pr-4 border-r border-red-500/30">
-            <div className="relative">
-              <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
-              <div className="absolute inset-0 w-3 h-3 bg-red-500 rounded-full animate-ping" />
-            </div>
-            <span className="text-red-400 font-bold text-sm uppercase tracking-wider">Live</span>
-          </div>
+  return days;
+}
 
-          {/* Scrolling matches */}
-          <div ref={tickerRef} className="flex-1 overflow-hidden">
-            <motion.div
-              className="flex gap-8"
-              animate={{ x: [0, -50 * liveMatches.length] }}
-              transition={{ duration: liveMatches.length * 5, repeat: Infinity, ease: "linear" }}
-            >
-              {[...liveMatches, ...liveMatches].map((match, idx) => (
-                <Link
-                  key={`${match.id}-${idx}`}
-                  to={`/football/club/${match.homeTeam.id}`}
-                  className="flex items-center gap-3 whitespace-nowrap group"
-                >
-                  <img src={match.homeTeam.crest} alt="" className="w-5 h-5 object-contain" />
-                  <span className="text-white font-medium group-hover:text-pink-400 transition-colors">
-                    {match.homeTeam.shortName || match.homeTeam.name}
-                  </span>
-                  <span className="text-2xl font-bold text-white">
-                    {match.score.fullTime.home ?? 0} - {match.score.fullTime.away ?? 0}
-                  </span>
-                  <span className="text-white font-medium group-hover:text-pink-400 transition-colors">
-                    {match.awayTeam.shortName || match.awayTeam.name}
-                  </span>
-                  <img src={match.awayTeam.crest} alt="" className="w-5 h-5 object-contain" />
-                </Link>
-              ))}
-            </motion.div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
+function formatMatchTime(dateString: string): string {
+  return new Date(dateString).toLocaleTimeString('fr-FR', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
 
-// Match Card Component with Glassmorphism
-const MatchCard = ({
-  match,
-  onFocus,
-  featured = false
-}: {
-  match: Match;
-  onFocus: () => void;
-  featured?: boolean;
-}) => {
+// =============================================
+// COMPOSANTS
+// =============================================
+
+// Badge Live animé
+const LiveBadge = ({ minute }: { minute?: number }) => (
+  <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-red-500/20 border border-red-500/50 rounded-full">
+    <span className="relative flex h-2 w-2">
+      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75" />
+      <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
+    </span>
+    <span className="text-red-400 text-xs font-bold">
+      {minute ? `${minute}'` : 'LIVE'}
+    </span>
+  </div>
+);
+
+// Skeleton loader
+const MatchSkeleton = () => (
+  <div className="animate-pulse">
+    <div className="h-10 bg-gray-800/50 rounded-lg mb-3" />
+    {[1, 2, 3].map(i => (
+      <div key={i} className="h-20 bg-gray-800/30 rounded-xl mb-2" />
+    ))}
+  </div>
+);
+
+// Card Match
+const MatchCard = ({ match }: { match: Match }) => {
   const isLive = match.status === 'IN_PLAY' || match.status === 'PAUSED';
   const isFinished = match.status === 'FINISHED';
-  const isUpcoming = match.status === 'SCHEDULED' || match.status === 'TIMED';
-
-  const getStatusColor = () => {
-    if (isLive) return 'from-red-500 to-pink-500';
-    if (isFinished) return 'from-gray-500 to-gray-600';
-    return 'from-blue-500 to-cyan-500';
-  };
-
-  const getStatusText = () => {
-    if (isLive) return 'EN DIRECT';
-    if (isFinished) return 'TERMINÉ';
-    return formatDateFR(match.utcDate);
-  };
-
-  // Calculate countdown for upcoming matches
-  const getCountdown = () => {
-    if (!isUpcoming) return null;
-    const now = new Date();
-    const matchDate = new Date(match.utcDate);
-    const diff = matchDate.getTime() - now.getTime();
-
-    if (diff <= 0) return null;
-
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-
-    if (days > 0) return `${days}j ${hours}h`;
-    if (hours > 0) return `${hours}h ${minutes}m`;
-    return `${minutes}m`;
-  };
 
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 20, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -20, scale: 0.95 }}
-      whileHover={{ scale: 1.02, y: -5 }}
-      className={`relative group ${featured ? 'col-span-2 row-span-2' : ''}`}
+    <Link
+      to={`/match/${match.id}`}
+      className={`block p-4 rounded-xl border transition-all duration-200 hover:scale-[1.01] hover:shadow-lg ${
+        isLive
+          ? 'bg-red-500/5 border-red-500/30 hover:border-red-500/50'
+          : 'bg-gray-900/50 border-gray-800 hover:border-pink-500/30'
+      }`}
     >
-      {/* Glassmorphism card */}
-      <div className={`
-        relative overflow-hidden rounded-2xl
-        bg-gradient-to-br from-white/10 to-white/5
-        backdrop-blur-xl border border-white/10
-        hover:border-white/20 transition-all duration-500
-        ${isLive ? 'ring-2 ring-red-500/50 shadow-lg shadow-red-500/20' : ''}
-        ${featured ? 'p-8' : 'p-5'}
-      `}>
-        {/* Animated gradient background */}
-        <div className={`absolute inset-0 bg-gradient-to-br ${getStatusColor()} opacity-5 group-hover:opacity-10 transition-opacity`} />
-
-        {/* Competition badge */}
-        {match.competition && (
-          <div className="absolute top-3 right-3 flex items-center gap-2">
-            {match.competition.emblem && (
-              <img src={match.competition.emblem} alt="" className="w-5 h-5 object-contain opacity-50" />
-            )}
-          </div>
-        )}
-
-        {/* Focus button */}
-        <button
-          onClick={onFocus}
-          className="absolute top-3 left-3 p-2 rounded-lg bg-white/5 opacity-0 group-hover:opacity-100 hover:bg-white/10 transition-all"
-        >
-          <Maximize2 className="w-4 h-4 text-white" />
-        </button>
-
-        {/* Status badge */}
-        <div className="flex justify-center mb-4">
-          <div className={`
-            inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider
-            bg-gradient-to-r ${getStatusColor()} text-white
-          `}>
-            {isLive && (
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
-              </span>
-            )}
-            {getStatusText()}
-          </div>
+      <div className="flex items-center justify-between">
+        {/* Équipe domicile */}
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          <img
+            src={match.homeTeam.crest}
+            alt=""
+            className="w-8 h-8 object-contain flex-shrink-0"
+          />
+          <span className={`font-medium truncate ${isLive ? 'text-white' : 'text-gray-200'}`}>
+            {match.homeTeam.name}
+          </span>
         </div>
 
-        {/* Teams */}
-        <div className="flex items-center justify-between gap-4">
-          {/* Home Team */}
-          <Link
-            to={`/football/club/${match.homeTeam.id}`}
-            className="flex-1 text-center group/team"
-          >
-            <motion.div
-              whileHover={{ scale: 1.1, rotate: [0, -5, 5, 0] }}
-              transition={{ duration: 0.3 }}
-              className="relative mx-auto mb-3"
-              style={{ width: featured ? 80 : 56, height: featured ? 80 : 56 }}
-            >
-              {/* Glow effect */}
-              <div className="absolute inset-0 bg-gradient-to-br from-pink-500 to-purple-500 rounded-full blur-xl opacity-0 group-hover/team:opacity-30 transition-opacity" />
-              <img
-                src={match.homeTeam.crest}
-                alt={match.homeTeam.name}
-                className="relative w-full h-full object-contain drop-shadow-lg"
-              />
-            </motion.div>
-            <h3 className={`font-bold text-white group-hover/team:text-pink-400 transition-colors line-clamp-1 ${featured ? 'text-lg' : 'text-sm'}`}>
-              {match.homeTeam.shortName || match.homeTeam.name}
-            </h3>
-          </Link>
-
-          {/* Score */}
-          <div className="flex flex-col items-center px-4">
-            {isUpcoming ? (
-              <div className="text-center">
-                <div className={`font-bold text-white ${featured ? 'text-4xl' : 'text-2xl'}`}>VS</div>
-                {getCountdown() && (
-                  <div className="mt-2 px-3 py-1 bg-blue-500/20 rounded-full">
-                    <span className="text-blue-400 text-xs font-medium">{getCountdown()}</span>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="flex items-center gap-3">
-                <motion.span
-                  key={match.score.fullTime.home}
-                  initial={{ scale: 1.5, color: '#ec4899' }}
-                  animate={{ scale: 1, color: '#ffffff' }}
-                  className={`font-black ${featured ? 'text-5xl' : 'text-3xl'}`}
-                >
-                  {match.score.fullTime.home ?? 0}
-                </motion.span>
-                <span className={`text-gray-500 ${featured ? 'text-3xl' : 'text-xl'}`}>-</span>
-                <motion.span
-                  key={match.score.fullTime.away}
-                  initial={{ scale: 1.5, color: '#ec4899' }}
-                  animate={{ scale: 1, color: '#ffffff' }}
-                  className={`font-black ${featured ? 'text-5xl' : 'text-3xl'}`}
-                >
-                  {match.score.fullTime.away ?? 0}
-                </motion.span>
-              </div>
-            )}
-
-            {/* Half-time score */}
-            {isFinished && match.score.halfTime.home !== null && (
-              <div className="mt-1 text-xs text-gray-500">
-                MT: {match.score.halfTime.home} - {match.score.halfTime.away}
-              </div>
-            )}
-          </div>
-
-          {/* Away Team */}
-          <Link
-            to={`/football/club/${match.awayTeam.id}`}
-            className="flex-1 text-center group/team"
-          >
-            <motion.div
-              whileHover={{ scale: 1.1, rotate: [0, 5, -5, 0] }}
-              transition={{ duration: 0.3 }}
-              className="relative mx-auto mb-3"
-              style={{ width: featured ? 80 : 56, height: featured ? 80 : 56 }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full blur-xl opacity-0 group-hover/team:opacity-30 transition-opacity" />
-              <img
-                src={match.awayTeam.crest}
-                alt={match.awayTeam.name}
-                className="relative w-full h-full object-contain drop-shadow-lg"
-              />
-            </motion.div>
-            <h3 className={`font-bold text-white group-hover/team:text-pink-400 transition-colors line-clamp-1 ${featured ? 'text-lg' : 'text-sm'}`}>
-              {match.awayTeam.shortName || match.awayTeam.name}
-            </h3>
-          </Link>
-        </div>
-
-        {/* Matchday info */}
-        <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-center gap-4 text-xs text-gray-400">
-          <span>Journée {match.matchday}</span>
-          {match.competition && (
+        {/* Score / Heure */}
+        <div className="flex flex-col items-center mx-4 min-w-[80px]">
+          {isLive || isFinished ? (
             <>
-              <span>•</span>
-              <span>{match.competition.name}</span>
+              <div className="flex items-center gap-2 text-xl font-bold">
+                <span className="text-white">{match.score.fullTime.home ?? 0}</span>
+                <span className="text-gray-600">-</span>
+                <span className="text-white">{match.score.fullTime.away ?? 0}</span>
+              </div>
+              {isLive && <LiveBadge minute={match.minute} />}
+              {isFinished && (
+                <span className="text-xs text-gray-500 mt-1">Terminé</span>
+              )}
+            </>
+          ) : (
+            <>
+              <span className="text-lg font-bold text-pink-400">
+                {formatMatchTime(match.utcDate)}
+              </span>
+              {match.venue && (
+                <span className="text-xs text-gray-500 truncate max-w-[100px]">
+                  {match.venue}
+                </span>
+              )}
             </>
           )}
         </div>
+
+        {/* Équipe extérieur */}
+        <div className="flex items-center gap-3 flex-1 min-w-0 justify-end">
+          <span className={`font-medium truncate text-right ${isLive ? 'text-white' : 'text-gray-200'}`}>
+            {match.awayTeam.name}
+          </span>
+          <img
+            src={match.awayTeam.crest}
+            alt=""
+            className="w-8 h-8 object-contain flex-shrink-0"
+          />
+        </div>
       </div>
-    </motion.div>
+    </Link>
   );
 };
 
-// Focus Match Modal
-const FocusMatchModal = ({ match, onClose }: { match: Match | null; onClose: () => void }) => {
-  if (!match) return null;
-
-  const isLive = match.status === 'IN_PLAY' || match.status === 'PAUSED';
+// Section de compétition
+const CompetitionSection = ({
+  competition,
+  matches,
+  isCollapsed,
+  onToggle,
+}: {
+  competition: { id: number; name: string; emblem: string };
+  matches: Match[];
+  isCollapsed: boolean;
+  onToggle: () => void;
+}) => {
+  const compInfo = COMPETITIONS[competition.id];
+  const liveCount = matches.filter(m => m.status === 'IN_PLAY' || m.status === 'PAUSED').length;
 
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl"
-        onClick={onClose}
+    <div className="mb-4">
+      {/* Header */}
+      <button
+        onClick={onToggle}
+        className="w-full flex items-center justify-between px-4 py-3 bg-gray-800/50 rounded-t-xl border border-gray-700/50 hover:bg-gray-800/70 transition-colors"
       >
-        <motion.div
-          initial={{ scale: 0.8, y: 50 }}
-          animate={{ scale: 1, y: 0 }}
-          exit={{ scale: 0.8, y: 50 }}
-          onClick={(e) => e.stopPropagation()}
-          className="relative w-full max-w-4xl bg-gradient-to-br from-gray-900 to-black rounded-3xl border border-white/10 overflow-hidden"
-        >
-          {/* Close button */}
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors z-10"
+        <div className="flex items-center gap-3">
+          {competition.emblem ? (
+            <img src={competition.emblem} alt="" className="w-6 h-6 object-contain" />
+          ) : (
+            <span className="text-xl">{compInfo?.flag || '⚽'}</span>
+          )}
+          <span className="text-white font-semibold">{competition.name}</span>
+          {liveCount > 0 && (
+            <span className="ml-2 px-2 py-0.5 bg-red-500/20 text-red-400 text-xs font-bold rounded-full">
+              {liveCount} live
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="text-gray-500 text-sm">{matches.length}</span>
+          <ChevronDown
+            className={`w-5 h-5 text-gray-400 transition-transform ${isCollapsed ? '' : 'rotate-180'}`}
+          />
+        </div>
+      </button>
+
+      {/* Matchs */}
+      <AnimatePresence>
+        {!isCollapsed && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
           >
-            <X className="w-6 h-6 text-white" />
-          </button>
-
-          {/* Header gradient */}
-          <div className={`h-2 bg-gradient-to-r ${isLive ? 'from-red-500 via-pink-500 to-red-500' : 'from-blue-500 via-purple-500 to-pink-500'}`} />
-
-          <div className="p-8 md:p-12">
-            {/* Live badge */}
-            {isLive && (
-              <div className="flex justify-center mb-6">
-                <div className="inline-flex items-center gap-3 px-6 py-2 bg-red-500/20 border border-red-500/50 rounded-full">
-                  <div className="relative">
-                    <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
-                    <div className="absolute inset-0 w-3 h-3 bg-red-500 rounded-full animate-ping" />
-                  </div>
-                  <span className="text-red-400 font-bold uppercase tracking-wider">Match en direct</span>
-                </div>
-              </div>
-            )}
-
-            {/* Teams and Score */}
-            <div className="flex items-center justify-center gap-8 md:gap-16">
-              {/* Home Team */}
-              <div className="text-center">
-                <motion.img
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: 'spring', delay: 0.2 }}
-                  src={match.homeTeam.crest}
-                  alt={match.homeTeam.name}
-                  className="w-24 h-24 md:w-32 md:h-32 object-contain mx-auto mb-4"
-                />
-                <h2 className="text-xl md:text-2xl font-bold text-white">{match.homeTeam.name}</h2>
-              </div>
-
-              {/* Score */}
-              <div className="text-center">
-                <div className="flex items-center gap-4">
-                  <motion.span
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.3 }}
-                    className="text-6xl md:text-8xl font-black text-white"
-                  >
-                    {match.score.fullTime.home ?? 0}
-                  </motion.span>
-                  <span className="text-4xl md:text-6xl text-gray-600">:</span>
-                  <motion.span
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.3 }}
-                    className="text-6xl md:text-8xl font-black text-white"
-                  >
-                    {match.score.fullTime.away ?? 0}
-                  </motion.span>
-                </div>
-                {match.score.halfTime.home !== null && (
-                  <div className="mt-2 text-gray-500">
-                    Mi-temps: {match.score.halfTime.home} - {match.score.halfTime.away}
-                  </div>
-                )}
-              </div>
-
-              {/* Away Team */}
-              <div className="text-center">
-                <motion.img
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: 'spring', delay: 0.2 }}
-                  src={match.awayTeam.crest}
-                  alt={match.awayTeam.name}
-                  className="w-24 h-24 md:w-32 md:h-32 object-contain mx-auto mb-4"
-                />
-                <h2 className="text-xl md:text-2xl font-bold text-white">{match.awayTeam.name}</h2>
-              </div>
+            <div className="space-y-2 p-3 bg-gray-900/30 rounded-b-xl border-x border-b border-gray-700/50">
+              {matches.map(match => (
+                <MatchCard key={match.id} match={match} />
+              ))}
             </div>
-
-            {/* Match Info */}
-            <div className="mt-8 flex flex-wrap justify-center gap-4">
-              <div className="px-4 py-2 bg-white/5 rounded-xl text-gray-400 text-sm">
-                <Calendar className="w-4 h-4 inline mr-2" />
-                {formatDateFR(match.utcDate)}
-              </div>
-              <div className="px-4 py-2 bg-white/5 rounded-xl text-gray-400 text-sm">
-                <Trophy className="w-4 h-4 inline mr-2" />
-                {match.competition?.name}
-              </div>
-              <div className="px-4 py-2 bg-white/5 rounded-xl text-gray-400 text-sm">
-                Journée {match.matchday}
-              </div>
-            </div>
-
-            {/* Actions */}
-            <div className="mt-8 flex justify-center gap-4">
-              <Link
-                to={`/football/club/${match.homeTeam.id}`}
-                className="px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold rounded-xl hover:opacity-90 transition-opacity"
-              >
-                Voir {match.homeTeam.shortName || match.homeTeam.name}
-              </Link>
-              <Link
-                to={`/football/club/${match.awayTeam.id}`}
-                className="px-6 py-3 bg-white/10 text-white font-bold rounded-xl hover:bg-white/20 transition-colors"
-              >
-                Voir {match.awayTeam.shortName || match.awayTeam.name}
-              </Link>
-            </div>
-          </div>
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 };
 
-// Main Page Component
+// =============================================
+// PAGE PRINCIPALE
+// =============================================
+
 export default function MatchsPage() {
-  // State
-  const [viewMode, setViewMode] = useState<ViewMode>('today');
-  const [selectedLeague, setSelectedLeague] = useState<LeagueKey | 'ALL'>('ALL');
+  // Toutes les compétitions actives
+  const allCompetitions = getAllActiveCompetitions();
+  const allCompetitionIds = allCompetitions.map(c => c.id);
+
+  // États
   const [matches, setMatches] = useState<Match[]>([]);
+  const [liveMatches, setLiveMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
-  const [focusMatch, setFocusMatch] = useState<Match | null>(null);
-  const [currentMatchday, setCurrentMatchday] = useState(1);
-  const [selectedMatchday, setSelectedMatchday] = useState(1);
-  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const { scrollY } = useScroll();
-  const headerOpacity = useTransform(scrollY, [0, 200], [1, 0.8]);
+  // Filtres
+  const [selectedDay, setSelectedDay] = useState(getDateString(new Date()));
+  const [selectedCompetitions, setSelectedCompetitions] = useState<number[]>(allCompetitionIds);
+  const [collapsedCompetitions, setCollapsedCompetitions] = useState<Set<number>>(new Set());
+  const [filter, setFilter] = useState<'all' | 'live' | 'upcoming'>('all');
 
-  // Fetch matches based on view mode
-  useEffect(() => {
-    async function fetchMatches() {
-      setLoading(true);
-      try {
-        let data: Match[] = [];
+  const refreshTimerRef = useRef<number | null>(null);
+  const days = getNavigableDays();
+  const todayIndex = days.findIndex(d => d.dateStr === getDateString(new Date()));
 
-        if (viewMode === 'today' || viewMode === 'live') {
-          data = await getTodayFixtures();
-        } else if (viewMode === 'upcoming') {
-          if (selectedLeague === 'ALL') {
-            // Fetch from all leagues
-            const promises = Object.values(LEAGUES).map(code => getNextFixtures(code, 5));
-            const results = await Promise.all(promises);
-            data = results.flat().sort((a, b) =>
-              new Date(a.utcDate).getTime() - new Date(b.utcDate).getTime()
-            );
-          } else {
-            data = await getNextFixtures(LEAGUES[selectedLeague], 20);
-          }
-        } else if (viewMode === 'results') {
-          if (selectedLeague === 'ALL') {
-            const promises = Object.values(LEAGUES).map(code => getLastResults(code, 5));
-            const results = await Promise.all(promises);
-            data = results.flat().sort((a, b) =>
-              new Date(b.utcDate).getTime() - new Date(a.utcDate).getTime()
-            );
-          } else {
-            data = await getLastResults(LEAGUES[selectedLeague], 20);
-          }
-        } else if (viewMode === 'matchday' && selectedLeague !== 'ALL') {
-          const md = await getCurrentMatchday(LEAGUES[selectedLeague]);
-          setCurrentMatchday(md);
-          setSelectedMatchday(md);
-          data = await getMatchesByMatchday(LEAGUES[selectedLeague], md);
-        }
+  // Fetch des matchs
+  const fetchMatches = useCallback(async () => {
+    try {
+      setError(null);
 
-        setMatches(data);
-      } catch (error) {
-        console.error('Error fetching matches:', error);
-      } finally {
-        setLoading(false);
-      }
+      // Récupérer matchs live
+      const liveData = await getLiveMatches();
+      const filteredLive = liveData.filter((m: Match) =>
+        selectedCompetitions.includes(m.competition?.id)
+      );
+      setLiveMatches(filteredLive);
+
+      // Récupérer matchs du jour sélectionné
+      const dayMatches = await getFixturesByDate(selectedDay, selectedCompetitions);
+      setMatches(dayMatches);
+
+      setLoading(false);
+    } catch (err) {
+      console.error('Erreur chargement matchs:', err);
+      setError('Impossible de charger les matchs');
+      setLoading(false);
     }
+  }, [selectedDay, selectedCompetitions]);
 
+  // Fetch initial + auto-refresh
+  useEffect(() => {
+    setLoading(true);
     fetchMatches();
-  }, [viewMode, selectedLeague]);
 
-  // Fetch matchday when it changes
+    // Auto-refresh toutes les 30 secondes
+    refreshTimerRef.current = window.setInterval(fetchMatches, 30000);
+
+    return () => {
+      if (refreshTimerRef.current) {
+        clearInterval(refreshTimerRef.current);
+      }
+    };
+  }, [fetchMatches]);
+
+  // Scroll vers "Aujourd'hui" au chargement
   useEffect(() => {
-    async function fetchMatchday() {
-      if (viewMode !== 'matchday' || selectedLeague === 'ALL') return;
-
-      setLoading(true);
-      try {
-        const data = await getMatchesByMatchday(LEAGUES[selectedLeague], selectedMatchday);
-        setMatches(data);
-      } catch (error) {
-        console.error('Error fetching matchday:', error);
-      } finally {
-        setLoading(false);
+    const daysNav = document.getElementById('days-nav');
+    if (daysNav && todayIndex >= 0) {
+      // Calculer la position pour centrer "Aujourd'hui"
+      const buttons = daysNav.querySelectorAll('button');
+      if (buttons[todayIndex]) {
+        const button = buttons[todayIndex] as HTMLButtonElement;
+        const scrollPos = button.offsetLeft - (daysNav.clientWidth / 2) + (button.clientWidth / 2);
+        daysNav.scrollTo({ left: scrollPos, behavior: 'smooth' });
       }
     }
+  }, [todayIndex]);
 
-    fetchMatchday();
-  }, [selectedMatchday, viewMode, selectedLeague]);
-
-  // Refresh function
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    // Simulate refresh delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    // Re-fetch current view
-    const event = new Event('refresh');
-    window.dispatchEvent(event);
-    setRefreshing(false);
+  // Sélectionner/désélectionner une compétition
+  const toggleCompetition = (compId: number) => {
+    setSelectedCompetitions(prev => {
+      if (prev.includes(compId)) {
+        if (prev.length === 1) return prev;
+        return prev.filter(id => id !== compId);
+      }
+      return [...prev, compId];
+    });
   };
 
-  // Filter matches by league if needed
-  const filteredMatches = selectedLeague === 'ALL'
-    ? matches
-    : matches.filter(m => m.competition?.code === LEAGUES[selectedLeague]);
+  // Sélectionner toutes les compétitions
+  const selectAllCompetitions = () => {
+    setSelectedCompetitions(allCompetitionIds);
+  };
 
-  // Separate live, upcoming and finished
-  const liveMatches = filteredMatches.filter(m => m.status === 'IN_PLAY' || m.status === 'PAUSED');
-  const upcomingMatches = filteredMatches.filter(m => m.status === 'SCHEDULED' || m.status === 'TIMED');
-  const finishedMatches = filteredMatches.filter(m => m.status === 'FINISHED');
+  // Toggle collapse
+  const toggleCollapse = (compId: number) => {
+    setCollapsedCompetitions(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(compId)) {
+        newSet.delete(compId);
+      } else {
+        newSet.add(compId);
+      }
+      return newSet;
+    });
+  };
+
+  // Grouper les matchs par compétition
+  const groupMatchesByCompetition = (matchList: Match[]) => {
+    const groups: Record<number, { competition: Match['competition']; matches: Match[] }> = {};
+
+    matchList.forEach(match => {
+      const compId = match.competition?.id;
+      if (!compId) return;
+
+      if (!groups[compId]) {
+        groups[compId] = {
+          competition: match.competition,
+          matches: [],
+        };
+      }
+      groups[compId].matches.push(match);
+    });
+
+    // Trier selon l'ordre défini
+    const order = getMatchesDisplayOrder();
+    return Object.entries(groups)
+      .sort(([aId], [bId]) => {
+        const aOrder = order.indexOf(Number(aId));
+        const bOrder = order.indexOf(Number(bId));
+        if (aOrder === -1 && bOrder === -1) return 0;
+        if (aOrder === -1) return 1;
+        if (bOrder === -1) return -1;
+        return aOrder - bOrder;
+      })
+      .map(([, value]) => value);
+  };
+
+  // Filtrer les matchs
+  const getFilteredMatches = () => {
+    if (filter === 'live') {
+      return liveMatches;
+    }
+    if (filter === 'upcoming') {
+      return matches.filter(m => m.status === 'SCHEDULED' || m.status === 'TIMED');
+    }
+    return matches;
+  };
+
+  // Compteurs
+  const liveCount = liveMatches.length;
+  const todayCount = matches.length;
+  const upcomingCount = matches.filter(m => m.status === 'SCHEDULED' || m.status === 'TIMED').length;
+  const finishedCount = matches.filter(m => m.status === 'FINISHED').length;
+  const isViewingPastDay = days.find(d => d.dateStr === selectedDay)?.isPast || false;
+
+  const filteredMatches = getFilteredMatches();
+  const groupedMatches = groupMatchesByCompetition(filteredMatches);
+  const groupedLiveMatches = groupMatchesByCompetition(liveMatches);
 
   return (
     <div className="min-h-screen bg-black">
-      {/* Background effects */}
+      {/* Background */}
       <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(236,72,153,0.15),transparent_50%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,rgba(59,130,246,0.15),transparent_50%)]" />
-        <Particles />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(236,72,153,0.1),transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,rgba(59,130,246,0.1),transparent_50%)]" />
       </div>
 
-      {/* Live Score Ticker */}
-      <div className="fixed top-20 left-0 right-0 z-40">
-        <LiveScoreTicker matches={matches} />
-      </div>
-
-      {/* Main Content */}
-      <div className="relative pt-36 pb-20">
-        {/* Hero Section */}
-        <motion.section
-          style={{ opacity: headerOpacity }}
-          className="relative py-16 overflow-hidden"
-        >
-          <div className="max-w-7xl mx-auto px-4 text-center">
-            {/* Badge */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-pink-500/20 border border-pink-500/30 rounded-full mb-6"
-            >
-              <Zap className="w-4 h-4 text-pink-500" />
-              <span className="text-pink-400 font-medium text-sm">Match Center Live</span>
-            </motion.div>
-
-            {/* Title */}
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="text-5xl md:text-7xl font-black mb-6"
-            >
-              <span className="text-white">Tous les </span>
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500">
-                Matchs
-              </span>
-            </motion.h1>
-
-            {/* Subtitle */}
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto mb-8"
-            >
-              Scores en direct, calendriers, résultats et analyses. Tout le football en temps réel.
-            </motion.p>
-
-            {/* Stats */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="flex flex-wrap justify-center gap-6 md:gap-12"
-            >
-              <div className="text-center">
-                <div className="text-3xl font-bold text-white">{liveMatches.length}</div>
-                <div className="text-gray-500 text-sm">En direct</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-white">{upcomingMatches.length}</div>
-                <div className="text-gray-500 text-sm">À venir</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-white">{finishedMatches.length}</div>
-                <div className="text-gray-500 text-sm">Terminés</div>
-              </div>
-            </motion.div>
+      {/* Header */}
+      <header className="relative pt-24 pb-6">
+        <div className="max-w-5xl mx-auto px-4">
+          {/* Titre */}
+          <div className="text-center mb-6">
+            <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
+              Match Center
+            </h1>
+            <p className="text-gray-400">Tous les matchs en temps réel</p>
           </div>
-        </motion.section>
 
-        {/* Filters Section */}
-        <section className="sticky top-32 z-30 py-4 bg-black/80 backdrop-blur-xl border-y border-white/10">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="flex flex-col md:flex-row items-center gap-4">
-              {/* View Mode Tabs */}
-              <div className="flex items-center gap-1 p-1 bg-white/5 rounded-xl">
-                {[
-                  { id: 'today', label: 'Aujourd\'hui', icon: Calendar },
-                  { id: 'live', label: 'En direct', icon: Play },
-                  { id: 'upcoming', label: 'À venir', icon: Clock },
-                  { id: 'results', label: 'Résultats', icon: Trophy },
-                  { id: 'matchday', label: 'Journée', icon: Target },
-                ].map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setViewMode(tab.id as ViewMode)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all ${
-                      viewMode === tab.id
-                        ? 'bg-gradient-to-r from-pink-500 to-purple-500 text-white'
-                        : 'text-gray-400 hover:text-white hover:bg-white/5'
-                    }`}
-                  >
-                    <tab.icon className="w-4 h-4" />
-                    <span className="hidden sm:inline">{tab.label}</span>
-                  </button>
-                ))}
-              </div>
-
-              {/* League Filter */}
-              <div className="flex items-center gap-2 flex-wrap justify-center">
-                <button
-                  onClick={() => setSelectedLeague('ALL')}
-                  className={`px-4 py-2 rounded-full font-medium text-sm transition-all ${
-                    selectedLeague === 'ALL'
-                      ? 'bg-white text-black'
-                      : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
-                  }`}
-                >
-                  Toutes
-                </button>
-                {(Object.keys(LEAGUES) as LeagueKey[]).map((league) => {
-                  const info = LEAGUE_INFO[LEAGUES[league]];
-                  return (
-                    <button
-                      key={league}
-                      onClick={() => setSelectedLeague(league)}
-                      className={`px-4 py-2 rounded-full font-medium text-sm transition-all ${
-                        selectedLeague === league
-                          ? `bg-gradient-to-r ${info.color} text-white`
-                          : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
-                      }`}
-                    >
-                      {info.flag}
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Refresh button */}
-              <motion.button
-                onClick={handleRefresh}
-                animate={{ rotate: refreshing ? 360 : 0 }}
-                transition={{ duration: 1, repeat: refreshing ? Infinity : 0 }}
-                className="p-2 rounded-lg bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white transition-all ml-auto"
+          {/* Compteurs cliquables */}
+          <div className="flex justify-center gap-3 mb-6 flex-wrap">
+            {/* Live - seulement pour aujourd'hui ou jours futurs */}
+            {!isViewingPastDay && (
+              <button
+                onClick={() => setFilter(filter === 'live' ? 'all' : 'live')}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all ${
+                  filter === 'live'
+                    ? 'bg-red-500 text-white'
+                    : 'bg-gray-800/50 text-gray-300 hover:bg-gray-800'
+                }`}
               >
-                <RefreshCw className="w-5 h-5" />
-              </motion.button>
-            </div>
+                <Radio className="w-4 h-4" />
+                <span>{liveCount} Live</span>
+              </button>
+            )}
 
-            {/* Matchday Navigation (only for matchday view) */}
-            {viewMode === 'matchday' && selectedLeague !== 'ALL' && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                className="mt-4 flex items-center justify-center gap-4"
+            <button
+              onClick={() => setFilter('all')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all ${
+                filter === 'all'
+                  ? isViewingPastDay ? 'bg-violet-500 text-white' : 'bg-pink-500 text-white'
+                  : 'bg-gray-800/50 text-gray-300 hover:bg-gray-800'
+              }`}
+            >
+              <Calendar className="w-4 h-4" />
+              <span>{todayCount} {isViewingPastDay ? 'Résultats' : 'Matchs'}</span>
+            </button>
+
+            {/* Terminé - pour les jours passés */}
+            {isViewingPastDay ? (
+              <button
+                onClick={() => setFilter('all')}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all ${
+                  filter === 'all'
+                    ? 'bg-gray-600 text-white'
+                    : 'bg-gray-800/50 text-gray-300 hover:bg-gray-800'
+                }`}
               >
-                <button
-                  onClick={() => setSelectedMatchday(Math.max(1, selectedMatchday - 1))}
-                  disabled={selectedMatchday <= 1}
-                  className="p-2 rounded-lg bg-white/5 text-white hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <ChevronLeft className="w-5 h-5" />
-                </button>
-
-                <div className="flex items-center gap-2">
-                  <span className="text-white font-bold text-lg">Journée {selectedMatchday}</span>
-                  {selectedMatchday === currentMatchday && (
-                    <span className="px-2 py-0.5 bg-pink-500 text-white text-xs font-bold rounded-full">
-                      Actuelle
-                    </span>
-                  )}
-                </div>
-
-                <button
-                  onClick={() => setSelectedMatchday(selectedMatchday + 1)}
-                  disabled={selectedMatchday >= LEAGUE_INFO[LEAGUES[selectedLeague]].totalMatchdays}
-                  className="p-2 rounded-lg bg-white/5 text-white hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <ChevronRight className="w-5 h-5" />
-                </button>
-
-                {selectedMatchday !== currentMatchday && (
-                  <button
-                    onClick={() => setSelectedMatchday(currentMatchday)}
-                    className="text-pink-400 text-sm hover:underline ml-4"
-                  >
-                    Retour à J{currentMatchday}
-                  </button>
-                )}
-              </motion.div>
+                <Trophy className="w-4 h-4" />
+                <span>{finishedCount} Terminés</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => setFilter(filter === 'upcoming' ? 'all' : 'upcoming')}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all ${
+                  filter === 'upcoming'
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-gray-800/50 text-gray-300 hover:bg-gray-800'
+                }`}
+              >
+                <Clock className="w-4 h-4" />
+                <span>{upcomingCount} À venir</span>
+              </button>
             )}
           </div>
-        </section>
+        </div>
+      </header>
 
-        {/* Matches Grid */}
-        <section className="max-w-7xl mx-auto px-4 py-12">
-          {loading ? (
-            <div className="flex flex-col items-center justify-center py-20">
-              <div className="w-16 h-16 border-4 border-pink-500 border-t-transparent rounded-full animate-spin" />
-              <p className="mt-4 text-gray-400">Chargement des matchs...</p>
+      {/* Navigation par jour */}
+      <div className="sticky top-20 z-40 bg-black/90 backdrop-blur-sm border-y border-gray-800">
+        <div className="max-w-5xl mx-auto px-4">
+          <div className="flex gap-1 py-3 overflow-x-auto scrollbar-hide" id="days-nav">
+            {/* Label Résultats */}
+            <div className="flex-shrink-0 flex items-center pr-3 mr-2 border-r border-gray-700">
+              <span className="text-xs text-gray-500 uppercase tracking-wider">Résultats</span>
             </div>
-          ) : filteredMatches.length === 0 ? (
-            <div className="text-center py-20">
-              <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-white/5 flex items-center justify-center">
-                <Calendar className="w-10 h-10 text-gray-600" />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-2">Aucun match trouvé</h3>
-              <p className="text-gray-400">Essayez de changer les filtres ou la date</p>
+
+            {days.map((day, index) => {
+              const isToday = day.dateStr === getDateString(new Date());
+              const isSelected = selectedDay === day.dateStr;
+
+              return (
+                <button
+                  key={day.dateStr}
+                  onClick={() => {
+                    setSelectedDay(day.dateStr);
+                    setFilter('all');
+                  }}
+                  className={`flex-shrink-0 px-4 py-2 rounded-lg font-medium text-sm transition-all ${
+                    isSelected
+                      ? day.isPast
+                        ? 'bg-gradient-to-r from-violet-500 to-violet-600 text-white'
+                        : 'bg-gradient-to-r from-pink-500 to-pink-600 text-white'
+                      : isToday
+                        ? 'text-pink-400 bg-pink-500/10 hover:bg-pink-500/20'
+                        : day.isPast
+                          ? 'text-gray-500 hover:text-gray-300 hover:bg-gray-800/50'
+                          : 'text-gray-400 hover:text-white hover:bg-gray-800'
+                  }`}
+                >
+                  {day.label}
+                </button>
+              );
+            })}
+
+            {/* Label À venir (après aujourd'hui) */}
+            <div className="flex-shrink-0 flex items-center pl-3 ml-2 border-l border-gray-700">
+              <span className="text-xs text-gray-500 uppercase tracking-wider">À venir</span>
             </div>
-          ) : (
-            <AnimatePresence mode="popLayout">
-              {/* Live Matches Section */}
-              {viewMode !== 'results' && liveMatches.length > 0 && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="mb-12"
-                >
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="relative">
-                      <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
-                      <div className="absolute inset-0 w-3 h-3 bg-red-500 rounded-full animate-ping" />
-                    </div>
-                    <h2 className="text-2xl font-bold text-white">En direct</h2>
-                    <span className="text-gray-500">({liveMatches.length})</span>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {liveMatches.map((match, idx) => (
-                      <MatchCard
-                        key={match.id}
-                        match={match}
-                        onFocus={() => setFocusMatch(match)}
-                        featured={idx === 0 && liveMatches.length > 2}
-                      />
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-
-              {/* Upcoming Matches Section */}
-              {viewMode !== 'results' && upcomingMatches.length > 0 && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="mb-12"
-                >
-                  <div className="flex items-center gap-3 mb-6">
-                    <Clock className="w-5 h-5 text-blue-500" />
-                    <h2 className="text-2xl font-bold text-white">À venir</h2>
-                    <span className="text-gray-500">({upcomingMatches.length})</span>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {upcomingMatches.map((match) => (
-                      <MatchCard
-                        key={match.id}
-                        match={match}
-                        onFocus={() => setFocusMatch(match)}
-                      />
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-
-              {/* Finished Matches Section */}
-              {(viewMode === 'results' || viewMode === 'today' || viewMode === 'matchday') && finishedMatches.length > 0 && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                >
-                  <div className="flex items-center gap-3 mb-6">
-                    <Trophy className="w-5 h-5 text-yellow-500" />
-                    <h2 className="text-2xl font-bold text-white">Résultats</h2>
-                    <span className="text-gray-500">({finishedMatches.length})</span>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {finishedMatches.map((match) => (
-                      <MatchCard
-                        key={match.id}
-                        match={match}
-                        onFocus={() => setFocusMatch(match)}
-                      />
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          )}
-        </section>
+          </div>
+        </div>
       </div>
 
-      {/* Focus Match Modal */}
-      {focusMatch && (
-        <FocusMatchModal match={focusMatch} onClose={() => setFocusMatch(null)} />
-      )}
+      {/* Filtre compétitions - Premium Design */}
+      <div className="max-w-5xl mx-auto px-4 pt-6 pb-2">
+        <div className="flex items-center gap-3 overflow-x-auto scrollbar-hide pb-2">
+          {/* Bouton ALL - reste sur cette page avec tous les matchs */}
+          <button
+            onClick={selectAllCompetitions}
+            className={`flex-shrink-0 px-4 py-2 rounded-2xl text-xs font-bold uppercase tracking-wider transition-all duration-300 ${
+              selectedCompetitions.length === allCompetitionIds.length
+                ? 'bg-gradient-to-r from-pink-500 to-violet-500 text-white shadow-lg shadow-pink-500/25'
+                : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
+            }`}
+          >
+            All
+          </button>
+
+          {/* Séparateur */}
+          <div className="w-px h-6 bg-gradient-to-b from-transparent via-gray-700 to-transparent" />
+
+          {/* Compétitions - liens vers la page des journées */}
+          {allCompetitions.map(comp => {
+            const isSelected = selectedCompetitions.length === 1 && selectedCompetitions.includes(comp.id);
+            return (
+              <Link
+                key={comp.id}
+                to={`/classements/matchday/${comp.id}`}
+                className={`group relative flex-shrink-0 px-3 py-2 rounded-2xl transition-all duration-300 ${
+                  isSelected
+                    ? 'bg-gradient-to-r from-white/15 to-white/5 shadow-lg'
+                    : 'hover:bg-white/5'
+                }`}
+                title={`Voir les journées - ${comp.name}`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className={`text-base transition-transform duration-300 ${isSelected ? 'scale-110' : 'group-hover:scale-105'}`}>
+                    {comp.flag}
+                  </span>
+                  <span className={`text-xs font-semibold uppercase tracking-wide transition-all duration-300 ${
+                    isSelected ? 'text-white' : 'text-gray-500 group-hover:text-gray-300'
+                  }`}>
+                    {comp.shortName}
+                  </span>
+                </div>
+                {/* Barre de sélection en bas */}
+                <span className={`absolute bottom-0 left-1/2 -translate-x-1/2 h-0.5 bg-gradient-to-r from-pink-500 to-violet-500 rounded-full transition-all duration-300 ${
+                  isSelected ? 'w-6 opacity-100' : 'w-0 opacity-0'
+                }`} />
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Contenu principal */}
+      <main className="relative max-w-5xl mx-auto px-4 py-8">
+        {/* Loading */}
+        {loading && (
+          <div className="space-y-6">
+            <MatchSkeleton />
+            <MatchSkeleton />
+          </div>
+        )}
+
+        {/* Erreur */}
+        {error && !loading && (
+          <div className="text-center py-16">
+            <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-4">
+              <Trophy className="w-8 h-8 text-red-500" />
+            </div>
+            <h3 className="text-xl font-bold text-white mb-2">{error}</h3>
+            <button
+              onClick={fetchMatches}
+              className="mt-4 px-6 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-colors inline-flex items-center gap-2"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Réessayer
+            </button>
+          </div>
+        )}
+
+        {/* Contenu */}
+        {!loading && !error && (
+          <>
+            {/* Matchs Live (toujours en haut si filter !== 'live') */}
+            {filter !== 'live' && liveMatches.length > 0 && (
+              <div className="mb-8">
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="relative flex h-3 w-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500" />
+                  </span>
+                  <h2 className="text-xl font-bold text-white">Matchs en direct</h2>
+                </div>
+                {groupedLiveMatches.map(group => (
+                  <CompetitionSection
+                    key={`live-${group.competition.id}`}
+                    competition={group.competition}
+                    matches={group.matches}
+                    isCollapsed={collapsedCompetitions.has(group.competition.id)}
+                    onToggle={() => toggleCollapse(group.competition.id)}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Message si aucun match */}
+            {filter === 'live' && liveMatches.length === 0 && (
+              <div className="text-center py-16">
+                <Radio className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                <h3 className="text-xl font-bold text-white mb-2">Aucun match en direct</h3>
+                <p className="text-gray-500">Il n'y a pas de match en cours actuellement</p>
+              </div>
+            )}
+
+            {filter !== 'live' && groupedMatches.length === 0 && (
+              <div className="text-center py-16">
+                <Calendar className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                <h3 className="text-xl font-bold text-white mb-2">Aucun match</h3>
+                <p className="text-gray-500">Pas de match prévu pour cette date dans les compétitions sélectionnées</p>
+              </div>
+            )}
+
+            {/* Liste des matchs Live uniquement */}
+            {filter === 'live' && liveMatches.length > 0 && (
+              <>
+                {groupedLiveMatches.map(group => (
+                  <CompetitionSection
+                    key={group.competition.id}
+                    competition={group.competition}
+                    matches={group.matches}
+                    isCollapsed={collapsedCompetitions.has(group.competition.id)}
+                    onToggle={() => toggleCollapse(group.competition.id)}
+                  />
+                ))}
+              </>
+            )}
+
+            {/* Liste des matchs (non-live) */}
+            {filter !== 'live' && groupedMatches.length > 0 && (
+              <>
+                {filter === 'upcoming' && (
+                  <h2 className="text-lg font-semibold text-gray-400 mb-4">
+                    Matchs à venir
+                  </h2>
+                )}
+                {groupedMatches.map(group => {
+                  const displayMatches = filter === 'all'
+                    ? group.matches.filter(m => m.status !== 'IN_PLAY' && m.status !== 'PAUSED')
+                    : group.matches;
+
+                  if (displayMatches.length === 0) return null;
+
+                  return (
+                    <CompetitionSection
+                      key={group.competition.id}
+                      competition={group.competition}
+                      matches={displayMatches}
+                      isCollapsed={collapsedCompetitions.has(group.competition.id)}
+                      onToggle={() => toggleCollapse(group.competition.id)}
+                    />
+                  );
+                })}
+              </>
+            )}
+          </>
+        )}
+
+        {/* Indicateur auto-refresh */}
+        {liveCount > 0 && (
+          <div className="fixed bottom-4 right-4 px-3 py-2 bg-gray-900/90 backdrop-blur-sm rounded-full border border-gray-700 flex items-center gap-2 text-xs text-gray-400">
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+            Auto-refresh actif
+          </div>
+        )}
+      </main>
     </div>
   );
 }

@@ -4,15 +4,17 @@ import { staticSEO } from '../utils/seo.config';
 import { HeroSection } from '../components/sections/HeroSection';
 import { RecentArticlesSection } from '../components/sections/RecentArticlesSection';
 import { EditorialSection } from '../components/sections/EditorialSection';
+import { QuickStandingsSection } from '../components/sections/QuickStandingsSection';
 import ContentSection from '../components/sections/ContentSection';
 import { EssentialArticlesSection } from '../components/sections/EssentialArticlesSection';
 import { ClubSection } from '../components/sections/ClubSection';
+import { VSPollSection } from '../components/sections/VSPollSection';
 import { Footer } from '../components/layout/Footer';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { useData } from '../context/DataContext';
 
-// Widget Live Scores via iframe (fonctionne sans problème CORS)
-import MatchesTicker from '../components/football/MatchesTicker';
+// Composants Football - API-Football
+import ResultsTicker from '../components/football/ResultsTicker';
 
 const mockArticles = [
   {
@@ -264,58 +266,65 @@ export const HomePage = () => {
           <div className="absolute inset-0 backdrop-blur-[100px]" />
         </div>
 
-        {/* LIVE SCORES TICKER - Entre navbar et hero */}
+        {/* Ticker des résultats - Sticky sous la navbar */}
         <div className="relative z-[45] pt-20">
-          <MatchesTicker />
+          <ResultsTicker title="Derniers résultats" showTitle={false} maxResults={20} className="bg-black/90 backdrop-blur-sm border-b border-white/10" />
         </div>
 
         <main className="relative z-[5] overflow-x-hidden">
+
           {/* 1. Hero avec article à la une + 6 articles récents + CTA */}
           <HeroSection />
-          
-          {/* 2. Section des derniers articles publiés */}
+
+          {/* 2. Classements - juste après le Hero */}
+          <QuickStandingsSection />
+
+          {/* 3. Section des derniers articles publiés */}
           <RecentArticlesSection articles={articles} />
-          
-          {/* 3. Articles essentiels */}
+
+          {/* 4. VS Poll - Sondage interactif */}
+          <VSPollSection />
+
+          {/* 5. Articles essentiels */}
           <section className="py-20 overflow-hidden">
             <EssentialArticlesSection />
           </section>
-          
-          {/* 4. Nos formats : Émissions Octogoal */}
+
+          {/* 6. Nos formats : Émissions Octogoal */}
           <section className="py-20 bg-gradient-to-b from-transparent via-purple-900/10 to-transparent overflow-hidden">
-            <ContentSection 
+            <ContentSection
               title="Les émissions Octogoal"
               description="Réactions live, débats enflammés et analyses décalées"
               sectionType="emission"
             />
           </section>
-          
-          {/* 5. Nos formats : Études de cas */}
+
+          {/* 7. Nos formats : Études de cas */}
           <section className="py-20 overflow-hidden">
-            <ContentSection 
+            <ContentSection
               title="Des études de cas exclusives"
               description="Découvrez les stratégies et idées qui transforment le monde des affaires"
               sectionType="business-idea"
             />
           </section>
-          
-          {/* 6. Nos formats : Parcours exceptionnels */}
+
+          {/* 8. Nos formats : Parcours exceptionnels */}
           <section className="py-20 bg-gradient-to-b from-transparent via-blue-900/10 to-transparent overflow-hidden">
-            <ContentSection 
+            <ContentSection
               title="Des parcours inspirants"
               description="Histoires d'entrepreneurs qui ont réussi à concrétiser leur vision"
               sectionType="success-story"
             />
           </section>
-          
-          {/* 7. Navigation thématique + stats + CTA */}
+
+          {/* 9. Navigation thématique + stats + CTA */}
           <EditorialSection />
-          
-          {/* 8. Proposition premium */}
+
+          {/* 10. Proposition premium */}
           <ClubSection />
         </main>
-        
-        {/* 9. Footer */}
+
+        {/* 11. Footer */}
         <Footer />
       </div>
     </>

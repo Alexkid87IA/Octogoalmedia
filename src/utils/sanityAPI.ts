@@ -1,5 +1,5 @@
 import { sanityClient, previewClient } from './sanityClient';
-import { SanityArticle, SanityDebate, SanityPodcast, SanityCaseStudy, SanitySuccessStory, SanityUniverse, SanityClubFeature, SanityClubPricing, SanityQuote } from '../types/sanity';
+import { SanityArticle, SanityDebate, SanityPodcast, SanityCaseStudy, SanitySuccessStory, SanityUniverse, SanityClubFeature, SanityClubPricing, SanityQuote, SanityVSPoll } from '../types/sanity';
 
 // Cache pour les requêtes fréquentes
 const cache: Record<string, { data: any; timestamp: number }> = {};
@@ -569,6 +569,60 @@ export const getFeaturedDebate = async (): Promise<SanityDebate | null> => {
       return await sanityClient.fetch(query);
     } catch (error) {
       console.error("Erreur lors de la récupération du débat à la une:", error);
+      return null;
+    }
+  });
+};
+
+// Récupérer le VS Poll à la une
+export const getFeaturedVSPoll = async (): Promise<SanityVSPoll | null> => {
+  return getWithCache('featuredVSPoll', async () => {
+    try {
+      const query = `*[_type == "vsPoll" && featured == true && active == true] | order(publishedAt desc)[0] {
+        _id,
+        title,
+        question,
+        slug,
+        option1 {
+          name,
+          subtitle,
+          image {
+            asset->{
+              _ref,
+              _type,
+              url
+            },
+            hotspot,
+            crop
+          },
+          color,
+          votes
+        },
+        option2 {
+          name,
+          subtitle,
+          image {
+            asset->{
+              _ref,
+              _type,
+              url
+            },
+            hotspot,
+            crop
+          },
+          color,
+          votes
+        },
+        context,
+        featured,
+        active,
+        publishedAt,
+        endsAt
+      }`;
+
+      return await sanityClient.fetch(query);
+    } catch (error) {
+      console.error("Erreur lors de la récupération du VS Poll à la une:", error);
       return null;
     }
   });
@@ -1144,12 +1198,96 @@ export const getActus = async (limit = 10): Promise<any[]> => {
           slug
         }
       }`;
-      
+
       const results = await sanityClient.fetch(query, { limit });
       console.log(`Actus récupérées: ${results?.length || 0}`);
       return results || [];
     } catch (error) {
       console.error("Erreur lors de la récupération des actus:", error);
+      return [];
+    }
+  });
+};
+
+// ============= FONCTIONS POUR L'ÉMISSION OCTOGOAL (MOMO) =============
+
+// Récupérer toutes les émissions Octogoal (format long)
+export const getOctogoalEmissions = async (limit = 50): Promise<any[]> => {
+  return getWithCache(`octogoalEmissions_${limit}`, async () => {
+    try {
+      const query = `*[_type == "emission"] | order(publishedAt desc)[0...$limit] {
+        _id,
+        title,
+        "slug": slug.current,
+        episodeNumber,
+        youtubeUrl,
+        "thumbnail": thumbnail.asset->url,
+        duration,
+        description,
+        publishedAt,
+        themes
+      }`;
+
+      const results = await sanityClient.fetch(query, { limit });
+      console.log(`Émissions Octogoal récupérées: ${results?.length || 0}`);
+      return results || [];
+    } catch (error) {
+      console.error("Erreur lors de la récupération des émissions Octogoal:", error);
+      return [];
+    }
+  });
+};
+
+// Récupérer la dernière émission Octogoal
+export const getLatestOctogoalEmission = async (): Promise<any | null> => {
+  return getWithCache('latestOctogoalEmission', async () => {
+    try {
+      const query = `*[_type == "emission"] | order(publishedAt desc)[0] {
+        _id,
+        title,
+        "slug": slug.current,
+        episodeNumber,
+        youtubeUrl,
+        "thumbnail": thumbnail.asset->url,
+        duration,
+        description,
+        publishedAt,
+        themes
+      }`;
+
+      const result = await sanityClient.fetch(query);
+      console.log(`Dernière émission Octogoal:`, result?.title || 'Aucune');
+      return result;
+    } catch (error) {
+      console.error("Erreur lors de la récupération de la dernière émission:", error);
+      return null;
+    }
+  });
+};
+
+// Récupérer les extraits (shorts/clips)
+export const getOctogoalExtraits = async (limit = 20): Promise<any[]> => {
+  return getWithCache(`octogoalExtraits_${limit}`, async () => {
+    try {
+      const query = `*[_type == "extrait"] | order(publishedAt desc)[0...$limit] {
+        _id,
+        title,
+        youtubeShortUrl,
+        "thumbnail": thumbnail.asset->url,
+        duration,
+        publishedAt,
+        emission->{
+          _id,
+          title,
+          episodeNumber
+        }
+      }`;
+
+      const results = await sanityClient.fetch(query, { limit });
+      console.log(`Extraits Octogoal récupérés: ${results?.length || 0}`);
+      return results || [];
+    } catch (error) {
+      console.error("Erreur lors de la récupération des extraits:", error);
       return [];
     }
   });

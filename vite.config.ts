@@ -22,12 +22,18 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/api/football': {
-        target: 'https://api.football-data.org',
+      '^/api/football/.*': {
+        target: 'https://v3.football.api-sports.io',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/football/, '/v4'),
-        headers: {
-          'X-Auth-Token': '003a99a4b9fe4d8cb814b314077aeaff'
+        rewrite: (path) => path.replace(/^\/api\/football/, ''),
+        configure: (proxy) => {
+          proxy.on('proxyReq', (proxyReq, req) => {
+            proxyReq.setHeader('x-apisports-key', 'baddb54e402c0dcdc8d1bae4ebec5474');
+            console.log('[Proxy]', req.url, '->', proxyReq.path);
+          });
+          proxy.on('proxyRes', (proxyRes, req) => {
+            console.log('[Proxy Response]', req.url, proxyRes.statusCode);
+          });
         }
       }
     }

@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Menu, X, ChevronDown, Bell, Search, ArrowRight, Clock, TrendingUp, Zap } from 'lucide-react';
-import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { ChevronDown, X, Search, Menu, Zap, Play, Trophy } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
-import { useScrollDirection } from '../../hooks/useScrollDirection';
-import { useData } from '../../context/DataContext';
+import { mainNavItems, highlightedItems, ctaConfig, NavItem } from '../../config/navigation';
+import { getLiveMatches } from '../../services/apiFootball';
 
 // Import du logo Octogoal
 import logoMedia from '../../assets/logos/LOGO_OCTOGOAL.png';
@@ -11,219 +11,44 @@ import logoMedia from '../../assets/logos/LOGO_OCTOGOAL.png';
 export const ResponsiveNavbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [hasNewArticles, setHasNewArticles] = useState(false);
+  const [expandedMobile, setExpandedMobile] = useState<string | null>(null);
+  const [hasLiveMatches, setHasLiveMatches] = useState(false);
+  const [liveCount, setLiveCount] = useState(0);
   const location = useLocation();
-  const { visible } = useScrollDirection();
-  const { scrollY } = useScroll();
-  
-  // Récupération des vrais articles depuis le contexte
-  const { recentArticles, featuredArticles } = useData();
-  
-  // Effet de transparence basé sur le scroll
-  const navbarBackground = useTransform(
-    scrollY,
-    [0, 100],
-    ['rgba(0, 0, 0, 0.4)', 'rgba(0, 0, 0, 0.95)']
-  );
 
-  // Vérifier s'il y a de nouveaux articles (moins de 24h)
-  useEffect(() => {
-    const allArticles = [...(recentArticles || []), ...(featuredArticles || [])];
-    
-    if (allArticles.length > 0) {
-      const hasNew = allArticles.some(article => {
-        if (!article.publishedAt) return false;
-        const publishDate = new Date(article.publishedAt);
-        const now = new Date();
-        const diffHours = (now.getTime() - publishDate.getTime()) / (1000 * 60 * 60);
-        return diffHours < 24;
-      });
-      setHasNewArticles(hasNew);
+  // Ref pour le timeout d'intention de hover
+  const hoverIntentTimeout = useRef<NodeJS.Timeout | null>(null);
+  const HOVER_DELAY = 150; // ms avant d'ouvrir le dropdown
+
+  // Vérifier s'il y a des matchs en direct
+  const checkLiveMatches = useCallback(async () => {
+    try {
+      const liveMatches = await getLiveMatches();
+      const count = liveMatches?.length || 0;
+      setHasLiveMatches(count > 0);
+      setLiveCount(count);
+    } catch (error) {
+      console.error('Error checking live matches:', error);
+      setHasLiveMatches(false);
+      setLiveCount(0);
     }
-  }, [recentArticles, featuredArticles]);
-
-  // Fonction pour formater le temps
-  const formatTimeAgo = (date: string) => {
-    const now = new Date();
-    const publishDate = new Date(date);
-    const diffInMinutes = Math.floor((now.getTime() - publishDate.getTime()) / (1000 * 60));
-    const diffInHours = Math.floor(diffInMinutes / 60);
-    
-    if (diffInMinutes < 60) return `Il y a ${diffInMinutes} min`;
-    if (diffInHours < 24) return `Il y a ${diffInHours}h`;
-    return publishDate.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
-  };
-
-  // Couleurs des catégories OCTOGOAL
-  const getCategoryColor = (category: string) => {
-    const colors: { [key: string]: string } = {
-      'Actus': 'bg-pink-500',
-      'Matchs': 'bg-blue-500',
-      'Clubs': 'bg-purple-500',
-      'Joueurs': 'bg-emerald-500',
-      'Formats Octogoal': 'bg-orange-500',
-      'Vidéos': 'bg-red-500',
-      'Mèmes': 'bg-yellow-500'
-    };
-    return colors[category] || 'bg-gray-500';
-  };
-
-  // Obtenir les 3 articles les plus récents pour les notifications
-  const getNotificationArticles = () => {
-    const allArticles = [...(recentArticles || []), ...(featuredArticles || [])];
-    
-    const sortedArticles = allArticles
-      .filter(article => article.publishedAt)
-      .sort((a, b) => {
-        const dateA = new Date(a.publishedAt).getTime();
-        const dateB = new Date(b.publishedAt).getTime();
-        return dateB - dateA;
-      })
-      .slice(0, 3);
-    
-    // Données mockées football si pas d'articles
-    if (sortedArticles.length === 0) {
-      return [
-        {
-          _id: '1',
-          title: "PSG-OM : Les notes du Classico",
-          slug: { current: 'psg-om-notes' },
-          publishedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-          categories: [{ title: 'Matchs' }]
-        },
-        {
-          _id: '2',
-          title: "Mbappé : Ses stats folles au Real Madrid",
-          slug: { current: 'mbappe-stats-real' },
-          publishedAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
-          categories: [{ title: 'Joueurs' }]
-        },
-        {
-          _id: '3',
-          title: "Mercato : Les pistes chaudes de janvier",
-          slug: { current: 'mercato-janvier' },
-          publishedAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-          categories: [{ title: 'Actus' }]
-        }
-      ];
-    }
-    
-    return sortedArticles;
-  };
-
-  // Navigation OCTOGOAL avec sous-catégories
-  const menuItems = [
-    { 
-      label: 'Actus', 
-      path: '/rubrique/actus', 
-      slug: 'actus',
-      color: 'pink',
-      subcategories: [
-        { label: 'Ligue 1', path: '/rubrique/actus/ligue-1' },
-        { label: 'Premier League', path: '/rubrique/actus/premier-league' },
-        { label: 'Liga', path: '/rubrique/actus/liga' },
-        { label: 'Champions League', path: '/rubrique/actus/champions-league' },
-        { label: 'Mercato', path: '/rubrique/actus/mercato' }
-      ]
-    },
-    {
-      label: 'Matchs',
-      path: '/matchs',
-      slug: 'matchs',
-      color: 'blue',
-      isLive: true, // Page API Live
-      subcategories: [
-        { label: 'En direct', path: '/matchs?view=live' },
-        { label: 'Aujourd\'hui', path: '/matchs?view=today' },
-        { label: 'À venir', path: '/matchs?view=upcoming' },
-        { label: 'Résultats', path: '/matchs?view=results' },
-        { label: 'Par journée', path: '/matchs?view=matchday' }
-      ]
-    },
-    {
-      label: 'Clubs',
-      path: '/clubs',
-      slug: 'clubs',
-      color: 'purple',
-      isLive: true, // Page API Live
-      subcategories: [
-        { label: 'Ligue 1', path: '/clubs?league=LIGUE_1' },
-        { label: 'Premier League', path: '/clubs?league=PREMIER_LEAGUE' },
-        { label: 'La Liga', path: '/clubs?league=LA_LIGA' },
-        { label: 'Serie A', path: '/clubs?league=SERIE_A' },
-        { label: 'Bundesliga', path: '/clubs?league=BUNDESLIGA' }
-      ]
-    },
-    { 
-      label: 'Joueurs', 
-      path: '/rubrique/joueurs', 
-      slug: 'joueurs',
-      color: 'emerald',
-      subcategories: [
-        { label: 'Tops joueurs', path: '/rubrique/joueurs/tops-joueurs' },
-        { label: 'Joueurs en forme', path: '/rubrique/joueurs/joueurs-en-forme' },
-        { label: 'Joueurs légendaires', path: '/rubrique/joueurs/joueurs-legendaires' },
-        { label: 'Fiches joueurs', path: '/rubrique/joueurs/fiches-joueurs' },
-        { label: 'Joueurs sous-cotés', path: '/rubrique/joueurs/joueurs-sous-cotes' }
-      ]
-    },
-    { 
-      label: 'Formats', 
-      path: '/rubrique/formats-octogoal', 
-      slug: 'formats-octogoal',
-      color: 'orange',
-      subcategories: [
-        { label: 'Tops & listes', path: '/rubrique/formats-octogoal/tops-listes' },
-        { label: 'Moments viraux', path: '/rubrique/formats-octogoal/moments-viraux' },
-        { label: 'Le joueur du jour', path: '/rubrique/formats-octogoal/joueur-du-jour' },
-        { label: 'Débats', path: '/rubrique/formats-octogoal/debats-reactions' },
-        { label: 'Humour', path: '/rubrique/formats-octogoal/humour-punchlines' }
-      ]
-    },
-    { 
-      label: 'Mèmes', 
-      path: '/rubrique/memes', 
-      slug: 'memes',
-      color: 'yellow',
-      subcategories: [
-        { label: 'Réactions', path: '/rubrique/memes/reactions' },
-        { label: 'Captures virales', path: '/rubrique/memes/captures-virales' },
-        { label: 'Mèmes Octogoal', path: '/rubrique/memes/memes-octogoal' },
-        { label: 'La tête de Momo', path: '/rubrique/memes/tete-de-momo' },
-        { label: 'Culture foot', path: '/rubrique/memes/culture-foot-internet' }
-      ]
-    }
-  ];
-
-  // MODIFIÉ : Football remplace Vidéos (même nombre d'éléments = centrage préservé)
-  const specialItems = [
-    { 
-      label: 'Football', 
-      path: '/football',
-      isLive: true  // Nouveau flag pour identifier le lien actif
-    },
-    { 
-      label: 'Émissions', 
-      path: '/emissions'
-    }
-  ];
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Vérifier les matchs en direct au montage et toutes les 60 secondes
+  useEffect(() => {
+    checkLiveMatches();
+    const interval = setInterval(checkLiveMatches, 60000);
+    return () => clearInterval(interval);
+  }, [checkLiveMatches]);
+
+  // Fermer le menu mobile et les dropdowns lors du changement de route
   useEffect(() => {
     setIsOpen(false);
     setActiveDropdown(null);
+    setExpandedMobile(null);
   }, [location.pathname]);
 
+  // Bloquer le scroll quand le menu mobile est ouvert
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -235,592 +60,441 @@ export const ResponsiveNavbar = () => {
     };
   }, [isOpen]);
 
-  const getGradientByColor = (color: string) => {
-    const gradients: { [key: string]: string } = {
-      pink: 'from-pink-500 to-rose-500',
-      blue: 'from-blue-400 to-cyan-500',
-      purple: 'from-purple-400 to-violet-500',
-      emerald: 'from-emerald-400 to-teal-500',
-      orange: 'from-orange-400 to-amber-500',
-      yellow: 'from-yellow-400 to-orange-500'
-    };
-    return gradients[color] || gradients.pink;
-  };
+  // Composant Dropdown unifié
+  const NavDropdown = ({ item }: { item: NavItem }) => {
+    if (!item.columns) return null;
 
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 1024);
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  const notificationArticles = getNotificationArticles();
-
-  return (
-    <>
-      <motion.nav
-        initial={{ y: 0 }}
-        animate={{ y: (!isMobile && !visible && !isOpen) ? -120 : 0 }}
-        transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
-        className="fixed top-0 left-0 right-0"
-        style={{ 
-          backgroundColor: navbarBackground as any,
-          zIndex: 9999,
-          position: 'fixed',
-          width: '100%',
-          top: 0,
-          left: 0,
-          right: 0
-        }}
-        onMouseLeave={() => setActiveDropdown(null)}
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 8 }}
+        transition={{ duration: 0.15, ease: 'easeOut' }}
+        className="absolute top-full left-0 mt-2 w-[580px] z-50"
       >
-        {/* Effet de blur premium */}
-        <div className="absolute inset-0 backdrop-blur-2xl" />
-        
-        {/* Ligne de gradient en haut - couleurs Octogoal */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-pink-500/50 to-transparent" />
-        
-        {/* Contenu principal */}
-        <div className="relative">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="relative flex items-center justify-between h-20" style={{ width: '100%' }}>
-              {/* Logo */}
-              <Link 
-                to="/" 
-                className="relative group z-20 flex-shrink-0 flex items-center"
-                style={{ minWidth: 'auto', maxWidth: '200px' }}
-              >
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="relative"
-                >
-                  <div className="absolute inset-0 bg-pink-500/20 blur-2xl scale-150 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  <img 
-                    src={logoMedia}
-                    alt="Octogoal Media"
-                    className="h-10 md:h-12 w-auto relative z-10 filter group-hover:brightness-125 transition-all duration-300" 
-                  />
-                </motion.div>
-              </Link>
-              
-              {/* Desktop Navigation */}
-              <div className="hidden lg:flex items-center flex-1 justify-center px-8">
-                <div className="flex items-center space-x-1 relative">
-                  {/* Menu principal */}
-                  {menuItems.map((item) => {
-                    const isActive = location.pathname.includes(item.slug);
-                    const gradient = getGradientByColor(item.color);
-                    const itemIsLive = 'isLive' in item && item.isLive;
+        {/* Flèche */}
+        <div className="absolute -top-2 left-6 w-4 h-4 bg-gray-900 rotate-45 border-l border-t border-pink-500/30" />
 
-                    return (
-                      <div
-                        key={item.slug}
-                        className="relative"
-                        onMouseEnter={() => setActiveDropdown(item.slug)}
-                      >
-                        <Link
-                          to={item.path}
-                          className={`relative px-4 py-2 text-sm font-medium transition-all duration-300 flex items-center gap-1 group ${
-                            isActive
-                              ? 'text-white'
-                              : 'text-gray-300 hover:text-white'
-                          }`}
-                        >
-                          <span>{item.label}</span>
-                          {itemIsLive && (
-                            <span className="px-1.5 py-0.5 text-[9px] font-bold bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-full uppercase">
-                              Live
-                            </span>
-                          )}
-                          <ChevronDown className={`w-3 h-3 transition-transform duration-300 ${
-                            activeDropdown === item.slug ? 'rotate-180' : ''
-                          }`} />
+        <div className="relative bg-gray-900 border border-pink-500/20 rounded-xl shadow-2xl shadow-pink-500/10 overflow-hidden">
+          {/* Header avec gradient */}
+          <div className="flex items-center justify-between px-6 py-4 border-b border-pink-500/10 bg-gradient-to-r from-pink-500/5 to-blue-500/5">
+            <span className="text-white font-semibold">{item.label}</span>
+            <Link
+              to={item.path}
+              onClick={() => setActiveDropdown(null)}
+              className="text-sm text-pink-400 hover:text-pink-300 transition-colors"
+            >
+              Tout voir →
+            </Link>
+          </div>
 
-                          {isActive && (
-                            <motion.div
-                              layoutId="navbar-active"
-                              className={`absolute -bottom-2 left-0 right-0 h-0.5 bg-gradient-to-r ${gradient}`}
-                              transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                            />
-                          )}
-                        </Link>
-                      </div>
-                    );
-                  })}
-
-                  {/* Dropdown */}
-                  <AnimatePresence>
-                    {activeDropdown && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                        transition={{ duration: 0.2, ease: "easeOut" }}
-                        className="absolute top-full mt-8 w-[480px] left-0"
-                      >
-                        {(() => {
-                          const item = menuItems.find(m => m.slug === activeDropdown);
-                          if (!item) return null;
-                          const gradient = getGradientByColor(item.color);
-                          
-                          return (
-                            <div className="relative">
-                              <div className={`absolute -top-2 left-12 w-4 h-4 bg-gradient-to-br ${gradient} rotate-45 rounded-sm`} />
-                              <div className="relative rounded-2xl p-[1px] bg-gradient-to-br from-white/20 to-white/5">
-                                <div className="bg-black/95 backdrop-blur-2xl rounded-2xl p-6">
-                                  <div className="mb-5">
-                                    <div className={`text-xs font-bold uppercase tracking-wider text-transparent bg-clip-text bg-gradient-to-r ${gradient} mb-2`}>
-                                      Explorer {item.label}
-                                    </div>
-                                    <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-                                  </div>
-                                  
-                                  <div className="grid grid-cols-2 gap-2">
-                                    {item.subcategories.slice(0, 4).map((sub, idx) => (
-                                      <Link
-                                        key={sub.path}
-                                        to={sub.path}
-                                        className="group relative"
-                                        onClick={() => setActiveDropdown(null)}
-                                      >
-                                        <motion.div
-                                          whileHover={{ scale: 1.02, x: 3 }}
-                                          className="relative p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.05] hover:border-white/10 transition-all duration-300"
-                                        >
-                                          <div className={`absolute top-3 right-3 text-3xl font-black bg-gradient-to-br ${gradient} bg-clip-text text-transparent`}>
-                                            {(idx + 1).toString().padStart(2, '0')}
-                                          </div>
-                                          <div className="relative z-10">
-                                            <h4 className="text-white font-medium text-sm mb-1">
-                                              {sub.label}
-                                            </h4>
-                                            <p className="text-xs text-gray-500">
-                                              Voir les articles
-                                            </p>
-                                          </div>
-                                          <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-5 rounded-xl transition-opacity`} />
-                                        </motion.div>
-                                      </Link>
-                                    ))}
-
-                                    {item.subcategories.length === 5 && (
-                                      <Link
-                                        to={item.subcategories[4].path}
-                                        className="group relative col-span-2"
-                                        onClick={() => setActiveDropdown(null)}
-                                      >
-                                        <motion.div
-                                          whileHover={{ scale: 1.02, x: 3 }}
-                                          className="relative p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.05] hover:border-white/10 transition-all duration-300"
-                                        >
-                                          <div className={`absolute top-3 right-3 text-3xl font-black bg-gradient-to-br ${gradient} bg-clip-text text-transparent`}>
-                                            05
-                                          </div>
-                                          <div className="relative z-10">
-                                            <h4 className="text-white font-medium text-sm mb-1">
-                                              {item.subcategories[4].label}
-                                            </h4>
-                                            <p className="text-xs text-gray-500">
-                                              Voir les articles
-                                            </p>
-                                          </div>
-                                          <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-5 rounded-xl transition-opacity`} />
-                                        </motion.div>
-                                      </Link>
-                                    )}
-                                  </div>
-                                  
-                                  <div className="mt-5 pt-5 border-t border-white/5">
-                                    <div className="flex items-center justify-between">
-                                      <div className="flex items-center gap-6">
-                                        <div className="text-xs">
-                                          <span className="text-gray-500">Articles</span>
-                                          <span className="ml-2 font-bold text-white">247</span>
-                                        </div>
-                                        <div className="text-xs">
-                                          <span className="text-gray-500">Cette semaine</span>
-                                          <span className="ml-2 font-bold text-pink-400">+18</span>
-                                        </div>
-                                      </div>
-                                      <Link
-                                        to={item.path}
-                                        onClick={() => setActiveDropdown(null)}
-                                        className={`text-xs font-medium text-transparent bg-clip-text bg-gradient-to-r ${gradient} hover:opacity-80 transition-opacity`}
-                                      >
-                                        Voir tout →
-                                      </Link>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })()}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-
-                  {/* Séparateur */}
-                  <div className="w-px h-6 bg-white/10 mx-2" />
-
-                  {/* Items spéciaux - Football et Émissions */}
-                  {specialItems.map((item) => (
+          {/* Colonnes */}
+          <div className="grid grid-cols-3 gap-0 p-6">
+            {item.columns.map((column, idx) => (
+              <div key={column.title} className={idx > 0 ? 'pl-6 border-l border-gray-800/30' : ''}>
+                <h4 className="text-[11px] font-semibold text-pink-400/70 uppercase tracking-wider mb-4">
+                  {column.title}
+                </h4>
+                <div className="space-y-1">
+                  {column.links.map((link) => (
                     <Link
-                      key={item.path}
-                      to={item.path}
-                      className={`relative px-4 py-2 text-sm font-medium flex items-center gap-2 transition-all duration-300 ${
-                        location.pathname === item.path
-                          ? 'text-white'
-                          : 'text-gray-300 hover:text-white'
-                      }`}
+                      key={link.path}
+                      to={link.path}
+                      onClick={() => setActiveDropdown(null)}
+                      className="block py-2 text-sm text-gray-400 hover:text-white hover:pl-2 transition-all duration-200"
                     >
-                      <span>{item.label}</span>
-                      {item.isLive && (
-                        <span className="px-2 py-0.5 text-[10px] font-bold bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-full">
-                          LIVE
-                        </span>
-                      )}
-                      {location.pathname === item.path && (
-                        <motion.div
-                          layoutId="navbar-special-active"
-                          className={`absolute -bottom-2 left-0 right-0 h-0.5 bg-gradient-to-r ${item.isLive ? 'from-emerald-500 to-green-500' : 'from-pink-500 to-rose-500'}`}
-                          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                        />
-                      )}
+                      {link.label}
                     </Link>
                   ))}
                 </div>
               </div>
+            ))}
+          </div>
+        </div>
+      </motion.div>
+    );
+  };
 
-              {/* Actions à droite - Desktop */}
-              <div className="hidden lg:flex items-center gap-3">
-                {/* Search Button */}
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setIsSearchOpen(!isSearchOpen)}
-                  className="p-2.5 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 hover:bg-white/10 transition-all"
+  // Composant pour les éléments mis en avant (Match Center et Émissions)
+  const HighlightedNavItem = ({
+    item,
+    icon: Icon,
+    hasLive = false,
+    variant = 'default'
+  }: {
+    item: { label: string; path: string; description?: string };
+    icon: React.ElementType;
+    hasLive?: boolean;
+    variant?: 'default' | 'emissions';
+  }) => {
+    const isActive = location.pathname === item.path;
+
+    return (
+      <Link
+        to={item.path}
+        className={`
+          group relative flex items-center gap-2.5 px-4 py-2 rounded-xl
+          transition-all duration-300 overflow-hidden
+          ${isActive
+            ? 'bg-gradient-to-r from-pink-500 to-blue-500 text-white shadow-lg shadow-pink-500/25'
+            : 'bg-gradient-to-r from-pink-500/10 to-blue-500/10 border border-pink-500/20 hover:border-pink-500/40 text-white hover:shadow-lg hover:shadow-pink-500/20'
+          }
+        `}
+      >
+        {/* Glow effect au hover */}
+        <div className="absolute inset-0 bg-gradient-to-r from-pink-500/20 to-blue-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+        {/* Icône avec indicateur live optionnel */}
+        <div className="relative z-10 flex items-center gap-2">
+          {hasLive && hasLiveMatches && (
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+            </span>
+          )}
+          <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-pink-400 group-hover:text-white'} transition-colors`} />
+        </div>
+
+        {/* Label */}
+        <span className="relative z-10 text-sm font-semibold tracking-wide">
+          {item.label}
+        </span>
+      </Link>
+    );
+  };
+
+  return (
+    <>
+      {/* Navbar principale */}
+      <nav className="fixed top-0 left-0 right-0 h-16 bg-gray-950/95 backdrop-blur-xl border-b border-gray-800/50 z-[9999]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
+          <div className="flex items-center justify-between h-full">
+
+            {/* Logo */}
+            <Link to="/" className="flex-shrink-0">
+              <img
+                src={logoMedia}
+                alt="Octogoal"
+                className="h-9 w-auto"
+              />
+            </Link>
+
+            {/* Navigation Desktop */}
+            <div
+              className="hidden lg:flex items-center gap-1"
+              onMouseLeave={() => {
+                // Annuler tout timeout en cours
+                if (hoverIntentTimeout.current) {
+                  clearTimeout(hoverIntentTimeout.current);
+                  hoverIntentTimeout.current = null;
+                }
+                setActiveDropdown(null);
+              }}
+            >
+              {/* Éléments mis en avant - Match Center */}
+              <HighlightedNavItem
+                item={highlightedItems.matchCenter}
+                icon={Zap}
+                hasLive={true}
+              />
+
+              {/* Séparateur */}
+              <div className="w-px h-6 bg-gray-700/50 mx-2" />
+
+              {/* Navigation classique */}
+              {mainNavItems.map((item) => (
+                <div
+                  key={item.label}
+                  className="relative"
+                  onMouseEnter={() => {
+                    // Annuler tout timeout précédent
+                    if (hoverIntentTimeout.current) {
+                      clearTimeout(hoverIntentTimeout.current);
+                    }
+                    // Délai avant d'ouvrir le dropdown (évite les déclenchements accidentels)
+                    if (item.hasDropdown) {
+                      hoverIntentTimeout.current = setTimeout(() => {
+                        setActiveDropdown(item.label);
+                      }, HOVER_DELAY);
+                    }
+                  }}
+                  onMouseLeave={() => {
+                    // Annuler le timeout si on quitte avant le délai
+                    if (hoverIntentTimeout.current) {
+                      clearTimeout(hoverIntentTimeout.current);
+                      hoverIntentTimeout.current = null;
+                    }
+                  }}
                 >
-                  <Search className="w-4 h-4 text-gray-300" />
-                </motion.button>
-
-                {/* Notifications */}
-                <div className="relative">
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setShowNotifications(!showNotifications)}
-                    className="relative p-2.5 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 hover:bg-white/10 transition-all"
+                  <Link
+                    to={item.path}
+                    className={`flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors ${
+                      location.pathname.includes(item.path.split('/')[2] || item.path)
+                        ? 'text-white'
+                        : 'text-gray-400 hover:text-white'
+                    }`}
                   >
-                    <Bell className="w-4 h-4 text-gray-300" />
-                    {hasNewArticles && (
-                      <span className="absolute top-1 right-1 w-2 h-2 bg-gradient-to-r from-pink-500 to-rose-500 rounded-full animate-pulse" />
+                    <span>{item.label}</span>
+                    {item.hasDropdown && (
+                      <ChevronDown
+                        className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                          activeDropdown === item.label ? 'rotate-180' : ''
+                        }`}
+                      />
                     )}
-                  </motion.button>
+                  </Link>
 
-                  {/* Dropdown notifications */}
+                  {/* Dropdown */}
                   <AnimatePresence>
-                    {showNotifications && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                        transition={{ duration: 0.2 }}
-                        className="absolute top-full right-0 mt-2 w-96 z-50"
-                      >
-                        <div className="relative rounded-2xl p-[1px] bg-gradient-to-br from-pink-500/20 to-blue-500/20">
-                          <div className="bg-black/95 backdrop-blur-2xl rounded-2xl overflow-hidden">
-                            <div className="p-4 border-b border-white/10">
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                  <div className="flex items-center gap-2">
-                                    <div className="w-2 h-2 bg-pink-500 rounded-full animate-pulse" />
-                                    <span className="text-xs font-bold text-white uppercase tracking-wider">
-                                      Actus chaudes
-                                    </span>
-                                  </div>
-                                  <span className="text-xs text-gray-500">
-                                    Live
-                                  </span>
-                                </div>
-                                <Zap className="w-4 h-4 text-pink-500" />
-                              </div>
-                            </div>
-
-                            <div className="max-h-[400px] overflow-y-auto">
-                              {notificationArticles.map((article, index) => (
-                                <Link
-                                  key={article._id}
-                                  to={`/article/${article.slug?.current || article.slug}`}
-                                  onClick={() => setShowNotifications(false)}
-                                  className="block p-4 hover:bg-white/5 transition-all border-b border-white/5 last:border-0"
-                                >
-                                  <div className="flex items-start gap-3">
-                                    <div className="flex-shrink-0 text-xs text-gray-500 min-w-[60px]">
-                                      {formatTimeAgo(article.publishedAt)}
-                                    </div>
-                                    
-                                    <div className="flex-grow">
-                                      {article.categories?.[0] && (
-                                        <span className={`inline-block px-2 py-0.5 text-[10px] font-bold uppercase rounded ${getCategoryColor(article.categories[0].title)} text-white mb-2`}>
-                                          {article.categories[0].title}
-                                        </span>
-                                      )}
-                                      
-                                      <h4 className="text-sm font-medium text-white hover:text-pink-400 transition-colors line-clamp-2">
-                                        {article.title}
-                                      </h4>
-                                    </div>
-
-                                    {index === 0 && hasNewArticles && (
-                                      <span className="flex-shrink-0 px-2 py-0.5 bg-gradient-to-r from-pink-500 to-rose-500 text-white text-[10px] font-bold rounded">
-                                        NEW
-                                      </span>
-                                    )}
-                                  </div>
-                                </Link>
-                              ))}
-                            </div>
-
-                            <div className="p-4 border-t border-white/10">
-                              <Link
-                                to="/articles"
-                                onClick={() => setShowNotifications(false)}
-                                className="flex items-center justify-between text-xs group"
-                              >
-                                <span className="text-gray-400 group-hover:text-white transition-colors">
-                                  Voir toutes les actus
-                                </span>
-                                <ArrowRight className="w-3 h-3 text-gray-400 group-hover:text-white transition-all group-hover:translate-x-1" />
-                              </Link>
-                            </div>
-                          </div>
-                        </div>
-                      </motion.div>
+                    {activeDropdown === item.label && item.hasDropdown && (
+                      <NavDropdown item={item} />
                     )}
                   </AnimatePresence>
                 </div>
+              ))}
 
-                {/* CTA Principal - REJOINS LA TEAM */}
-                <motion.div className="relative">
-                  <Link
-                    to="/newsletter"
-                    className="relative block group"
-                  >
-                    <motion.div
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="relative"
-                    >
-                      <div className="relative px-6 py-2.5 overflow-hidden rounded-full bg-gradient-to-r from-pink-500 to-blue-500 shadow-lg shadow-pink-500/20 whitespace-nowrap min-w-max">
-                        {/* Shine effect */}
-                        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                          <div 
-                            className="absolute inset-0"
-                            style={{
-                              background: 'linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.2) 50%, transparent 70%)',
-                              transform: 'translateX(-100%)',
-                              animation: 'shine 1.5s ease-out forwards'
-                            }}
-                          />
-                        </div>
-                        
-                        <div className="relative flex items-center gap-2">
-                          <Zap className="w-4 h-4 text-white" />
-                          <span className="text-sm font-semibold text-white tracking-wide whitespace-nowrap">
-                            Rejoins la team
-                          </span>
-                        </div>
-                      </div>
-                    </motion.div>
-                  </Link>
-                </motion.div>
-              </div>
+              {/* Séparateur */}
+              <div className="w-px h-6 bg-gray-700/50 mx-2" />
 
-              {/* Mobile Menu Button */}
-              <div className="lg:hidden flex items-center gap-3">
-                <button
-                  onClick={() => setIsOpen(!isOpen)}
-                  className="relative w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
-                  aria-label="Menu"
-                >
-                  <div className="w-5 h-4 flex flex-col justify-between">
-                    <span className={`block h-0.5 bg-white rounded-full transition-all duration-300 origin-center ${isOpen ? 'rotate-45 translate-y-[7px]' : ''}`} />
-                    <span className={`block h-0.5 bg-white rounded-full transition-all duration-300 ${isOpen ? 'opacity-0 scale-0' : ''}`} />
-                    <span className={`block h-0.5 bg-white rounded-full transition-all duration-300 origin-center ${isOpen ? '-rotate-45 -translate-y-[7px]' : ''}`} />
-                  </div>
-                </button>
-              </div>
+              {/* Éléments mis en avant - Émissions */}
+              <HighlightedNavItem
+                item={highlightedItems.emissions}
+                icon={Play}
+                variant="emissions"
+              />
+            </div>
+
+            {/* Section droite : Search + CTA */}
+            <div className="hidden lg:flex items-center gap-4">
+              {/* Recherche */}
+              <button className="p-2 text-gray-400 hover:text-white transition-colors rounded-lg hover:bg-gray-800/50">
+                <Search className="w-5 h-5" />
+              </button>
+
+              {/* CTA */}
+              <Link
+                to={ctaConfig.path}
+                className="px-5 py-2 bg-gradient-to-r from-pink-500 to-blue-500 text-white text-sm font-semibold rounded-full shadow-lg shadow-pink-500/25 hover:shadow-pink-500/40 hover:scale-105 transition-all duration-300"
+              >
+                {ctaConfig.label}
+              </Link>
+            </div>
+
+            {/* Mobile : Match Center + Émissions + Menu Button */}
+            <div className="flex lg:hidden items-center gap-2">
+              {/* Match Center Mobile */}
+              <Link
+                to={highlightedItems.matchCenter.path}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-pink-500/10 to-blue-500/10 border border-pink-500/30 rounded-lg"
+              >
+                {hasLiveMatches && (
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                  </span>
+                )}
+                <Zap className="w-3.5 h-3.5 text-pink-400" />
+                <span className="text-xs font-semibold text-white">Matchs</span>
+              </Link>
+
+              {/* Émissions Mobile */}
+              <Link
+                to={highlightedItems.emissions.path}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-pink-500/10 to-blue-500/10 border border-pink-500/30 rounded-lg"
+              >
+                <Play className="w-3.5 h-3.5 text-pink-400" />
+                <span className="text-xs font-semibold text-white sr-only sm:not-sr-only">Émissions</span>
+              </Link>
+
+              {/* Burger Menu */}
+              <button
+                onClick={() => setIsOpen(true)}
+                className="p-2 text-gray-400 hover:text-white transition-colors"
+              >
+                <Menu className="w-6 h-6" />
+              </button>
             </div>
           </div>
-
-          {/* Search Bar Overlay - Desktop only */}
-          <AnimatePresence>
-            {isSearchOpen && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                className="border-t border-white/10 overflow-hidden hidden lg:block"
-              >
-                <div className="max-w-3xl mx-auto p-4">
-                  <div className="relative">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <input
-                      type="text"
-                      placeholder="Rechercher un article, un joueur, un match..."
-                      className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-pink-500/50 focus:bg-white/10 transition-all"
-                      autoFocus
-                    />
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
         </div>
-      </motion.nav>
+      </nav>
 
-      {/* Mobile Menu */}
+      {/* Mobile Drawer (depuis la droite) */}
       <AnimatePresence>
         {isOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-40 lg:hidden"
-          >
+          <>
             {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/95 backdrop-blur-xl"
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[10000]"
               onClick={() => setIsOpen(false)}
             />
 
-            {/* Menu Content */}
+            {/* Drawer */}
             <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-              className="relative h-full pt-24 pb-8 px-6 overflow-y-auto"
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'tween', duration: 0.3, ease: 'easeOut' }}
+              className="fixed top-0 right-0 bottom-0 w-80 bg-gray-950 border-l border-pink-500/20 z-[10001] overflow-y-auto"
             >
-              {/* Close button */}
-              <button
-                onClick={() => setIsOpen(false)}
-                className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/10"
-              >
-                <X className="w-5 h-5 text-white" />
-              </button>
+              {/* Header du drawer */}
+              <div className="flex items-center justify-between p-4 border-b border-pink-500/10 bg-gradient-to-r from-pink-500/5 to-blue-500/5">
+                <img src={logoMedia} alt="Octogoal" className="h-8" />
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="p-2 text-gray-400 hover:text-white transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
 
-              {/* Navigation principale */}
-              <nav className="space-y-1">
-                {menuItems.map((item) => {
-                  const isActive = location.pathname.includes(item.slug);
-                  const itemIsLive = 'isLive' in item && item.isLive;
+              {/* Éléments mis en avant en mobile */}
+              <div className="p-4 space-y-3 border-b border-gray-800/50">
+                <Link
+                  to={highlightedItems.matchCenter.path}
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-3 p-4 bg-gradient-to-r from-pink-500/10 to-blue-500/10 border border-pink-500/30 rounded-xl hover:border-pink-500/50 transition-colors"
+                >
+                  <div className="p-2 bg-gradient-to-r from-pink-500 to-blue-500 rounded-lg">
+                    <Zap className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-white">{highlightedItems.matchCenter.label}</span>
+                      {hasLiveMatches && (
+                        <span className="px-2 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full animate-pulse">
+                          LIVE
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-xs text-gray-400">{highlightedItems.matchCenter.description}</span>
+                  </div>
+                </Link>
 
-                  return (
-                    <Link
-                      key={item.slug}
-                      to={item.path}
-                      onClick={() => setIsOpen(false)}
-                      className={`flex items-center justify-between px-4 py-4 rounded-xl transition-all ${
-                        isActive
-                          ? 'bg-white/10 text-white'
-                          : 'text-gray-300 hover:bg-white/5'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg font-medium">{item.label}</span>
-                        {itemIsLive && (
-                          <span className="px-2 py-0.5 text-[10px] font-bold bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-full uppercase">
-                            Live
+                <Link
+                  to={highlightedItems.emissions.path}
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-3 p-4 bg-gradient-to-r from-pink-500/10 to-blue-500/10 border border-pink-500/30 rounded-xl hover:border-pink-500/50 transition-colors"
+                >
+                  <div className="p-2 bg-gradient-to-r from-pink-500 to-blue-500 rounded-lg">
+                    <Play className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <span className="font-semibold text-white">{highlightedItems.emissions.label}</span>
+                    <span className="block text-xs text-gray-400">{highlightedItems.emissions.description}</span>
+                  </div>
+                </Link>
+              </div>
+
+              {/* Navigation mobile */}
+              <div className="p-4 space-y-1">
+                {mainNavItems.map((item) => (
+                  <div key={item.label} className="border-b border-gray-800/50 last:border-0">
+                    {item.hasDropdown ? (
+                      <>
+                        {/* Item avec dropdown */}
+                        <button
+                          onClick={() => setExpandedMobile(expandedMobile === item.label ? null : item.label)}
+                          className="w-full flex items-center justify-between py-3 text-left"
+                        >
+                          <span className={`font-medium ${expandedMobile === item.label ? 'text-pink-400' : 'text-gray-300'}`}>
+                            {item.label}
                           </span>
-                        )}
-                      </div>
-                      <ArrowRight className="w-4 h-4" />
-                    </Link>
-                  );
-                })}
-              </nav>
+                          <ChevronDown
+                            className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${
+                              expandedMobile === item.label ? 'rotate-180 text-pink-400' : ''
+                            }`}
+                          />
+                        </button>
 
-              {/* Séparateur */}
-              <div className="my-6 h-px bg-white/10" />
+                        {/* Sous-menu expandé */}
+                        <AnimatePresence>
+                          {expandedMobile === item.label && item.columns && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: 'auto', opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.2 }}
+                              className="overflow-hidden"
+                            >
+                              <div className="pb-4 space-y-4">
+                                {item.columns.map((column) => (
+                                  <div key={column.title}>
+                                    <h4 className="text-[10px] font-semibold text-pink-400/70 uppercase tracking-wider mb-2 px-2">
+                                      {column.title}
+                                    </h4>
+                                    <div className="space-y-0.5">
+                                      {column.links.map((link) => (
+                                        <Link
+                                          key={link.path}
+                                          to={link.path}
+                                          onClick={() => setIsOpen(false)}
+                                          className="block px-3 py-2 text-sm text-gray-400 hover:text-white hover:bg-pink-500/10 rounded-lg transition-colors"
+                                        >
+                                          {link.label}
+                                        </Link>
+                                      ))}
+                                    </div>
+                                  </div>
+                                ))}
 
-              {/* Liens spéciaux - Football et Émissions */}
-              <div className="space-y-1">
-                {specialItems.map((item) => (
-                  <Link
-                    key={item.path}
-                    to={item.path}
-                    onClick={() => setIsOpen(false)}
-                    className={`flex items-center justify-between px-4 py-4 rounded-xl transition-all ${
-                      location.pathname === item.path
-                        ? item.isLive
-                          ? 'bg-emerald-500/20 text-white border border-emerald-500/30'
-                          : 'bg-pink-500/20 text-white border border-pink-500/30'
-                        : 'text-white hover:bg-white/5'
-                    }`}
-                  >
-                    <span className="text-lg font-medium">{item.label}</span>
-                    {item.isLive ? (
-                      <span className="px-2 py-1 text-[10px] font-bold bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-full">
-                        LIVE
-                      </span>
+                                {/* Lien "Tout voir" */}
+                                <Link
+                                  to={item.path}
+                                  onClick={() => setIsOpen(false)}
+                                  className="block px-3 py-2 text-sm text-pink-400 hover:text-pink-300 transition-colors"
+                                >
+                                  Tout voir {item.label} →
+                                </Link>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </>
                     ) : (
-                      <ArrowRight className="w-4 h-4" />
+                      /* Item simple sans dropdown */
+                      <Link
+                        to={item.path}
+                        onClick={() => setIsOpen(false)}
+                        className="block py-3 font-medium text-gray-300 hover:text-white transition-colors"
+                      >
+                        {item.label}
+                      </Link>
                     )}
-                  </Link>
+                  </div>
                 ))}
               </div>
 
-              {/* CTA Mobile - REJOINS LA TEAM */}
-              <div className="mt-8">
+              {/* CTA Mobile */}
+              <div className="p-4 border-t border-gray-800">
                 <Link
-                  to="/newsletter"
+                  to={ctaConfig.path}
                   onClick={() => setIsOpen(false)}
-                  className="flex items-center justify-center gap-3 w-full px-6 py-4 bg-gradient-to-r from-pink-500 to-blue-500 rounded-xl text-white font-semibold shadow-lg shadow-pink-500/20"
+                  className="block w-full py-3 text-center bg-gradient-to-r from-pink-500 to-blue-500 text-white font-semibold rounded-xl shadow-lg shadow-pink-500/25"
                 >
-                  <Zap className="w-5 h-5" />
-                  <span>Rejoins la team</span>
-                  <ArrowRight className="w-4 h-4" />
+                  {ctaConfig.label}
                 </Link>
               </div>
             </motion.div>
-          </motion.div>
+          </>
         )}
       </AnimatePresence>
 
-      {/* Background overlay when dropdown is open */}
+      {/* Overlay pour fermer les dropdowns desktop */}
       <AnimatePresence>
         {activeDropdown && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 hidden lg:block"
+            className="fixed inset-0 z-[9998]"
             onClick={() => setActiveDropdown(null)}
           />
         )}
       </AnimatePresence>
-
-      {/* Styles CSS pour les animations */}
-      <style>{`
-        @keyframes shine {
-          0% {
-            transform: translateX(-100%);
-          }
-          100% {
-            transform: translateX(200%);
-          }
-        }
-      `}</style>
     </>
   );
 };

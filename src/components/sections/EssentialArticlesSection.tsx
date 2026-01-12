@@ -16,14 +16,16 @@ const categoryIcons = {
   'Vidéos': TrendingUp
 };
 
+// Style unifié OCTOGOAL - Pink to Blue
+const unifiedGradient = "from-pink-500 to-blue-500";
 const categoryGradients = {
-  'Actus': "from-pink-500 to-rose-500",
-  'Matchs': "from-blue-500 to-indigo-500",
-  'Clubs': "from-purple-500 to-violet-500",
-  'Joueurs': "from-emerald-500 to-teal-500",
-  'Formats Octogoal': "from-orange-500 to-amber-500",
-  'Mèmes': "from-yellow-500 to-orange-500",
-  'Vidéos': "from-red-500 to-pink-500"
+  'Actus': unifiedGradient,
+  'Matchs': unifiedGradient,
+  'Clubs': unifiedGradient,
+  'Joueurs': unifiedGradient,
+  'Formats Octogoal': unifiedGradient,
+  'Mèmes': unifiedGradient,
+  'Vidéos': unifiedGradient
 };
 
 export const EssentialArticlesSection = () => {
@@ -242,7 +244,7 @@ export const EssentialArticlesSection = () => {
                         </div>
                       )}
 
-                      <h3 className="font-bold mb-2 line-clamp-2 group-hover:text-pink-400 transition-colors">
+                      <h3 className="font-bold mb-2 line-clamp-2 text-white group-hover:text-pink-400 transition-colors">
                         {article.title}
                       </h3>
                       
