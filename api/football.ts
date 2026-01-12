@@ -14,7 +14,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).end();
   }
 
-  // Récupérer le chemin de l'API (Vercel utilise [[...path]] pour catch-all optionnel)
+  // Récupérer le chemin depuis le query param 'path' (set by rewrite)
   const pathParam = req.query.path;
   const apiPath = Array.isArray(pathParam) ? pathParam.join('/') : pathParam || '';
 
