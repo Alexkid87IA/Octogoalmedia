@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-const API_KEY = 'baddb54e402c0dcdc8d1bae4ebec5474';
+const API_KEY = 'da33787ca20dc37d8986e538ef30f941';
 const API_HOST = 'https://v3.football.api-sports.io';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
