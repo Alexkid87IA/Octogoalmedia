@@ -165,9 +165,14 @@ export async function findMatchOdds(
   awayTeam: string,
   competitionId: number
 ): Promise<MatchOdds | null> {
+  console.log('[OddsService] findMatchOdds called:', { homeTeam, awayTeam, competitionId });
   const allOdds = await getOddsByCompetitionId(competitionId);
+  console.log('[OddsService] allOdds count:', allOdds.length);
 
-  if (!allOdds.length) return null;
+  if (!allOdds.length) {
+    console.log('[OddsService] No odds found for competition', competitionId);
+    return null;
+  }
 
   // Normaliser les noms pour la comparaison
   const normalize = (name: string) =>
@@ -198,6 +203,12 @@ export async function findMatchOdds(
 
     return false;
   });
+
+  if (match) {
+    console.log('[OddsService] Match found:', match.homeTeam, 'vs', match.awayTeam);
+  } else {
+    console.log('[OddsService] No match found. Available matches:', allOdds.slice(0, 5).map(m => `${m.homeTeam} vs ${m.awayTeam}`));
+  }
 
   return match || null;
 }
