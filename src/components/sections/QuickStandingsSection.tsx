@@ -49,6 +49,7 @@ export const QuickStandingsSection = () => {
 
       // Si déjà en cache, ne pas recharger
       if (standings[leagueKey]) {
+        console.log(`[QuickStandings] Cache hit for ${leagueKey}`);
         setIsLoading(false);
         return;
       }
@@ -56,16 +57,22 @@ export const QuickStandingsSection = () => {
       try {
         setLoadingLeague(leagueKey);
         const leagueId = LEAGUES[leagueKey];
+        console.log(`[QuickStandings] Fetching ${leagueKey} (ID: ${leagueId})...`);
+
         const data = await getStandings(String(leagueId));
+        console.log(`[QuickStandings] Got ${data?.length || 0} teams for ${leagueKey}`);
 
         if (data && data.length > 0) {
           setStandings(prev => ({
             ...prev,
             [leagueKey]: data.slice(0, 5)
           }));
+          console.log(`[QuickStandings] Stored ${data.slice(0, 5).length} teams in state`);
+        } else {
+          console.warn(`[QuickStandings] No data received for ${leagueKey}`);
         }
       } catch (error) {
-        console.error('Erreur lors de la récupération du classement:', error);
+        console.error('[QuickStandings] Error fetching:', error);
       } finally {
         setIsLoading(false);
         setLoadingLeague(null);
@@ -221,7 +228,7 @@ export const QuickStandingsSection = () => {
                     </div>
                     <div>
                       <h3 className="text-white font-bold">{currentLeague.name}</h3>
-                      <p className="text-xs text-gray-500">Saison 2024-25</p>
+                      <p className="text-xs text-gray-500">Saison 2025-26</p>
                     </div>
                   </div>
                   <span className="text-xs text-gray-500">Top 5</span>

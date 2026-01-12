@@ -119,22 +119,34 @@ export async function getStandings(leagueCode: string) {
   const normalizedCode = normalizeLeagueCode(leagueCode);
   const cacheKey = `standings_${normalizedCode}`;
   const cached = getCached(cacheKey);
-  if (cached) return cached;
+  if (cached) {
+    console.log(`[API] getStandings(${normalizedCode}) - from cache:`, cached.length);
+    return cached;
+  }
 
   try {
+    console.log(`[API] getStandings(${normalizedCode}) - fetching for season ${CURRENT_SEASON}...`);
     const response = await apiFetch(
       `/standings?league=${normalizedCode}&season=${CURRENT_SEASON}`
     );
 
     if (!response.ok) {
-      console.error('Erreur API:', response.status);
+      console.error(`[API] getStandings(${normalizedCode}) - HTTP error:`, response.status, response.statusText);
       return [];
     }
 
     const data = await response.json();
+    console.log(`[API] getStandings(${normalizedCode}) - API response received, results:`, data.results || 0);
+
+    // Vérifier les erreurs API
+    if (data.errors && Object.keys(data.errors).length > 0) {
+      console.error(`[API] getStandings(${normalizedCode}) - API errors:`, JSON.stringify(data.errors));
+      return [];
+    }
 
     // API-Football structure: { response: [{ league: { standings: [[...teams]] } }] }
     const standings = data.response?.[0]?.league?.standings?.[0] || [];
+    console.log(`[API] getStandings(${normalizedCode}) - raw standings:`, standings.length);
 
     // Transformer pour compatibilité avec l'ancien format
     const result = standings.map((team: any) => ({
@@ -157,10 +169,11 @@ export async function getStandings(leagueCode: string) {
       form: team.form,
     }));
 
+    console.log(`[API] getStandings(${normalizedCode}) - transformed:`, result.length, 'teams');
     setCache(cacheKey, result);
     return result;
   } catch (error) {
-    console.error('Erreur getStandings:', error);
+    console.error(`[API] getStandings(${normalizedCode}) - exception:`, error);
     return [];
   }
 }
