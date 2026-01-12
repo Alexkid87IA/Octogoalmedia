@@ -14,6 +14,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).end();
   }
 
+  // Debug mode - return info about the request
+  if (req.query.debug === 'true') {
+    return res.status(200).json({
+      debug: true,
+      path: req.query.path,
+      query: req.query,
+      apiKeyPrefix: API_KEY.substring(0, 8),
+      timestamp: new Date().toISOString()
+    });
+  }
+
   // Récupérer le chemin de l'API
   const { path } = req.query;
   const apiPath = Array.isArray(path) ? path.join('/') : path || '';
