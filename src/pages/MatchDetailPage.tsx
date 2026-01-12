@@ -32,6 +32,8 @@ import {
 } from '../services/apiFootball';
 import { getCompetition } from '../config/competitions';
 import OddsWidget from '../components/football/OddsWidget';
+import { findMatchOdds } from '../services/oddsService';
+import { MatchOdds, formatOdds } from '../types/odds.types';
 
 // =============================================
 // TYPES
@@ -473,6 +475,7 @@ export default function MatchDetailPage() {
   const [homeForm, setHomeForm] = useState<('W' | 'D' | 'L')[]>([]);
   const [awayForm, setAwayForm] = useState<('W' | 'D' | 'L')[]>([]);
   const [matchdayMatches, setMatchdayMatches] = useState<Match[]>([]);
+  const [headerOdds, setHeaderOdds] = useState<MatchOdds | null>(null);
 
   // États UI
   const [activeTab, setActiveTab] = useState<TabType>('events');
@@ -518,6 +521,13 @@ export default function MatchDetailPage() {
         if (homeTeamId && awayTeamId) {
           getHeadToHead(homeTeamId, awayTeamId)
             .then(data => setH2H(data || []))
+            .catch(() => {});
+        }
+
+        // Cotes Winamax pour le header (si match non terminé)
+        if (matchData.status !== 'FINISHED' && competitionId) {
+          findMatchOdds(matchData.homeTeam.name, matchData.awayTeam.name, competitionId)
+            .then(odds => setHeaderOdds(odds))
             .catch(() => {});
         }
 
@@ -797,6 +807,52 @@ export default function MatchDetailPage() {
                   </div>
                 )}
               </div>
+
+              {/* Cotes Winamax centrées */}
+              {isUpcoming && headerOdds?.odds.winamax && (
+                <div className="mt-6 flex flex-col items-center">
+                  <div className="flex items-center gap-2 mb-3">
+                    <img
+                      src="/images/winamax-logo.png"
+                      alt="Winamax"
+                      className="w-6 h-6 rounded object-contain"
+                    />
+                    <span className="text-sm text-gray-400">Cotes Winamax</span>
+                  </div>
+                  <div className="flex items-center justify-center gap-6">
+                    <div className="flex flex-col items-center">
+                      <span className="text-xs text-gray-500 mb-1">1</span>
+                      <span className={`text-xl font-bold ${
+                        headerOdds.odds.winamax.home === Math.min(headerOdds.odds.winamax.home, headerOdds.odds.winamax.draw, headerOdds.odds.winamax.away)
+                          ? 'text-green-400'
+                          : 'text-white'
+                      }`}>
+                        {formatOdds(headerOdds.odds.winamax.home)}
+                      </span>
+                    </div>
+                    <div className="flex flex-col items-center">
+                      <span className="text-xs text-gray-500 mb-1">N</span>
+                      <span className={`text-xl font-bold ${
+                        headerOdds.odds.winamax.draw === Math.min(headerOdds.odds.winamax.home, headerOdds.odds.winamax.draw, headerOdds.odds.winamax.away)
+                          ? 'text-green-400'
+                          : 'text-white'
+                      }`}>
+                        {formatOdds(headerOdds.odds.winamax.draw)}
+                      </span>
+                    </div>
+                    <div className="flex flex-col items-center">
+                      <span className="text-xs text-gray-500 mb-1">2</span>
+                      <span className={`text-xl font-bold ${
+                        headerOdds.odds.winamax.away === Math.min(headerOdds.odds.winamax.home, headerOdds.odds.winamax.draw, headerOdds.odds.winamax.away)
+                          ? 'text-green-400'
+                          : 'text-white'
+                      }`}>
+                        {formatOdds(headerOdds.odds.winamax.away)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
