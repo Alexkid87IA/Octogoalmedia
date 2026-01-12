@@ -14,25 +14,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).end();
   }
 
-  // Debug mode - return info about the request
-  if (req.query.debug === 'true') {
-    return res.status(200).json({
-      debug: true,
-      path: req.query.path,
-      query: req.query,
-      apiKeyPrefix: API_KEY.substring(0, 8),
-      timestamp: new Date().toISOString()
-    });
-  }
-
-  // Récupérer le chemin de l'API (Vercel stocke sous '...path' pour catch-all)
-  const pathParam = req.query['...path'] || req.query.path;
+  // Récupérer le chemin de l'API (Vercel utilise [[...path]] pour catch-all optionnel)
+  const pathParam = req.query.path;
   const apiPath = Array.isArray(pathParam) ? pathParam.join('/') : pathParam || '';
 
   // Construire les query params sans le path
   const queryParams = new URLSearchParams();
   for (const [key, value] of Object.entries(req.query)) {
-    if (key !== 'path' && key !== '...path' && key !== 'debug' && typeof value === 'string') {
+    if (key !== 'path' && typeof value === 'string') {
       queryParams.append(key, value);
     }
   }
@@ -40,7 +29,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const apiUrl = `${API_HOST}/${apiPath}${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
 
   console.log('[Vercel API] Fetching:', apiUrl);
-  console.log('[Vercel API] Using key:', API_KEY.substring(0, 8) + '...');
 
   try {
     const response = await fetch(apiUrl, {
@@ -52,9 +40,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
 
     const data = await response.json();
-
-    console.log('[Vercel API] Response status:', response.status);
-    console.log('[Vercel API] Response has errors:', data.errors ? Object.keys(data.errors).length > 0 : false);
 
     res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate');
 
