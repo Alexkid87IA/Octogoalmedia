@@ -18,8 +18,7 @@ import {
   RelatedArticles,
   ShareModal,
   TableOfContents,
-  ArticleAuthor,
-  ArticleCTA
+  ArticleAuthor
 } from "../components/article";
 
 // Système de données
@@ -348,14 +347,11 @@ const ArticlePageNEW: React.FC<{ isEmission?: boolean }> = ({ isEmission = false
               )}
 
               {/* Contenu principal */}
-              <ArticleContent 
+              <ArticleContent
                 article={article}
                 colors={colors}
                 isEmission={isEmission}
               />
-
-              {/* CTA Club Élite - Version mobile */}
-              <ArticleCTA colors={colors} variant="mobile" />
             </div>
 
             {/* Sidebar droite - Desktop uniquement */}
