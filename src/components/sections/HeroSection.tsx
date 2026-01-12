@@ -170,19 +170,6 @@ export const HeroSection = () => {
                       className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                     />
 
-                    {/* Badge À LA UNE octogonal */}
-                    <div className="absolute top-6 left-6">
-                      <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        transition={{ delay: 0.3, type: 'spring' }}
-                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-pink-500 to-blue-500 shadow-lg shadow-pink-500/30"
-                        style={{ clipPath: octagonClipSubtle }}
-                      >
-                        <Sparkles className="w-4 h-4 text-white" />
-                        <span className="text-sm font-bold text-white uppercase tracking-wider">À la une</span>
-                      </motion.div>
-                    </div>
                   </div>
 
                   {/* Zone texte EN DESSOUS de l'image */}
