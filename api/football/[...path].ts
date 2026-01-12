@@ -25,14 +25,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   }
 
-  // Récupérer le chemin de l'API
-  const { path } = req.query;
-  const apiPath = Array.isArray(path) ? path.join('/') : path || '';
+  // Récupérer le chemin de l'API (Vercel stocke sous '...path' pour catch-all)
+  const pathParam = req.query['...path'] || req.query.path;
+  const apiPath = Array.isArray(pathParam) ? pathParam.join('/') : pathParam || '';
 
   // Construire les query params sans le path
   const queryParams = new URLSearchParams();
   for (const [key, value] of Object.entries(req.query)) {
-    if (key !== 'path' && typeof value === 'string') {
+    if (key !== 'path' && key !== '...path' && key !== 'debug' && typeof value === 'string') {
       queryParams.append(key, value);
     }
   }
