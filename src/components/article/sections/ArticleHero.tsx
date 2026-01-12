@@ -46,7 +46,7 @@ const ArticleHero: React.FC<ArticleHeroProps> = ({ article, colors }) => {
   const readingTime = article.readingTime || "5 min";
 
   return (
-    <section className="relative h-[55vh] sm:h-[60vh] md:h-[65vh] lg:h-[70vh] xl:h-[75vh] min-h-[400px] max-h-[700px] flex items-end overflow-hidden">
+    <section className="relative h-[45vh] sm:h-[50vh] md:h-[55vh] lg:h-[60vh] min-h-[350px] max-h-[550px] flex items-end overflow-hidden">
       {/* Background Image - Responsive pour tous les écrans */}
       <div className="absolute inset-0">
         {imageUrl ? (
