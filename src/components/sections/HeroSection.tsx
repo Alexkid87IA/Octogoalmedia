@@ -582,13 +582,11 @@ export const HeroSection = () => {
                           <p className="text-[10px] text-gray-500 truncate">{poll.option1.subtitle}</p>
                         )}
                       </div>
-                      <motion.button
-                        whileHover={{ scale: hasVoted ? 1 : 1.03 }}
-                        whileTap={{ scale: hasVoted ? 1 : 0.97 }}
+                      <button
                         onClick={() => handleVote('option1')}
                         disabled={hasVoted}
                         className={`
-                          px-3 py-1.5 rounded-lg font-bold text-xs transition-all flex-shrink-0
+                          px-3 py-1.5 rounded-lg font-bold text-xs transition-all flex-shrink-0 active:scale-95
                           ${hasVoted
                             ? userVote === 'option1'
                               ? 'bg-gradient-to-r from-pink-500 to-pink-600 text-white'
@@ -598,7 +596,7 @@ export const HeroSection = () => {
                         `}
                       >
                         {hasVoted ? `${percentage1}%` : 'Voter'}
-                      </motion.button>
+                      </button>
                     </div>
 
                     {/* Badge VS central */}
@@ -636,13 +634,11 @@ export const HeroSection = () => {
                           <p className="text-[10px] text-gray-500 truncate">{poll.option2.subtitle}</p>
                         )}
                       </div>
-                      <motion.button
-                        whileHover={{ scale: hasVoted ? 1 : 1.03 }}
-                        whileTap={{ scale: hasVoted ? 1 : 0.97 }}
+                      <button
                         onClick={() => handleVote('option2')}
                         disabled={hasVoted}
                         className={`
-                          px-3 py-1.5 rounded-lg font-bold text-xs transition-all flex-shrink-0
+                          px-3 py-1.5 rounded-lg font-bold text-xs transition-all flex-shrink-0 active:scale-95
                           ${hasVoted
                             ? userVote === 'option2'
                               ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white'
@@ -652,7 +648,7 @@ export const HeroSection = () => {
                         `}
                       >
                         {hasVoted ? `${percentage2}%` : 'Voter'}
-                      </motion.button>
+                      </button>
                     </div>
                   </div>
 

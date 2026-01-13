@@ -197,13 +197,11 @@ export const VSPollSection: React.FC = () => {
               )}
 
               {/* Vote Button */}
-              <motion.button
-                whileHover={{ scale: hasVoted ? 1 : 1.05 }}
-                whileTap={{ scale: hasVoted ? 1 : 0.95 }}
+              <button
                 onClick={() => handleVote('option1')}
                 disabled={hasVoted}
                 className={`
-                  relative px-4 py-2 sm:px-6 sm:py-3 md:px-8 md:py-4 rounded-lg sm:rounded-xl font-bold text-xs sm:text-sm md:text-lg transition-all duration-300
+                  relative px-4 py-2 sm:px-6 sm:py-3 md:px-8 md:py-4 rounded-lg sm:rounded-xl font-bold text-xs sm:text-sm md:text-lg transition-all duration-300 active:scale-95
                   ${hasVoted
                     ? userVote === 'option1'
                       ? 'bg-gradient-to-r from-pink-500 to-pink-600 text-white cursor-default'
@@ -221,7 +219,7 @@ export const VSPollSection: React.FC = () => {
                 ) : (
                   'Voter'
                 )}
-              </motion.button>
+              </button>
 
               {/* Vote count */}
               {hasVoted && (
@@ -278,13 +276,11 @@ export const VSPollSection: React.FC = () => {
               )}
 
               {/* Vote Button */}
-              <motion.button
-                whileHover={{ scale: hasVoted ? 1 : 1.05 }}
-                whileTap={{ scale: hasVoted ? 1 : 0.95 }}
+              <button
                 onClick={() => handleVote('option2')}
                 disabled={hasVoted}
                 className={`
-                  relative px-4 py-2 sm:px-6 sm:py-3 md:px-8 md:py-4 rounded-lg sm:rounded-xl font-bold text-xs sm:text-sm md:text-lg transition-all duration-300
+                  relative px-4 py-2 sm:px-6 sm:py-3 md:px-8 md:py-4 rounded-lg sm:rounded-xl font-bold text-xs sm:text-sm md:text-lg transition-all duration-300 active:scale-95
                   ${hasVoted
                     ? userVote === 'option2'
                       ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white cursor-default'
@@ -302,7 +298,7 @@ export const VSPollSection: React.FC = () => {
                 ) : (
                   'Voter'
                 )}
-              </motion.button>
+              </button>
 
               {/* Vote count */}
               {hasVoted && (

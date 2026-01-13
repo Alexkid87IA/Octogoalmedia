@@ -1458,12 +1458,16 @@ function extractMatchday(round: string): number {
 
 /**
  * Récupère les détails complets d'un match
+ * Note: Ne met PAS en cache les matchs en cours pour avoir des données fraîches
  */
 export async function getMatchDetails(fixtureId: number) {
   const cacheKey = `match_details_${fixtureId}`;
   const cached = getCached(cacheKey);
-  if (cached) {
-    console.log(`[API] getMatchDetails(${fixtureId}) - from cache`);
+
+  // Vérifier si le cache contient un match en cours - si oui, ignorer le cache
+  const liveStatuses = ['IN_PLAY', 'PAUSED', 'HALFTIME', '1H', '2H', 'HT', 'ET', 'BT', 'P', 'LIVE'];
+  if (cached && !liveStatuses.includes(cached.status)) {
+    console.log(`[API] getMatchDetails(${fixtureId}) - from cache (status: ${cached.status})`);
     return cached;
   }
 
@@ -1487,7 +1491,15 @@ export async function getMatchDetails(fixtureId: number) {
     if (!fixture) return null;
 
     const result = transformMatch(fixture);
-    setCache(cacheKey, result);
+
+    // Ne mettre en cache que les matchs terminés ou programmés (pas les matchs en cours)
+    if (!liveStatuses.includes(result.status)) {
+      setCache(cacheKey, result);
+      console.log(`[API] getMatchDetails(${fixtureId}) - cached (status: ${result.status})`);
+    } else {
+      console.log(`[API] getMatchDetails(${fixtureId}) - NOT cached (live match, status: ${result.status})`);
+    }
+
     return result;
   } catch (error) {
     console.error('Erreur getMatchDetails:', error);
