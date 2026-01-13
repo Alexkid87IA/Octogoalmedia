@@ -1327,41 +1327,115 @@ export default function MatchDetailPage() {
                         {isUpcoming && <p className="text-gray-500 text-sm mt-1">Match pas encore commencé</p>}
                       </div>
                     ) : (
-                      <div className="space-y-2">
-                        {events
-                          .sort((a, b) => (b.time?.elapsed || 0) - (a.time?.elapsed || 0))
-                          .map((event, idx) => {
+                      <div className="space-y-1">
+                        {(() => {
+                          // Trier par minute (ordre décroissant pour afficher les plus récents en haut)
+                          const sortedEvents = [...events].sort((a, b) => {
+                            const timeA = (a.time?.elapsed || 0) + (a.time?.extra || 0) / 100;
+                            const timeB = (b.time?.elapsed || 0) + (b.time?.extra || 0) / 100;
+                            return timeB - timeA;
+                          });
+
+                          // Calculer le score à chaque moment pour les buts
+                          const goalsChronological = events
+                            .filter(e => e.type === 'Goal')
+                            .sort((a, b) => {
+                              const timeA = (a.time?.elapsed || 0) + (a.time?.extra || 0) / 100;
+                              const timeB = (b.time?.elapsed || 0) + (b.time?.extra || 0) / 100;
+                              return timeA - timeB;
+                            });
+
+                          let homeScore = 0;
+                          let awayScore = 0;
+                          const scoreAtGoal = new Map();
+
+                          goalsChronological.forEach((goal) => {
+                            if (goal.team?.id === match.homeTeam.id) homeScore++;
+                            else awayScore++;
+                            scoreAtGoal.set(goal, { home: homeScore, away: awayScore });
+                          });
+
+                          // Mi-temps indicator
+                          const hasHalfTime = sortedEvents.some(e => (e.time?.elapsed || 0) > 45);
+
+                          return sortedEvents.map((event, idx) => {
                             const isHome = event.team?.id === match.homeTeam.id;
+                            const isGoal = event.type === 'Goal';
+                            const currentScore = isGoal ? scoreAtGoal.get(event) : null;
+                            const showHalfTime = hasHalfTime && idx > 0 &&
+                              (sortedEvents[idx - 1].time?.elapsed || 0) > 45 &&
+                              (event.time?.elapsed || 0) <= 45;
+
                             return (
-                              <div
-                                key={idx}
-                                className={`flex items-center gap-3 p-3 rounded-lg bg-white/5 ${
-                                  isHome ? '' : 'flex-row-reverse'
-                                }`}
-                              >
-                                <div className="w-12 text-center">
-                                  <span className="text-pink-400 font-bold">{event.time?.elapsed}'</span>
-                                  {event.time?.extra && <span className="text-gray-500 text-xs">+{event.time.extra}</span>}
-                                </div>
-                                <EventIcon type={event.type} detail={event.detail} />
-                                <div className={`flex-1 ${isHome ? '' : 'text-right'}`}>
-                                  {event.player?.id ? (
-                                    <Link to={`/player/${event.player.id}`} className="text-white font-medium hover:text-pink-400">
-                                      {event.player.name}
-                                    </Link>
-                                  ) : (
-                                    <span className="text-white font-medium">{event.player?.name || 'Événement'}</span>
-                                  )}
-                                  {event.type === 'subst' && event.assist?.name && (
-                                    <p className="text-gray-500 text-xs">↓ {event.assist.name}</p>
-                                  )}
-                                  {event.type === 'Goal' && event.assist?.name && (
-                                    <p className="text-gray-500 text-xs">Passe: {event.assist.name}</p>
+                              <div key={idx}>
+                                {/* Mi-temps separator */}
+                                {showHalfTime && (
+                                  <div className="flex items-center gap-4 py-3 my-2">
+                                    <div className="flex-1 h-px bg-white/20" />
+                                    <span className="text-gray-500 text-xs font-medium px-3 py-1 bg-white/5 rounded">
+                                      MI-TEMPS {match.score.halfTime.home !== null ? `${match.score.halfTime.home} - ${match.score.halfTime.away}` : ''}
+                                    </span>
+                                    <div className="flex-1 h-px bg-white/20" />
+                                  </div>
+                                )}
+
+                                <div
+                                  className={`flex items-center gap-2 md:gap-3 p-2 md:p-3 rounded-lg transition-colors ${
+                                    isGoal ? 'bg-green-500/10 border border-green-500/20' : 'bg-white/5 hover:bg-white/10'
+                                  } ${isHome ? '' : 'flex-row-reverse'}`}
+                                >
+                                  {/* Minute */}
+                                  <div className="w-10 md:w-12 text-center flex-shrink-0">
+                                    <span className={`font-bold text-sm ${isGoal ? 'text-green-400' : 'text-pink-400'}`}>
+                                      {event.time?.elapsed}'
+                                    </span>
+                                    {event.time?.extra > 0 && (
+                                      <span className="text-gray-500 text-xs">+{event.time.extra}</span>
+                                    )}
+                                  </div>
+
+                                  {/* Icon */}
+                                  <EventIcon type={event.type} detail={event.detail} />
+
+                                  {/* Player info */}
+                                  <div className={`flex-1 min-w-0 ${isHome ? '' : 'text-right'}`}>
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      {event.assist?.name && event.type === 'Goal' && (
+                                        <span className={`text-gray-500 text-xs ${isHome ? '' : 'order-last'}`}>
+                                          (P. {event.assist.name.split(' ').pop()})
+                                        </span>
+                                      )}
+                                      {event.player?.id ? (
+                                        <Link
+                                          to={`/player/${event.player.id}`}
+                                          className={`text-white font-medium text-sm hover:text-pink-400 truncate ${isHome ? '' : 'ml-auto'}`}
+                                        >
+                                          {event.player.name}
+                                        </Link>
+                                      ) : (
+                                        <span className="text-white font-medium text-sm truncate">
+                                          {event.player?.name || 'Événement'}
+                                        </span>
+                                      )}
+                                    </div>
+                                    {event.type === 'subst' && event.assist?.name && (
+                                      <p className="text-red-400 text-xs">↓ {event.assist.name}</p>
+                                    )}
+                                  </div>
+
+                                  {/* Score pour les buts */}
+                                  {isGoal && currentScore && (
+                                    <div className="flex items-center gap-1 px-2 py-1 bg-black/30 rounded text-sm font-bold flex-shrink-0">
+                                      <span className="text-white">{currentScore.home}</span>
+                                      <span className="text-gray-500">-</span>
+                                      <span className="text-white">{currentScore.away}</span>
+                                    </div>
                                   )}
                                 </div>
                               </div>
                             );
-                          })}
+                          });
+                        })()}
                       </div>
                     )}
                   </div>
