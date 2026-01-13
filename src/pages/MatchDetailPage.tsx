@@ -34,6 +34,8 @@ import {
   getTeamLastResults,
   getMatchesByMatchday,
   getMatchesByRound,
+  getMatchPlayerStats,
+  getTeamInjuries,
   formatDateFR,
 } from '../services/apiFootball';
 import { getCompetition } from '../config/competitions';
@@ -791,6 +793,8 @@ export default function MatchDetailPage() {
   const [stats, setStats] = useState<any>(null);
   const [lineups, setLineups] = useState<any>(null);
   const [h2h, setH2H] = useState<Match[]>([]);
+  const [playerStats, setPlayerStats] = useState<any>(null);
+  const [injuries, setInjuries] = useState<any[]>([]);
 
   // États sidebar
   const [standings, setStandings] = useState<TeamStanding[]>([]);
@@ -850,6 +854,25 @@ export default function MatchDetailPage() {
         if (homeTeamId && awayTeamId) {
           getHeadToHead(homeTeamId, awayTeamId)
             .then(data => setH2H(data || []))
+            .catch(() => {});
+        }
+
+        // Stats joueurs (pour matchs terminés ou en cours)
+        if (matchData.status === 'FINISHED' || isLive) {
+          getMatchPlayerStats(fixtureId, isLive)
+            .then(data => setPlayerStats(data))
+            .catch(() => {});
+        }
+
+        // Blessures des deux équipes
+        if (homeTeamId) {
+          getTeamInjuries(homeTeamId)
+            .then(data => setInjuries(prev => [...prev, ...data.map((i: any) => ({ ...i, side: 'home' }))]))
+            .catch(() => {});
+        }
+        if (awayTeamId) {
+          getTeamInjuries(awayTeamId)
+            .then(data => setInjuries(prev => [...prev, ...data.map((i: any) => ({ ...i, side: 'away' }))]))
             .catch(() => {});
         }
 
@@ -1342,6 +1365,212 @@ export default function MatchDetailPage() {
                       </div>
                     )}
                   </div>
+
+                  {/* Stats Joueurs - Top performers */}
+                  {playerStats && playerStats.length > 0 && (
+                    <div className="mt-6 bg-gray-900/50 rounded-2xl border border-white/10 p-4 md:p-6">
+                      <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                        <Star className="w-5 h-5 text-yellow-500" />
+                        Stats Joueurs
+                      </h3>
+
+                      {/* Top Ratings */}
+                      {(() => {
+                        // Combiner tous les joueurs des deux équipes
+                        const allPlayers = playerStats.flatMap((team: any) =>
+                          (team.players || []).map((p: any) => ({ ...p, teamId: team.team?.id, teamLogo: team.team?.logo }))
+                        );
+
+                        // Top par note
+                        const topRated = allPlayers
+                          .filter((p: any) => p.rating && p.rating > 0)
+                          .sort((a: any, b: any) => (b.rating || 0) - (a.rating || 0))
+                          .slice(0, 3);
+
+                        // Top buteurs du match
+                        const topScorers = allPlayers
+                          .filter((p: any) => p.goals > 0)
+                          .sort((a: any, b: any) => b.goals - a.goals)
+                          .slice(0, 3);
+
+                        // Top passeurs décisifs
+                        const topAssisters = allPlayers
+                          .filter((p: any) => p.assists > 0)
+                          .sort((a: any, b: any) => b.assists - a.assists)
+                          .slice(0, 3);
+
+                        // Top passes clés
+                        const topKeyPasses = allPlayers
+                          .filter((p: any) => p.keyPasses > 0)
+                          .sort((a: any, b: any) => b.keyPasses - a.keyPasses)
+                          .slice(0, 3);
+
+                        // Top dribbles réussis
+                        const topDribblers = allPlayers
+                          .filter((p: any) => p.dribblesSuccess > 0)
+                          .sort((a: any, b: any) => b.dribblesSuccess - a.dribblesSuccess)
+                          .slice(0, 3);
+
+                        return (
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {/* Meilleures notes */}
+                            {topRated.length > 0 && (
+                              <div className="bg-white/5 rounded-xl p-4">
+                                <h4 className="text-sm font-semibold text-gray-400 mb-3 flex items-center gap-2">
+                                  <Flame className="w-4 h-4 text-orange-500" />
+                                  Meilleures notes
+                                </h4>
+                                <div className="space-y-2">
+                                  {topRated.map((p: any, idx: number) => (
+                                    <div key={idx} className="flex items-center gap-2">
+                                      <span className="text-gray-500 text-xs w-4">#{idx + 1}</span>
+                                      <img src={p.teamLogo} alt="" className="w-4 h-4" />
+                                      <span className="text-white text-sm flex-1 truncate">{p.name}</span>
+                                      <span className="text-yellow-400 font-bold text-sm">{p.rating?.toFixed(1)}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Buteurs */}
+                            {topScorers.length > 0 && (
+                              <div className="bg-white/5 rounded-xl p-4">
+                                <h4 className="text-sm font-semibold text-gray-400 mb-3 flex items-center gap-2">
+                                  <Target className="w-4 h-4 text-green-500" />
+                                  Buteurs
+                                </h4>
+                                <div className="space-y-2">
+                                  {topScorers.map((p: any, idx: number) => (
+                                    <div key={idx} className="flex items-center gap-2">
+                                      <span className="text-gray-500 text-xs w-4">#{idx + 1}</span>
+                                      <img src={p.teamLogo} alt="" className="w-4 h-4" />
+                                      <span className="text-white text-sm flex-1 truncate">{p.name}</span>
+                                      <span className="text-green-400 font-bold text-sm">{p.goals}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Passeurs décisifs */}
+                            {topAssisters.length > 0 && (
+                              <div className="bg-white/5 rounded-xl p-4">
+                                <h4 className="text-sm font-semibold text-gray-400 mb-3 flex items-center gap-2">
+                                  <Zap className="w-4 h-4 text-blue-500" />
+                                  Passeurs décisifs
+                                </h4>
+                                <div className="space-y-2">
+                                  {topAssisters.map((p: any, idx: number) => (
+                                    <div key={idx} className="flex items-center gap-2">
+                                      <span className="text-gray-500 text-xs w-4">#{idx + 1}</span>
+                                      <img src={p.teamLogo} alt="" className="w-4 h-4" />
+                                      <span className="text-white text-sm flex-1 truncate">{p.name}</span>
+                                      <span className="text-blue-400 font-bold text-sm">{p.assists}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Passes clés */}
+                            {topKeyPasses.length > 0 && (
+                              <div className="bg-white/5 rounded-xl p-4">
+                                <h4 className="text-sm font-semibold text-gray-400 mb-3 flex items-center gap-2">
+                                  <TrendingUp className="w-4 h-4 text-purple-500" />
+                                  Passes clés
+                                </h4>
+                                <div className="space-y-2">
+                                  {topKeyPasses.map((p: any, idx: number) => (
+                                    <div key={idx} className="flex items-center gap-2">
+                                      <span className="text-gray-500 text-xs w-4">#{idx + 1}</span>
+                                      <img src={p.teamLogo} alt="" className="w-4 h-4" />
+                                      <span className="text-white text-sm flex-1 truncate">{p.name}</span>
+                                      <span className="text-purple-400 font-bold text-sm">{p.keyPasses}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Dribbles réussis */}
+                            {topDribblers.length > 0 && (
+                              <div className="bg-white/5 rounded-xl p-4">
+                                <h4 className="text-sm font-semibold text-gray-400 mb-3 flex items-center gap-2">
+                                  <Swords className="w-4 h-4 text-pink-500" />
+                                  Dribbles réussis
+                                </h4>
+                                <div className="space-y-2">
+                                  {topDribblers.map((p: any, idx: number) => (
+                                    <div key={idx} className="flex items-center gap-2">
+                                      <span className="text-gray-500 text-xs w-4">#{idx + 1}</span>
+                                      <img src={p.teamLogo} alt="" className="w-4 h-4" />
+                                      <span className="text-white text-sm flex-1 truncate">{p.name}</span>
+                                      <span className="text-pink-400 font-bold text-sm">{p.dribblesSuccess}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  )}
+
+                  {/* Blessures & Absents */}
+                  {injuries.length > 0 && (
+                    <div className="mt-6 bg-gray-900/50 rounded-2xl border border-white/10 p-4 md:p-6">
+                      <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                        <AlertCircle className="w-5 h-5 text-red-500" />
+                        Blessures & Absents
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Blessés domicile */}
+                        <div>
+                          <div className="flex items-center gap-2 mb-3">
+                            <img src={match.homeTeam.crest} alt="" className="w-5 h-5" />
+                            <span className="text-gray-400 text-sm">{match.homeTeam.name}</span>
+                          </div>
+                          <div className="space-y-2">
+                            {injuries.filter((i: any) => i.side === 'home').slice(0, 5).map((injury: any, idx: number) => (
+                              <div key={idx} className="flex items-center gap-2 p-2 rounded-lg bg-white/5">
+                                <img src={injury.player?.photo} alt="" className="w-8 h-8 rounded-full" />
+                                <div className="flex-1">
+                                  <p className="text-white text-sm">{injury.player?.name}</p>
+                                  <p className="text-red-400 text-xs">{injury.reason}</p>
+                                </div>
+                              </div>
+                            ))}
+                            {injuries.filter((i: any) => i.side === 'home').length === 0 && (
+                              <p className="text-gray-500 text-sm">Aucun absent signalé</p>
+                            )}
+                          </div>
+                        </div>
+                        {/* Blessés extérieur */}
+                        <div>
+                          <div className="flex items-center gap-2 mb-3">
+                            <img src={match.awayTeam.crest} alt="" className="w-5 h-5" />
+                            <span className="text-gray-400 text-sm">{match.awayTeam.name}</span>
+                          </div>
+                          <div className="space-y-2">
+                            {injuries.filter((i: any) => i.side === 'away').slice(0, 5).map((injury: any, idx: number) => (
+                              <div key={idx} className="flex items-center gap-2 p-2 rounded-lg bg-white/5">
+                                <img src={injury.player?.photo} alt="" className="w-8 h-8 rounded-full" />
+                                <div className="flex-1">
+                                  <p className="text-white text-sm">{injury.player?.name}</p>
+                                  <p className="text-red-400 text-xs">{injury.reason}</p>
+                                </div>
+                              </div>
+                            ))}
+                            {injuries.filter((i: any) => i.side === 'away').length === 0 && (
+                              <p className="text-gray-500 text-sm">Aucun absent signalé</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </motion.div>
               )}
 
