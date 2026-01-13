@@ -56,7 +56,15 @@ const DIFFICULTY_LABELS = {
 };
 
 const FootballQuizBlock: React.FC<FootballQuizProps> = ({ value }) => {
-  const { title, description, difficulty, timeLimit, questions, showResults, shareEnabled, resultMessages } = value;
+  // Valeurs par défaut
+  const title = value?.title || 'Quiz Football';
+  const description = value?.description;
+  const difficulty = value?.difficulty || 'medium';
+  const timeLimit = value?.timeLimit || 30;
+  const questions = value?.questions || [];
+  const showResults = value?.showResults !== false;
+  const shareEnabled = value?.shareEnabled !== false;
+  const resultMessages = value?.resultMessages;
 
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [score, setScore] = useState(0);
@@ -66,9 +74,27 @@ const FootballQuizBlock: React.FC<FootballQuizProps> = ({ value }) => {
   const [quizComplete, setQuizComplete] = useState(false);
   const [quizStarted, setQuizStarted] = useState(false);
 
+  // Protection: pas de données ou pas de questions
+  if (!value || !questions || questions.length === 0) {
+    return (
+      <div className="my-10 md:my-14">
+        <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl border border-gray-700 overflow-hidden p-6 text-center">
+          <span className="text-4xl mb-4 block">🎯</span>
+          <h3 className="text-xl font-bold text-white mb-2">{title}</h3>
+          <p className="text-gray-400">Quiz en cours de préparation...</p>
+          {process.env.NODE_ENV === 'development' && (
+            <pre className="mt-4 text-xs text-left text-gray-500 overflow-auto max-h-40 bg-gray-900 p-2 rounded">
+              {JSON.stringify(value, null, 2)}
+            </pre>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   const question = questions[currentQuestion];
-  const totalPoints = questions.reduce((acc, q) => acc + q.points, 0);
-  const percentage = Math.round((score / totalPoints) * 100);
+  const totalPoints = questions.reduce((acc, q) => acc + (q.points || 1), 0);
+  const percentage = totalPoints > 0 ? Math.round((score / totalPoints) * 100) : 0;
 
   // Timer
   useEffect(() => {

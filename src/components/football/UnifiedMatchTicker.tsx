@@ -73,9 +73,9 @@ function normalizeTeamName(name: string): string {
 }
 
 export default function UnifiedMatchTicker() {
-  const [matches, setMatches] = useState<MatchWithOdds[]>([]);
+  const [liveMatches, setLiveMatches] = useState<Match[]>([]);
+  const [upcomingMatches, setUpcomingMatches] = useState<MatchWithOdds[]>([]);
   const [loading, setLoading] = useState(true);
-  const [hasLiveMatches, setHasLiveMatches] = useState(false);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -90,25 +90,15 @@ export default function UnifiedMatchTicker() {
         const majorLiveMatches = liveData.filter((m: Match) =>
           isLiveMatch(m.status) && MAJOR_COMPETITION_IDS.includes(m.competition?.id)
         );
+        setLiveMatches(majorLiveMatches.slice(0, 10));
 
-        // 2. Si des matchs LIVE majeurs existent, les afficher
-        if (majorLiveMatches.length > 0) {
-          setHasLiveMatches(true);
-          setMatches(majorLiveMatches.slice(0, 20));
-          setLoading(false);
-          return;
-        }
-
-        // 3. Sinon, afficher les matchs à venir avec cotes Winamax
-        setHasLiveMatches(false);
-
-        // Récupérer les prochains matchs - Top 5 ligues seulement (séquentiellement)
+        // 2. Récupérer les matchs à venir avec cotes Winamax
         const TOP_5_LEAGUES = [61, 39, 140, 135, 78]; // L1, PL, Liga, Serie A, Bundesliga
         const allUpcoming: Match[] = [];
 
         for (const leagueId of TOP_5_LEAGUES) {
           try {
-            const fixtures = await getNextFixtures(String(leagueId), 4);
+            const fixtures = await getNextFixtures(String(leagueId), 3);
             allUpcoming.push(...fixtures);
             await new Promise(resolve => setTimeout(resolve, 100)); // Délai anti rate-limit
           } catch (err) {
@@ -116,11 +106,11 @@ export default function UnifiedMatchTicker() {
           }
         }
 
-        const upcomingMatches = allUpcoming.filter((m: Match) => isUpcomingMatch(m.status));
+        const upcoming = allUpcoming.filter((m: Match) => isUpcomingMatch(m.status));
 
         // Récupérer les cotes Winamax
         const sportsToFetch = new Set<SportKey>();
-        upcomingMatches.forEach((m: Match) => {
+        upcoming.forEach((m: Match) => {
           const sport = COMPETITION_TO_SPORT[m.competition?.id];
           if (sport) sportsToFetch.add(sport);
         });
@@ -137,7 +127,7 @@ export default function UnifiedMatchTicker() {
         );
 
         // Associer les cotes aux matchs
-        const matchesWithOdds: MatchWithOdds[] = upcomingMatches.map((match: Match) => {
+        const matchesWithOdds: MatchWithOdds[] = upcoming.map((match: Match) => {
           const key = normalizeTeamName(match.homeTeam.name) + '_' + normalizeTeamName(match.awayTeam.name);
           const oddsData = oddsMap.get(key);
 
@@ -162,12 +152,12 @@ export default function UnifiedMatchTicker() {
           };
         });
 
-        // Trier par date et prendre les 20 premiers
+        // Trier par date et prendre les 15 premiers
         const sortedMatches = matchesWithOdds
           .sort((a, b) => new Date(a.utcDate).getTime() - new Date(b.utcDate).getTime())
-          .slice(0, 20);
+          .slice(0, 15);
 
-        setMatches(sortedMatches);
+        setUpcomingMatches(sortedMatches);
       } catch (err) {
         console.error('[UnifiedMatchTicker] Error:', err);
       } finally {
@@ -179,6 +169,9 @@ export default function UnifiedMatchTicker() {
     const interval = setInterval(fetchMatches, 60000);
     return () => clearInterval(interval);
   }, []);
+
+  const hasLiveMatches = liveMatches.length > 0;
+  const hasUpcomingMatches = upcomingMatches.length > 0;
 
   // Check scroll state
   const checkScrollState = () => {
@@ -219,39 +212,25 @@ export default function UnifiedMatchTicker() {
     );
   }
 
-  if (matches.length === 0) return null;
+  if (!hasLiveMatches && !hasUpcomingMatches) return null;
+
+  const totalMatches = liveMatches.length + upcomingMatches.length;
 
   return (
     <div className="relative bg-black/90 backdrop-blur-sm border-b border-white/5">
       <div className="flex items-center">
-        {/* Header avec indicateur LIVE ou Winamax */}
-        <div className="flex items-center gap-1.5 sm:gap-2 pl-2 sm:pl-4 pr-2 sm:pr-3 py-2 sm:py-2.5 border-r border-white/10 flex-shrink-0">
-          {hasLiveMatches ? (
-            <>
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-              </span>
-              <span className="text-[9px] sm:text-[10px] font-bold text-red-400 uppercase tracking-wide">
-                Live
-              </span>
-            </>
-          ) : (
-            <>
-              <img
-                src="/images/winamax-logo.png"
-                alt="Winamax"
-                className="w-4 h-4 sm:w-5 sm:h-5 rounded object-contain"
-              />
-              <div className="hidden sm:flex flex-col">
-                <span className="text-[10px] font-bold uppercase tracking-wide" style={{ color: '#ED1C24' }}>
-                  Cotes Winamax
-                </span>
-                <span className="text-[8px] text-gray-500">Matchs à venir</span>
-              </div>
-            </>
-          )}
-        </div>
+        {/* Header LIVE si matchs en direct */}
+        {hasLiveMatches && (
+          <div className="flex items-center gap-1.5 sm:gap-2 pl-2 sm:pl-4 pr-2 sm:pr-3 py-2 sm:py-2.5 border-r border-white/10 flex-shrink-0">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+            </span>
+            <span className="text-[9px] sm:text-[10px] font-bold text-red-400 uppercase tracking-wide">
+              Live
+            </span>
+          </div>
+        )}
 
         {/* Bouton gauche */}
         <button
@@ -266,17 +245,51 @@ export default function UnifiedMatchTicker() {
         <div
           ref={containerRef}
           onScroll={checkScrollState}
-          className="flex gap-2 overflow-x-auto py-2 flex-1"
+          className="flex gap-2 overflow-x-auto py-2 flex-1 items-center"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           <style>{`div::-webkit-scrollbar { display: none; }`}</style>
 
-          {matches.map((match, index) => (
-            hasLiveMatches ? (
-              <LiveMatchCard key={match.id} match={match} index={index} getTeamCode={getTeamCode} />
-            ) : (
-              <OddsMatchCard key={match.id} match={match} index={index} getTeamCode={getTeamCode} />
-            )
+          {/* Matchs LIVE */}
+          {liveMatches.map((match, index) => (
+            <LiveMatchCard key={match.id} match={match} index={index} getTeamCode={getTeamCode} />
+          ))}
+
+          {/* Séparateur si les deux existent */}
+          {hasLiveMatches && hasUpcomingMatches && (
+            <div className="flex items-center gap-2 px-2 flex-shrink-0">
+              <div className="w-px h-8 bg-white/10" />
+              <div className="flex items-center gap-1.5">
+                <img
+                  src="/images/winamax-logo.png"
+                  alt="Winamax"
+                  className="w-4 h-4 rounded object-contain"
+                />
+                <span className="text-[8px] text-gray-500 hidden sm:block">Cotes</span>
+              </div>
+              <div className="w-px h-8 bg-white/10" />
+            </div>
+          )}
+
+          {/* Header Winamax si pas de live */}
+          {!hasLiveMatches && hasUpcomingMatches && (
+            <div className="flex items-center gap-1.5 pr-3 flex-shrink-0">
+              <img
+                src="/images/winamax-logo.png"
+                alt="Winamax"
+                className="w-4 h-4 sm:w-5 sm:h-5 rounded object-contain"
+              />
+              <div className="hidden sm:flex flex-col">
+                <span className="text-[10px] font-bold uppercase tracking-wide" style={{ color: '#ED1C24' }}>
+                  Cotes
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Matchs à venir avec cotes */}
+          {upcomingMatches.map((match, index) => (
+            <OddsMatchCard key={match.id} match={match} index={index} getTeamCode={getTeamCode} />
           ))}
         </div>
 
@@ -291,20 +304,20 @@ export default function UnifiedMatchTicker() {
 
         {/* CTA */}
         <Link
-          to={hasLiveMatches ? "/matchs" : "/paris"}
+          to="/matchs"
           className="flex items-center gap-1 sm:gap-2 px-1.5 sm:px-3 py-1.5 sm:py-2 mr-1 sm:mr-2 hover:bg-white/5 rounded transition-colors flex-shrink-0"
         >
           <span className="flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 bg-pink-500/20 text-pink-400 text-[9px] sm:text-[10px] font-bold rounded">
-            {matches.length}
+            {totalMatches}
           </span>
           <span className="text-[11px] text-gray-400 hidden sm:block">
-            {hasLiveMatches ? "Voir tous les matchs" : "Tous les paris"}
+            Voir tous les matchs
           </span>
           <ChevronRight className="w-3 h-3 text-gray-500 sm:hidden" />
         </Link>
 
-        {/* Mention légale pour les cotes - hidden on mobile */}
-        {!hasLiveMatches && (
+        {/* Mention légale pour les cotes */}
+        {hasUpcomingMatches && (
           <div className="relative group pr-3 flex-shrink-0 hidden sm:block">
             <span className="text-[9px] text-gray-600 cursor-help border-b border-dotted border-gray-600">
               (i)
