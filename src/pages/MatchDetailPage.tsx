@@ -1064,58 +1064,102 @@ export default function MatchDetailPage() {
               )}
 
               {/* Teams and Score */}
-              <div className="flex items-center justify-center gap-4 md:gap-12">
-                {/* Home Team */}
-                <Link to={`/classements/club/${match.homeTeam.id}`} className="flex-1 text-center group">
-                  <img
-                    src={match.homeTeam.crest}
-                    alt={match.homeTeam.name}
-                    className="w-16 h-16 md:w-24 md:h-24 object-contain mx-auto mb-3 group-hover:scale-110 transition-transform"
-                  />
-                  <h2 className="text-base md:text-xl font-bold text-white group-hover:text-pink-400 transition-colors">
-                    {match.homeTeam.name}
-                  </h2>
-                </Link>
+              {(() => {
+                // Filtrer les buts par équipe
+                const homeGoals = events.filter(e => e.type === 'Goal' && e.team?.id === match.homeTeam.id);
+                const awayGoals = events.filter(e => e.type === 'Goal' && e.team?.id === match.awayTeam.id);
 
-                {/* Score */}
-                <div className="text-center min-w-[120px]">
-                  {isUpcoming ? (
-                    <div>
-                      <div className="text-4xl md:text-6xl font-black text-white">VS</div>
-                      <div className="mt-2 text-gray-400 text-sm">{formatDateFR(match.utcDate)}</div>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="flex items-center justify-center gap-3">
-                        <span className="text-4xl md:text-6xl font-black text-white">
-                          {match.score.fullTime.home ?? 0}
-                        </span>
-                        <span className="text-2xl md:text-4xl text-gray-600">:</span>
-                        <span className="text-4xl md:text-6xl font-black text-white">
-                          {match.score.fullTime.away ?? 0}
-                        </span>
-                      </div>
-                      {match.score.halfTime.home !== null && (
-                        <div className="mt-1 text-gray-500 text-sm">
-                          MT: {match.score.halfTime.home} - {match.score.halfTime.away}
+                // Fonction pour afficher le nom du buteur (format court)
+                const formatScorer = (event: any) => {
+                  const name = event.player?.name || 'But';
+                  const minute = event.time?.elapsed || '';
+                  const extra = event.time?.extra ? `+${event.time.extra}` : '';
+                  const isPenalty = event.detail?.includes('Penalty');
+                  const isOwnGoal = event.detail?.includes('Own Goal');
+                  return `${name.split(' ').pop()} ${minute}${extra}'${isPenalty ? ' (P)' : ''}${isOwnGoal ? ' (CSC)' : ''}`;
+                };
+
+                return (
+                  <div className="flex items-start justify-center gap-4 md:gap-8">
+                    {/* Home Team */}
+                    <div className="flex-1 text-center">
+                      <Link to={`/classements/club/${match.homeTeam.id}`} className="group inline-block">
+                        <img
+                          src={match.homeTeam.crest}
+                          alt={match.homeTeam.name}
+                          className="w-16 h-16 md:w-24 md:h-24 object-contain mx-auto mb-3 group-hover:scale-110 transition-transform"
+                        />
+                        <h2 className="text-base md:text-xl font-bold text-white group-hover:text-pink-400 transition-colors">
+                          {match.homeTeam.name}
+                        </h2>
+                      </Link>
+                      {/* Buteurs domicile */}
+                      {!isUpcoming && homeGoals.length > 0 && (
+                        <div className="mt-2 space-y-0.5">
+                          {homeGoals.map((goal, idx) => (
+                            <div key={idx} className="text-xs text-gray-400 flex items-center justify-center gap-1">
+                              <span className="text-pink-400">⚽</span>
+                              <span>{formatScorer(goal)}</span>
+                            </div>
+                          ))}
                         </div>
                       )}
-                    </>
-                  )}
-                </div>
+                    </div>
 
-                {/* Away Team */}
-                <Link to={`/classements/club/${match.awayTeam.id}`} className="flex-1 text-center group">
-                  <img
-                    src={match.awayTeam.crest}
-                    alt={match.awayTeam.name}
-                    className="w-16 h-16 md:w-24 md:h-24 object-contain mx-auto mb-3 group-hover:scale-110 transition-transform"
-                  />
-                  <h2 className="text-base md:text-xl font-bold text-white group-hover:text-blue-400 transition-colors">
-                    {match.awayTeam.name}
-                  </h2>
-                </Link>
-              </div>
+                    {/* Score */}
+                    <div className="text-center min-w-[100px] md:min-w-[120px] pt-4 md:pt-6">
+                      {isUpcoming ? (
+                        <div>
+                          <div className="text-4xl md:text-6xl font-black text-white">VS</div>
+                          <div className="mt-2 text-gray-400 text-sm">{formatDateFR(match.utcDate)}</div>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="flex items-center justify-center gap-3">
+                            <span className="text-4xl md:text-6xl font-black text-white">
+                              {match.score.fullTime.home ?? 0}
+                            </span>
+                            <span className="text-2xl md:text-4xl text-gray-600">:</span>
+                            <span className="text-4xl md:text-6xl font-black text-white">
+                              {match.score.fullTime.away ?? 0}
+                            </span>
+                          </div>
+                          {match.score.halfTime.home !== null && (
+                            <div className="mt-1 text-gray-500 text-sm">
+                              MT: {match.score.halfTime.home} - {match.score.halfTime.away}
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+
+                    {/* Away Team */}
+                    <div className="flex-1 text-center">
+                      <Link to={`/classements/club/${match.awayTeam.id}`} className="group inline-block">
+                        <img
+                          src={match.awayTeam.crest}
+                          alt={match.awayTeam.name}
+                          className="w-16 h-16 md:w-24 md:h-24 object-contain mx-auto mb-3 group-hover:scale-110 transition-transform"
+                        />
+                        <h2 className="text-base md:text-xl font-bold text-white group-hover:text-blue-400 transition-colors">
+                          {match.awayTeam.name}
+                        </h2>
+                      </Link>
+                      {/* Buteurs extérieur */}
+                      {!isUpcoming && awayGoals.length > 0 && (
+                        <div className="mt-2 space-y-0.5">
+                          {awayGoals.map((goal, idx) => (
+                            <div key={idx} className="text-xs text-gray-400 flex items-center justify-center gap-1">
+                              <span className="text-blue-400">⚽</span>
+                              <span>{formatScorer(goal)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Match info badges */}
               <div className="mt-6 flex flex-wrap justify-center gap-3">
