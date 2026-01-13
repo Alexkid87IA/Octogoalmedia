@@ -602,10 +602,11 @@ export async function getUpcomingFixtures(leagueIds?: number[], days: number = 7
 
 /**
  * Récupère les matchs pour une date spécifique
- * Utilise des batches de 5 requêtes pour éviter le rate limit
+ * Optimisé: UNE SEULE requête API puis filtrage côté client
  */
 export async function getFixturesByDate(date: string, leagueIds?: number[]) {
   const ids = leagueIds || getTopCompetitionIds();
+  const idsSet = new Set(ids);
   const cacheKey = `fixtures_date_${date}_${ids.join('-')}`;
   const cached = getCached(cacheKey);
   if (cached) {
@@ -614,55 +615,35 @@ export async function getFixturesByDate(date: string, leagueIds?: number[]) {
   }
 
   try {
-    console.log(`[API] getFixturesByDate - fetching for date:`, date, 'leagues:', ids.length);
+    console.log(`[API] getFixturesByDate - fetching ALL fixtures for date:`, date);
 
-    const allMatches: any[] = [];
-    const BATCH_SIZE = 5;
-    const BATCH_DELAY = 1200; // 1.2 secondes entre les batches
+    // UNE SEULE requête pour tous les matchs du jour
+    const response = await apiFetch(`/fixtures?date=${date}&season=${CURRENT_SEASON}`);
 
-    // Diviser les IDs en batches
-    for (let i = 0; i < ids.length; i += BATCH_SIZE) {
-      const batch = ids.slice(i, i + BATCH_SIZE);
-      console.log(`[API] getFixturesByDate - batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(ids.length / BATCH_SIZE)}`);
-
-      const batchPromises = batch.map(leagueId =>
-        apiFetch(`/fixtures?date=${date}&league=${leagueId}&season=${CURRENT_SEASON}`)
-          .then(async res => {
-            if (!res.ok) {
-              console.error(`[API] getFixturesByDate - league ${leagueId} HTTP error:`, res.status);
-              return { response: [], errors: { http: res.status } };
-            }
-            const data = await res.json();
-            if (data.errors && Object.keys(data.errors).length > 0) {
-              console.error(`[API] getFixturesByDate - league ${leagueId} API errors:`, JSON.stringify(data.errors));
-            }
-            return data;
-          })
-          .catch(err => {
-            console.error(`[API] getFixturesByDate - league ${leagueId} failed:`, err);
-            return { response: [] };
-          })
-      );
-
-      const batchResults = await Promise.all(batchPromises);
-
-      batchResults.forEach((data) => {
-        if (data.response && Array.isArray(data.response)) {
-          allMatches.push(...data.response);
-        }
-      });
-
-      // Attendre avant le prochain batch (sauf pour le dernier)
-      if (i + BATCH_SIZE < ids.length) {
-        await new Promise(resolve => setTimeout(resolve, BATCH_DELAY));
-      }
+    if (!response.ok) {
+      console.error(`[API] getFixturesByDate - HTTP error:`, response.status);
+      return [];
     }
 
-    console.log(`[API] getFixturesByDate(${date}) - total:`, allMatches.length);
+    const data = await response.json();
 
-    const result = allMatches
+    if (data.errors && Object.keys(data.errors).length > 0) {
+      console.error(`[API] getFixturesByDate - API errors:`, JSON.stringify(data.errors));
+      return [];
+    }
+
+    const allMatches = data.response || [];
+    console.log(`[API] getFixturesByDate(${date}) - received:`, allMatches.length, 'total fixtures');
+
+    // Filtrer côté client pour garder uniquement les ligues qu'on veut
+    const filteredMatches = allMatches.filter((fixture: any) =>
+      idsSet.has(fixture.league?.id)
+    );
+    console.log(`[API] getFixturesByDate(${date}) - after filter:`, filteredMatches.length, 'matches');
+
+    const result = filteredMatches
       .map(transformMatch)
-      .sort((a, b) => new Date(a.utcDate).getTime() - new Date(b.utcDate).getTime());
+      .sort((a: any, b: any) => new Date(a.utcDate).getTime() - new Date(b.utcDate).getTime());
 
     setCache(cacheKey, result);
     return result;
