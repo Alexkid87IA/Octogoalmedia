@@ -1080,52 +1080,53 @@ export default function MatchDetailPage() {
                 };
 
                 return (
-                  <div className="flex items-start justify-center gap-4 md:gap-8">
-                    {/* Home Team */}
-                    <div className="flex-1 text-center">
-                      <Link to={`/classements/club/${match.homeTeam.id}`} className="group inline-block">
-                        <img
-                          src={match.homeTeam.crest}
-                          alt={match.homeTeam.name}
-                          className="w-16 h-16 md:w-24 md:h-24 object-contain mx-auto mb-3 group-hover:scale-110 transition-transform"
-                        />
-                        <h2 className="text-base md:text-xl font-bold text-white group-hover:text-pink-400 transition-colors">
-                          {match.homeTeam.name}
-                        </h2>
-                      </Link>
-                      {/* Buteurs domicile */}
-                      {!isUpcoming && homeGoals.length > 0 && (
-                        <div className="mt-2 space-y-0.5">
-                          {homeGoals.map((goal, idx) => (
-                            <div key={idx} className="text-xs text-gray-400 flex items-center justify-center gap-1">
-                              <span className="text-pink-400">⚽</span>
-                              <span>{formatScorer(goal)}</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                  <div className="flex items-center justify-center gap-2 md:gap-4">
+                    {/* Home Team - Logo + Name */}
+                    <Link to={`/classements/club/${match.homeTeam.id}`} className="group text-center flex-shrink-0">
+                      <img
+                        src={match.homeTeam.crest}
+                        alt={match.homeTeam.name}
+                        className="w-14 h-14 md:w-20 md:h-20 object-contain mx-auto mb-2 group-hover:scale-110 transition-transform"
+                      />
+                      <h2 className="text-sm md:text-lg font-bold text-white group-hover:text-pink-400 transition-colors max-w-[80px] md:max-w-[120px] truncate">
+                        {match.homeTeam.name}
+                      </h2>
+                    </Link>
+
+                    {/* Buteurs domicile (alignés à droite) */}
+                    {!isUpcoming && homeGoals.length > 0 && (
+                      <div className="hidden md:block text-right max-w-[140px]">
+                        {homeGoals.slice(0, 6).map((goal, idx) => (
+                          <div key={idx} className="text-[10px] text-gray-400 truncate">
+                            {formatScorer(goal)}
+                          </div>
+                        ))}
+                        {homeGoals.length > 6 && (
+                          <div className="text-[10px] text-gray-500">+{homeGoals.length - 6} autres</div>
+                        )}
+                      </div>
+                    )}
 
                     {/* Score */}
-                    <div className="text-center min-w-[100px] md:min-w-[120px] pt-4 md:pt-6">
+                    <div className="text-center px-2 md:px-4">
                       {isUpcoming ? (
                         <div>
-                          <div className="text-4xl md:text-6xl font-black text-white">VS</div>
-                          <div className="mt-2 text-gray-400 text-sm">{formatDateFR(match.utcDate)}</div>
+                          <div className="text-3xl md:text-5xl font-black text-white">VS</div>
+                          <div className="mt-1 text-gray-400 text-xs">{formatDateFR(match.utcDate)}</div>
                         </div>
                       ) : (
                         <>
-                          <div className="flex items-center justify-center gap-3">
-                            <span className="text-4xl md:text-6xl font-black text-white">
+                          <div className="flex items-center justify-center gap-2 md:gap-3">
+                            <span className="text-3xl md:text-5xl font-black text-white">
                               {match.score.fullTime.home ?? 0}
                             </span>
-                            <span className="text-2xl md:text-4xl text-gray-600">:</span>
-                            <span className="text-4xl md:text-6xl font-black text-white">
+                            <span className="text-xl md:text-3xl text-gray-600">-</span>
+                            <span className="text-3xl md:text-5xl font-black text-white">
                               {match.score.fullTime.away ?? 0}
                             </span>
                           </div>
                           {match.score.halfTime.home !== null && (
-                            <div className="mt-1 text-gray-500 text-sm">
+                            <div className="mt-1 text-gray-500 text-[10px] md:text-xs">
                               MT: {match.score.halfTime.home} - {match.score.halfTime.away}
                             </div>
                           )}
@@ -1133,30 +1134,31 @@ export default function MatchDetailPage() {
                       )}
                     </div>
 
-                    {/* Away Team */}
-                    <div className="flex-1 text-center">
-                      <Link to={`/classements/club/${match.awayTeam.id}`} className="group inline-block">
-                        <img
-                          src={match.awayTeam.crest}
-                          alt={match.awayTeam.name}
-                          className="w-16 h-16 md:w-24 md:h-24 object-contain mx-auto mb-3 group-hover:scale-110 transition-transform"
-                        />
-                        <h2 className="text-base md:text-xl font-bold text-white group-hover:text-blue-400 transition-colors">
-                          {match.awayTeam.name}
-                        </h2>
-                      </Link>
-                      {/* Buteurs extérieur */}
-                      {!isUpcoming && awayGoals.length > 0 && (
-                        <div className="mt-2 space-y-0.5">
-                          {awayGoals.map((goal, idx) => (
-                            <div key={idx} className="text-xs text-gray-400 flex items-center justify-center gap-1">
-                              <span className="text-blue-400">⚽</span>
-                              <span>{formatScorer(goal)}</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                    {/* Buteurs extérieur (alignés à gauche) */}
+                    {!isUpcoming && awayGoals.length > 0 && (
+                      <div className="hidden md:block text-left max-w-[140px]">
+                        {awayGoals.slice(0, 6).map((goal, idx) => (
+                          <div key={idx} className="text-[10px] text-gray-400 truncate">
+                            {formatScorer(goal)}
+                          </div>
+                        ))}
+                        {awayGoals.length > 6 && (
+                          <div className="text-[10px] text-gray-500">+{awayGoals.length - 6} autres</div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Away Team - Logo + Name */}
+                    <Link to={`/classements/club/${match.awayTeam.id}`} className="group text-center flex-shrink-0">
+                      <img
+                        src={match.awayTeam.crest}
+                        alt={match.awayTeam.name}
+                        className="w-14 h-14 md:w-20 md:h-20 object-contain mx-auto mb-2 group-hover:scale-110 transition-transform"
+                      />
+                      <h2 className="text-sm md:text-lg font-bold text-white group-hover:text-blue-400 transition-colors max-w-[80px] md:max-w-[120px] truncate">
+                        {match.awayTeam.name}
+                      </h2>
+                    </Link>
                   </div>
                 );
               })()}
