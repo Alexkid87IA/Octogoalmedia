@@ -1064,104 +1064,110 @@ export default function MatchDetailPage() {
               )}
 
               {/* Teams and Score */}
-              {(() => {
-                // Filtrer les buts par équipe
-                const homeGoals = events.filter(e => e.type === 'Goal' && e.team?.id === match.homeTeam.id);
-                const awayGoals = events.filter(e => e.type === 'Goal' && e.team?.id === match.awayTeam.id);
+              <div className="flex items-center justify-between gap-4 md:gap-8 max-w-2xl mx-auto">
+                {/* Home Team */}
+                <Link to={`/classements/club/${match.homeTeam.id}`} className="group text-center flex-1">
+                  <img
+                    src={match.homeTeam.crest}
+                    alt={match.homeTeam.name}
+                    className="w-16 h-16 md:w-24 md:h-24 object-contain mx-auto mb-2 group-hover:scale-110 transition-transform"
+                  />
+                  <h2 className="text-sm md:text-xl font-bold text-white group-hover:text-pink-400 transition-colors">
+                    {match.homeTeam.name}
+                  </h2>
+                </Link>
 
-                // Fonction pour afficher le nom du buteur (format court)
-                const formatScorer = (event: any) => {
-                  const name = event.player?.name || 'But';
-                  const minute = event.time?.elapsed || '';
-                  const extra = event.time?.extra ? `+${event.time.extra}` : '';
-                  const isPenalty = event.detail?.includes('Penalty');
-                  const isOwnGoal = event.detail?.includes('Own Goal');
-                  return `${name.split(' ').pop()} ${minute}${extra}'${isPenalty ? ' (P)' : ''}${isOwnGoal ? ' (CSC)' : ''}`;
-                };
+                {/* Score */}
+                <div className="text-center flex-shrink-0">
+                  {isUpcoming ? (
+                    <div>
+                      <div className="text-4xl md:text-6xl font-black text-white">VS</div>
+                      <div className="mt-2 text-gray-400 text-sm">{formatDateFR(match.utcDate)}</div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex items-center justify-center gap-3 md:gap-4">
+                        <span className="text-4xl md:text-6xl font-black text-white">
+                          {match.score.fullTime.home ?? 0}
+                        </span>
+                        <span className="text-2xl md:text-4xl text-gray-600">-</span>
+                        <span className="text-4xl md:text-6xl font-black text-white">
+                          {match.score.fullTime.away ?? 0}
+                        </span>
+                      </div>
+                      {match.score.halfTime.home !== null && (
+                        <div className="mt-1 text-gray-500 text-xs md:text-sm">
+                          MT: {match.score.halfTime.home} - {match.score.halfTime.away}
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
 
-                return (
-                  <div className="flex items-center justify-center gap-2 md:gap-4">
-                    {/* Home Team - Logo + Name */}
-                    <Link to={`/classements/club/${match.homeTeam.id}`} className="group text-center flex-shrink-0">
-                      <img
-                        src={match.homeTeam.crest}
-                        alt={match.homeTeam.name}
-                        className="w-14 h-14 md:w-20 md:h-20 object-contain mx-auto mb-2 group-hover:scale-110 transition-transform"
-                      />
-                      <h2 className="text-sm md:text-lg font-bold text-white group-hover:text-pink-400 transition-colors max-w-[80px] md:max-w-[120px] truncate">
-                        {match.homeTeam.name}
-                      </h2>
-                    </Link>
+                {/* Away Team */}
+                <Link to={`/classements/club/${match.awayTeam.id}`} className="group text-center flex-1">
+                  <img
+                    src={match.awayTeam.crest}
+                    alt={match.awayTeam.name}
+                    className="w-16 h-16 md:w-24 md:h-24 object-contain mx-auto mb-2 group-hover:scale-110 transition-transform"
+                  />
+                  <h2 className="text-sm md:text-xl font-bold text-white group-hover:text-blue-400 transition-colors">
+                    {match.awayTeam.name}
+                  </h2>
+                </Link>
+              </div>
 
-                    {/* Buteurs domicile (alignés à droite) */}
-                    {!isUpcoming && homeGoals.length > 0 && (
-                      <div className="hidden md:block text-right max-w-[140px]">
-                        {homeGoals.slice(0, 6).map((goal, idx) => (
-                          <div key={idx} className="text-[10px] text-gray-400 truncate">
-                            {formatScorer(goal)}
+              {/* Scorers Section - Below score, clickable */}
+              {!isUpcoming && events.filter(e => e.type === 'Goal').length > 0 && (
+                <button
+                  onClick={() => setActiveTab('events')}
+                  className="mt-4 w-full max-w-xl mx-auto"
+                >
+                  <div className="flex justify-center gap-8 md:gap-16 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors cursor-pointer">
+                    {/* Home Scorers */}
+                    <div className="text-right flex-1">
+                      {events
+                        .filter(e => e.type === 'Goal' && e.team?.id === match.homeTeam.id)
+                        .slice(0, 4)
+                        .map((goal, idx) => (
+                          <div key={idx} className="text-xs text-gray-300">
+                            <span className="text-pink-400">⚽</span>{' '}
+                            {goal.player?.name?.split(' ').pop()} {goal.time?.elapsed}'{goal.time?.extra ? `+${goal.time.extra}` : ''}
+                            {goal.detail?.includes('Penalty') ? ' (P)' : ''}
                           </div>
                         ))}
-                        {homeGoals.length > 6 && (
-                          <div className="text-[10px] text-gray-500">+{homeGoals.length - 6} autres</div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Score */}
-                    <div className="text-center px-2 md:px-4">
-                      {isUpcoming ? (
-                        <div>
-                          <div className="text-3xl md:text-5xl font-black text-white">VS</div>
-                          <div className="mt-1 text-gray-400 text-xs">{formatDateFR(match.utcDate)}</div>
+                      {events.filter(e => e.type === 'Goal' && e.team?.id === match.homeTeam.id).length > 4 && (
+                        <div className="text-[10px] text-gray-500 mt-1">
+                          +{events.filter(e => e.type === 'Goal' && e.team?.id === match.homeTeam.id).length - 4} autres
                         </div>
-                      ) : (
-                        <>
-                          <div className="flex items-center justify-center gap-2 md:gap-3">
-                            <span className="text-3xl md:text-5xl font-black text-white">
-                              {match.score.fullTime.home ?? 0}
-                            </span>
-                            <span className="text-xl md:text-3xl text-gray-600">-</span>
-                            <span className="text-3xl md:text-5xl font-black text-white">
-                              {match.score.fullTime.away ?? 0}
-                            </span>
-                          </div>
-                          {match.score.halfTime.home !== null && (
-                            <div className="mt-1 text-gray-500 text-[10px] md:text-xs">
-                              MT: {match.score.halfTime.home} - {match.score.halfTime.away}
-                            </div>
-                          )}
-                        </>
                       )}
                     </div>
 
-                    {/* Buteurs extérieur (alignés à gauche) */}
-                    {!isUpcoming && awayGoals.length > 0 && (
-                      <div className="hidden md:block text-left max-w-[140px]">
-                        {awayGoals.slice(0, 6).map((goal, idx) => (
-                          <div key={idx} className="text-[10px] text-gray-400 truncate">
-                            {formatScorer(goal)}
+                    {/* Divider */}
+                    <div className="w-px bg-gray-700" />
+
+                    {/* Away Scorers */}
+                    <div className="text-left flex-1">
+                      {events
+                        .filter(e => e.type === 'Goal' && e.team?.id === match.awayTeam.id)
+                        .slice(0, 4)
+                        .map((goal, idx) => (
+                          <div key={idx} className="text-xs text-gray-300">
+                            <span className="text-blue-400">⚽</span>{' '}
+                            {goal.player?.name?.split(' ').pop()} {goal.time?.elapsed}'{goal.time?.extra ? `+${goal.time.extra}` : ''}
+                            {goal.detail?.includes('Penalty') ? ' (P)' : ''}
                           </div>
                         ))}
-                        {awayGoals.length > 6 && (
-                          <div className="text-[10px] text-gray-500">+{awayGoals.length - 6} autres</div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Away Team - Logo + Name */}
-                    <Link to={`/classements/club/${match.awayTeam.id}`} className="group text-center flex-shrink-0">
-                      <img
-                        src={match.awayTeam.crest}
-                        alt={match.awayTeam.name}
-                        className="w-14 h-14 md:w-20 md:h-20 object-contain mx-auto mb-2 group-hover:scale-110 transition-transform"
-                      />
-                      <h2 className="text-sm md:text-lg font-bold text-white group-hover:text-blue-400 transition-colors max-w-[80px] md:max-w-[120px] truncate">
-                        {match.awayTeam.name}
-                      </h2>
-                    </Link>
+                      {events.filter(e => e.type === 'Goal' && e.team?.id === match.awayTeam.id).length > 4 && (
+                        <div className="text-[10px] text-gray-500 mt-1">
+                          +{events.filter(e => e.type === 'Goal' && e.team?.id === match.awayTeam.id).length - 4} autres
+                        </div>
+                      )}
+                    </div>
                   </div>
-                );
-              })()}
+                  <div className="text-[10px] text-gray-500 mt-1 text-center">Cliquer pour voir tous les temps forts</div>
+                </button>
+              )}
 
               {/* Match info badges */}
               <div className="mt-6 flex flex-wrap justify-center gap-3">

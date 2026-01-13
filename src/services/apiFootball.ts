@@ -1796,6 +1796,223 @@ export async function getHeadToHead(team1Id: number, team2Id: number, last: numb
   }
 }
 
+/**
+ * Récupère les statistiques des joueurs pour un match
+ * Endpoint: /fixtures/players
+ */
+export async function getMatchPlayerStats(fixtureId: number, isLive: boolean = false) {
+  const cacheKey = `match_players_${fixtureId}`;
+  const cached = getCached(cacheKey);
+  if (cached && !isLive) {
+    console.log(`[API] getMatchPlayerStats(${fixtureId}) - from cache`);
+    return cached;
+  }
+
+  try {
+    console.log(`[API] getMatchPlayerStats - fetching player stats for fixture ${fixtureId}`);
+    const response = await apiFetch(`/fixtures/players?fixture=${fixtureId}`);
+
+    if (!response.ok) {
+      console.error(`[API] getMatchPlayerStats - HTTP error:`, response.status);
+      return null;
+    }
+
+    const data = await response.json();
+
+    if (data.errors && Object.keys(data.errors).length > 0) {
+      console.error(`[API] getMatchPlayerStats - API errors:`, data.errors);
+      return null;
+    }
+
+    if (!data.response || data.response.length === 0) {
+      console.log(`[API] getMatchPlayerStats - Empty response`);
+      return null;
+    }
+
+    // Transformer: data.response contient un array avec les stats par équipe
+    const result = data.response.map((teamData: any) => ({
+      team: {
+        id: teamData.team.id,
+        name: teamData.team.name,
+        logo: teamData.team.logo,
+      },
+      players: (teamData.players || []).map((p: any) => ({
+        id: p.player.id,
+        name: p.player.name,
+        photo: p.player.photo,
+        position: p.statistics?.[0]?.games?.position,
+        rating: p.statistics?.[0]?.games?.rating ? parseFloat(p.statistics[0].games.rating) : null,
+        minutes: p.statistics?.[0]?.games?.minutes,
+        // Offensive
+        goals: p.statistics?.[0]?.goals?.total || 0,
+        assists: p.statistics?.[0]?.goals?.assists || 0,
+        shots: p.statistics?.[0]?.shots?.total || 0,
+        shotsOnTarget: p.statistics?.[0]?.shots?.on || 0,
+        // Passing
+        passes: p.statistics?.[0]?.passes?.total || 0,
+        passAccuracy: p.statistics?.[0]?.passes?.accuracy ? parseInt(p.statistics[0].passes.accuracy) : 0,
+        keyPasses: p.statistics?.[0]?.passes?.key || 0,
+        // Dribbles
+        dribbles: p.statistics?.[0]?.dribbles?.attempts || 0,
+        dribblesSuccess: p.statistics?.[0]?.dribbles?.success || 0,
+        // Duels
+        duels: p.statistics?.[0]?.duels?.total || 0,
+        duelsWon: p.statistics?.[0]?.duels?.won || 0,
+        // Fouls
+        foulsDrawn: p.statistics?.[0]?.fouls?.drawn || 0,
+        foulsCommitted: p.statistics?.[0]?.fouls?.committed || 0,
+        // Cards
+        yellowCard: p.statistics?.[0]?.cards?.yellow || 0,
+        redCard: p.statistics?.[0]?.cards?.red || 0,
+        // Other
+        tackles: p.statistics?.[0]?.tackles?.total || 0,
+        interceptions: p.statistics?.[0]?.tackles?.interceptions || 0,
+        saves: p.statistics?.[0]?.goalkeeper?.saves || 0,
+      })),
+    }));
+
+    if (!isLive) {
+      setCache(cacheKey, result);
+    }
+    return result;
+  } catch (error) {
+    console.error('Erreur getMatchPlayerStats:', error);
+    return null;
+  }
+}
+
+/**
+ * Récupère les prédictions pour un match
+ * Endpoint: /predictions
+ */
+export async function getMatchPredictions(fixtureId: number) {
+  const cacheKey = `predictions_${fixtureId}`;
+  const cached = getCached(cacheKey);
+  if (cached) return cached;
+
+  try {
+    console.log(`[API] getMatchPredictions - fetching predictions for fixture ${fixtureId}`);
+    const response = await apiFetch(`/predictions?fixture=${fixtureId}`);
+
+    if (!response.ok) {
+      console.error(`[API] getMatchPredictions - HTTP error:`, response.status);
+      return null;
+    }
+
+    const data = await response.json();
+
+    if (data.errors && Object.keys(data.errors).length > 0) {
+      console.error(`[API] getMatchPredictions - API errors:`, data.errors);
+      return null;
+    }
+
+    if (!data.response || data.response.length === 0) {
+      return null;
+    }
+
+    const pred = data.response[0];
+    const result = {
+      winner: {
+        id: pred.predictions?.winner?.id,
+        name: pred.predictions?.winner?.name,
+        comment: pred.predictions?.winner?.comment,
+      },
+      winOrDraw: pred.predictions?.win_or_draw,
+      underOver: pred.predictions?.under_over,
+      goals: {
+        home: pred.predictions?.goals?.home,
+        away: pred.predictions?.goals?.away,
+      },
+      advice: pred.predictions?.advice,
+      percent: {
+        home: pred.predictions?.percent?.home,
+        draw: pred.predictions?.percent?.draw,
+        away: pred.predictions?.percent?.away,
+      },
+      comparison: pred.comparison,
+      teams: {
+        home: {
+          id: pred.teams?.home?.id,
+          name: pred.teams?.home?.name,
+          logo: pred.teams?.home?.logo,
+          lastFive: pred.teams?.home?.last_5,
+          form: pred.teams?.home?.league?.form,
+        },
+        away: {
+          id: pred.teams?.away?.id,
+          name: pred.teams?.away?.name,
+          logo: pred.teams?.away?.logo,
+          lastFive: pred.teams?.away?.last_5,
+          form: pred.teams?.away?.league?.form,
+        },
+      },
+    };
+
+    setCache(cacheKey, result);
+    return result;
+  } catch (error) {
+    console.error('Erreur getMatchPredictions:', error);
+    return null;
+  }
+}
+
+/**
+ * Récupère les blessures d'une équipe
+ * Endpoint: /injuries
+ */
+export async function getTeamInjuries(teamId: number) {
+  const cacheKey = `injuries_${teamId}`;
+  const cached = getCached(cacheKey);
+  if (cached) return cached;
+
+  try {
+    console.log(`[API] getTeamInjuries - fetching injuries for team ${teamId}`);
+    const response = await apiFetch(`/injuries?team=${teamId}&season=${CURRENT_SEASON}`);
+
+    if (!response.ok) {
+      console.error(`[API] getTeamInjuries - HTTP error:`, response.status);
+      return [];
+    }
+
+    const data = await response.json();
+
+    if (data.errors && Object.keys(data.errors).length > 0) {
+      console.error(`[API] getTeamInjuries - API errors:`, data.errors);
+      return [];
+    }
+
+    // Filtrer pour ne garder que les blessures actuelles (sans date de retour ou date future)
+    const now = new Date();
+    const injuries = (data.response || [])
+      .filter((injury: any) => {
+        // Garder si pas de date de retour ou date de retour dans le futur
+        if (!injury.player?.reason) return false;
+        return true;
+      })
+      .slice(0, 10) // Limiter à 10 blessures
+      .map((injury: any) => ({
+        player: {
+          id: injury.player?.id,
+          name: injury.player?.name,
+          photo: injury.player?.photo,
+        },
+        team: {
+          id: injury.team?.id,
+          name: injury.team?.name,
+          logo: injury.team?.logo,
+        },
+        reason: injury.player?.reason,
+        type: injury.player?.type, // "Missing Fixture" ou autre
+      }));
+
+    setCache(cacheKey, injuries);
+    return injuries;
+  } catch (error) {
+    console.error('Erreur getTeamInjuries:', error);
+    return [];
+  }
+}
+
 // =============================================
 // FONCTIONS JOUEURS
 // =============================================
