@@ -185,7 +185,7 @@ export default function UnifiedMatchTicker() {
     checkScrollState();
     window.addEventListener('resize', checkScrollState);
     return () => window.removeEventListener('resize', checkScrollState);
-  }, [matches]);
+  }, [liveMatches, upcomingMatches]);
 
   const scroll = (direction: 'left' | 'right') => {
     if (!containerRef.current) return;
