@@ -815,19 +815,25 @@ export default function MatchDetailPage() {
       try {
         const fixtureId = parseInt(id);
 
-        // Appels principaux en parallèle
-        const [matchData, eventsData, statsData, lineupsData] = await Promise.all([
-          getMatchDetails(fixtureId),
-          getMatchEvents(fixtureId),
-          getMatchStats(fixtureId),
-          getMatchLineups(fixtureId),
-        ]);
+        // D'abord récupérer les détails du match pour savoir s'il est en cours
+        const matchData = await getMatchDetails(fixtureId);
 
         if (!matchData) {
           setError('Match non trouvé');
           setLoading(false);
           return;
         }
+
+        // Déterminer si le match est en cours (pour éviter le cache)
+        const liveStatuses = ['IN_PLAY', 'PAUSED', 'HALFTIME', '1H', '2H', 'HT', 'ET', 'BT', 'P', 'LIVE'];
+        const isLive = liveStatuses.includes(matchData.status);
+
+        // Ensuite récupérer les autres données en parallèle avec le flag isLive
+        const [eventsData, statsData, lineupsData] = await Promise.all([
+          getMatchEvents(fixtureId, isLive),
+          getMatchStats(fixtureId, isLive),
+          getMatchLineups(fixtureId, isLive),
+        ]);
 
         setMatch(matchData);
         setEvents(eventsData || []);

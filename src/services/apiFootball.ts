@@ -1509,11 +1509,13 @@ export async function getMatchDetails(fixtureId: number) {
 
 /**
  * Récupère les événements d'un match (buts, cartons, remplacements)
+ * Note: Ne met PAS en cache pour les matchs en cours (passé via paramètre isLive)
  */
-export async function getMatchEvents(fixtureId: number) {
+export async function getMatchEvents(fixtureId: number, isLive: boolean = false) {
   const cacheKey = `match_events_${fixtureId}`;
   const cached = getCached(cacheKey);
-  if (cached) {
+  // Ne pas utiliser le cache pour les matchs en cours
+  if (cached && !isLive) {
     console.log(`[API] getMatchEvents(${fixtureId}) - from cache:`, cached.length, 'events');
     return cached;
   }
@@ -1555,7 +1557,10 @@ export async function getMatchEvents(fixtureId: number) {
       comments: event.comments,
     }));
 
-    setCache(cacheKey, events);
+    // Ne mettre en cache que si ce n'est pas un match live
+    if (!isLive) {
+      setCache(cacheKey, events);
+    }
     return events;
   } catch (error) {
     console.error('Erreur getMatchEvents:', error);
@@ -1565,11 +1570,13 @@ export async function getMatchEvents(fixtureId: number) {
 
 /**
  * Récupère les statistiques d'un match
+ * Note: Ne met PAS en cache pour les matchs en cours
  */
-export async function getMatchStats(fixtureId: number) {
+export async function getMatchStats(fixtureId: number, isLive: boolean = false) {
   const cacheKey = `match_stats_${fixtureId}`;
   const cached = getCached(cacheKey);
-  if (cached) {
+  // Ne pas utiliser le cache pour les matchs en cours
+  if (cached && !isLive) {
     console.log(`[API] getMatchStats(${fixtureId}) - from cache`);
     return cached;
   }
@@ -1685,7 +1692,10 @@ export async function getMatchStats(fixtureId: number) {
       },
     };
 
-    setCache(cacheKey, result);
+    // Ne mettre en cache que si ce n'est pas un match live
+    if (!isLive) {
+      setCache(cacheKey, result);
+    }
     return result;
   } catch (error) {
     console.error('Erreur getMatchStats:', error);
@@ -1695,11 +1705,13 @@ export async function getMatchStats(fixtureId: number) {
 
 /**
  * Récupère les compositions d'un match
+ * Note: Les compos peuvent changer avant le match mais pas pendant
  */
-export async function getMatchLineups(fixtureId: number) {
+export async function getMatchLineups(fixtureId: number, isLive: boolean = false) {
   const cacheKey = `match_lineups_${fixtureId}`;
   const cached = getCached(cacheKey);
-  if (cached) {
+  // Ne pas utiliser le cache pour les matchs en cours (compos peuvent être corrigées)
+  if (cached && !isLive) {
     console.log(`[API] getMatchLineups(${fixtureId}) - from cache`);
     return cached;
   }
@@ -1766,7 +1778,10 @@ export async function getMatchLineups(fixtureId: number) {
       away: transformLineup(data.response[1]),
     };
 
-    setCache(cacheKey, result);
+    // Ne mettre en cache que si ce n'est pas un match live
+    if (!isLive) {
+      setCache(cacheKey, result);
+    }
     return result;
   } catch (error) {
     console.error('Erreur getMatchLineups:', error);
