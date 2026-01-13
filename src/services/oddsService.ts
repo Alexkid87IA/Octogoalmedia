@@ -1,13 +1,13 @@
 // src/services/oddsService.ts
 // Service pour récupérer les cotes Winamax via The Odds API
-// OPTIMISÉ : Cache localStorage de 30 minutes pour économiser le quota
+// OPTIMISÉ : Cache localStorage de 1 heure pour économiser le quota
 
 import { MatchOdds, SportKey, COMPETITION_TO_SPORT } from '../types/odds.types';
 
 const BASE_URL = '/api/odds';
 
-// CACHE AGRESSIF : 30 MINUTES en localStorage
-const CACHE_DURATION_MS = 30 * 60 * 1000; // 30 minutes
+// CACHE AGRESSIF : 1 HEURE en localStorage
+const CACHE_DURATION_MS = 60 * 60 * 1000; // 1 heure
 const CACHE_KEY_PREFIX = 'octogoal_odds_';
 
 // =============================================
@@ -63,7 +63,7 @@ function saveToLocalStorage(sport: SportKey, data: MatchOdds[]): void {
     };
 
     localStorage.setItem(key, JSON.stringify(cacheData));
-    console.log(`[OddsService] Cache sauvegardé pour ${sport} (30 min)`);
+    console.log(`[OddsService] Cache sauvegardé pour ${sport} (1h)`);
   } catch (error) {
     console.error('[OddsService] Erreur sauvegarde cache:', error);
   }
@@ -97,7 +97,7 @@ function saveToMemory(sport: SportKey, data: MatchOdds[]): void {
 
 /**
  * Récupère les cotes Winamax pour une compétition
- * Utilise le cache localStorage en priorité (30 min)
+ * Utilise le cache localStorage en priorité (1h)
  */
 export async function getOddsBySport(sport: SportKey): Promise<MatchOdds[]> {
   // 1. Vérifier cache localStorage
