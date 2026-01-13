@@ -301,10 +301,21 @@ export default function MatchsPage() {
         selectedCompetitions.includes(m.competition?.id)
       );
       setLiveMatches(filteredLive);
+      console.log('[MatchCenter] Live matches:', filteredLive.length);
 
       // Récupérer matchs du jour sélectionné
       const dayMatches = await getFixturesByDate(selectedDay, selectedCompetitions);
       setMatches(dayMatches);
+
+      // Debug: afficher les matchs par statut
+      const finishedCount = dayMatches.filter((m: Match) => m.status === 'FINISHED').length;
+      const scheduledCount = dayMatches.filter((m: Match) => m.status === 'SCHEDULED' || m.status === 'TIMED').length;
+      const liveCount = dayMatches.filter((m: Match) => m.status === 'IN_PLAY' || m.status === 'PAUSED').length;
+      console.log(`[MatchCenter] Matchs du ${selectedDay}: ${dayMatches.length} total (${finishedCount} terminés, ${liveCount} live, ${scheduledCount} à venir)`);
+
+      // Debug: afficher les statuts uniques
+      const statuses = [...new Set(dayMatches.map((m: Match) => m.status))];
+      console.log('[MatchCenter] Statuts présents:', statuses);
 
       setLoading(false);
     } catch (err) {
