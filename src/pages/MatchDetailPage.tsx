@@ -16,6 +16,12 @@ import {
   TrendingUp,
   ChevronRight,
   AlertCircle,
+  Swords,
+  Target,
+  Shield,
+  Zap,
+  Star,
+  Flame,
 } from 'lucide-react';
 import {
   getMatchDetails,
@@ -363,6 +369,323 @@ const TeamFormSidebar = ({ homeForm, awayForm, homeTeam, awayTeam }: {
           </div>
         </div>
       </div>
+    </div>
+  );
+};
+
+// =============================================
+// COMPOSANT PREVIEW AVANT-MATCH
+// =============================================
+
+const MatchPreview = ({
+  match,
+  h2h,
+  homeForm,
+  awayForm,
+  standings,
+  headerOdds,
+}: {
+  match: Match;
+  h2h: Match[];
+  homeForm: ('W' | 'D' | 'L')[];
+  awayForm: ('W' | 'D' | 'L')[];
+  standings: TeamStanding[];
+  headerOdds: MatchOdds | null;
+}) => {
+  // Calculer les stats H2H
+  const h2hStats = (() => {
+    let homeWins = 0;
+    let awayWins = 0;
+    let draws = 0;
+    let homeGoals = 0;
+    let awayGoals = 0;
+
+    h2h.forEach(m => {
+      const hGoals = m.score.fullTime.home ?? 0;
+      const aGoals = m.score.fullTime.away ?? 0;
+
+      if (m.homeTeam.id === match.homeTeam.id) {
+        homeGoals += hGoals;
+        awayGoals += aGoals;
+        if (hGoals > aGoals) homeWins++;
+        else if (aGoals > hGoals) awayWins++;
+        else draws++;
+      } else {
+        homeGoals += aGoals;
+        awayGoals += hGoals;
+        if (aGoals > hGoals) homeWins++;
+        else if (hGoals > aGoals) awayWins++;
+        else draws++;
+      }
+    });
+
+    return { homeWins, awayWins, draws, homeGoals, awayGoals, total: h2h.length };
+  })();
+
+  // Calculer la forme (points sur les 5 derniers matchs)
+  const calcFormPoints = (form: ('W' | 'D' | 'L')[]) => {
+    return form.slice(0, 5).reduce((acc, r) => acc + (r === 'W' ? 3 : r === 'D' ? 1 : 0), 0);
+  };
+
+  const homeFormPoints = calcFormPoints(homeForm);
+  const awayFormPoints = calcFormPoints(awayForm);
+
+  // Positions au classement
+  const homeStanding = standings.find(s => s.team.id === match.homeTeam.id);
+  const awayStanding = standings.find(s => s.team.id === match.awayTeam.id);
+
+  // Prédiction basée sur les cotes
+  const prediction = (() => {
+    if (!headerOdds?.odds.winamax) return null;
+    const { home, draw, away } = headerOdds.odds.winamax;
+    const minOdd = Math.min(home, draw, away);
+    if (minOdd === home) return { winner: 'home', confidence: Math.round((1 / home) * 100) };
+    if (minOdd === away) return { winner: 'away', confidence: Math.round((1 / away) * 100) };
+    return { winner: 'draw', confidence: Math.round((1 / draw) * 100) };
+  })();
+
+  return (
+    <div className="space-y-6">
+      {/* En-tête Avant-Match */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-gradient-to-br from-purple-900/30 via-gray-900/50 to-blue-900/30 rounded-2xl border border-purple-500/20 p-6"
+      >
+        <div className="flex items-center justify-center gap-3 mb-6">
+          <Swords className="w-6 h-6 text-purple-400" />
+          <h2 className="text-xl font-bold text-white">Avant-Match</h2>
+          <Flame className="w-5 h-5 text-orange-400" />
+        </div>
+
+        {/* Comparaison Forme + Position */}
+        <div className="grid grid-cols-3 gap-4 mb-6">
+          {/* Home */}
+          <div className="text-center">
+            <img src={match.homeTeam.crest} alt="" className="w-16 h-16 mx-auto mb-2" />
+            <p className="text-white font-bold text-sm mb-2">{match.homeTeam.shortName || match.homeTeam.name}</p>
+            <div className="flex justify-center gap-1 mb-2">
+              {homeForm.slice(0, 5).map((r, i) => (
+                <FormBadge key={i} result={r} />
+              ))}
+            </div>
+            {homeStanding && (
+              <p className="text-gray-400 text-xs">
+                <span className="text-pink-400 font-bold">{homeStanding.position}e</span> au classement
+              </p>
+            )}
+          </div>
+
+          {/* VS */}
+          <div className="flex flex-col items-center justify-center">
+            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-pink-500 to-blue-500 flex items-center justify-center shadow-lg shadow-purple-500/30 mb-2">
+              <span className="text-white font-black text-lg">VS</span>
+            </div>
+            <p className="text-gray-500 text-xs">{formatDateFR(match.utcDate)}</p>
+          </div>
+
+          {/* Away */}
+          <div className="text-center">
+            <img src={match.awayTeam.crest} alt="" className="w-16 h-16 mx-auto mb-2" />
+            <p className="text-white font-bold text-sm mb-2">{match.awayTeam.shortName || match.awayTeam.name}</p>
+            <div className="flex justify-center gap-1 mb-2">
+              {awayForm.slice(0, 5).map((r, i) => (
+                <FormBadge key={i} result={r} />
+              ))}
+            </div>
+            {awayStanding && (
+              <p className="text-gray-400 text-xs">
+                <span className="text-blue-400 font-bold">{awayStanding.position}e</span> au classement
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Stats saison si dispo */}
+        {homeStanding && awayStanding && (
+          <div className="grid grid-cols-3 gap-4 pt-4 border-t border-white/10">
+            <div className="text-center">
+              <p className="text-2xl font-black text-pink-400">{homeStanding.goalsFor}</p>
+              <p className="text-xs text-gray-500">Buts marqués</p>
+            </div>
+            <div className="flex items-center justify-center">
+              <Target className="w-5 h-5 text-gray-600" />
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-black text-blue-400">{awayStanding.goalsFor}</p>
+              <p className="text-xs text-gray-500">Buts marqués</p>
+            </div>
+
+            <div className="text-center">
+              <p className="text-2xl font-black text-pink-400">{homeStanding.goalsAgainst}</p>
+              <p className="text-xs text-gray-500">Buts encaissés</p>
+            </div>
+            <div className="flex items-center justify-center">
+              <Shield className="w-5 h-5 text-gray-600" />
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-black text-blue-400">{awayStanding.goalsAgainst}</p>
+              <p className="text-xs text-gray-500">Buts encaissés</p>
+            </div>
+          </div>
+        )}
+      </motion.div>
+
+      {/* Historique H2H */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="bg-gray-900/50 rounded-2xl border border-white/10 overflow-hidden"
+      >
+        <div className="px-6 py-4 border-b border-white/10 bg-black/30">
+          <div className="flex items-center gap-3">
+            <History className="w-5 h-5 text-yellow-500" />
+            <h3 className="text-lg font-bold text-white">Confrontations directes</h3>
+            <span className="px-2 py-0.5 bg-yellow-500/20 text-yellow-400 text-xs font-bold rounded-full">
+              {h2hStats.total} matchs
+            </span>
+          </div>
+        </div>
+
+        {h2h.length > 0 ? (
+          <>
+            {/* Stats H2H */}
+            <div className="p-6 grid grid-cols-3 gap-4 border-b border-white/10">
+              <div className="text-center">
+                <p className="text-3xl font-black text-pink-400">{h2hStats.homeWins}</p>
+                <p className="text-xs text-gray-500 mt-1">Victoires {match.homeTeam.shortName || match.homeTeam.name.substring(0, 3)}</p>
+              </div>
+              <div className="text-center">
+                <p className="text-3xl font-black text-gray-400">{h2hStats.draws}</p>
+                <p className="text-xs text-gray-500 mt-1">Nuls</p>
+              </div>
+              <div className="text-center">
+                <p className="text-3xl font-black text-blue-400">{h2hStats.awayWins}</p>
+                <p className="text-xs text-gray-500 mt-1">Victoires {match.awayTeam.shortName || match.awayTeam.name.substring(0, 3)}</p>
+              </div>
+            </div>
+
+            {/* Barre visuelle */}
+            <div className="px-6 py-3 border-b border-white/10">
+              <div className="flex h-3 rounded-full overflow-hidden">
+                <div
+                  className="bg-gradient-to-r from-pink-500 to-pink-400 transition-all"
+                  style={{ width: `${(h2hStats.homeWins / h2hStats.total) * 100}%` }}
+                />
+                <div
+                  className="bg-gray-600 transition-all"
+                  style={{ width: `${(h2hStats.draws / h2hStats.total) * 100}%` }}
+                />
+                <div
+                  className="bg-gradient-to-l from-blue-500 to-blue-400 transition-all"
+                  style={{ width: `${(h2hStats.awayWins / h2hStats.total) * 100}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Liste derniers matchs */}
+            <div className="p-4 space-y-2">
+              {h2h.slice(0, 5).map((m) => {
+                const isHomeTeamHome = m.homeTeam.id === match.homeTeam.id;
+                const homeGoals = m.score.fullTime.home ?? 0;
+                const awayGoals = m.score.fullTime.away ?? 0;
+                const result = isHomeTeamHome
+                  ? (homeGoals > awayGoals ? 'W' : homeGoals < awayGoals ? 'L' : 'D')
+                  : (awayGoals > homeGoals ? 'W' : awayGoals < homeGoals ? 'L' : 'D');
+
+                return (
+                  <Link
+                    key={m.id}
+                    to={`/match/${m.id}`}
+                    className="flex items-center gap-3 p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
+                  >
+                    <span className="text-gray-500 text-xs w-20">{formatDateFR(m.utcDate)}</span>
+                    <img src={m.homeTeam.crest} alt="" className="w-5 h-5" />
+                    <span className="text-gray-300 text-sm flex-1 truncate">{m.homeTeam.name}</span>
+                    <span className={`font-bold px-2 py-0.5 rounded ${
+                      result === 'W' ? 'bg-green-500/20 text-green-400' :
+                      result === 'L' ? 'bg-red-500/20 text-red-400' :
+                      'bg-gray-500/20 text-gray-400'
+                    }`}>
+                      {homeGoals} - {awayGoals}
+                    </span>
+                    <span className="text-gray-300 text-sm flex-1 truncate text-right">{m.awayTeam.name}</span>
+                    <img src={m.awayTeam.crest} alt="" className="w-5 h-5" />
+                  </Link>
+                );
+              })}
+            </div>
+          </>
+        ) : (
+          <div className="p-8 text-center">
+            <History className="w-12 h-12 text-gray-700 mx-auto mb-3" />
+            <p className="text-gray-400">Première confrontation entre ces équipes</p>
+          </div>
+        )}
+      </motion.div>
+
+      {/* Pronostic */}
+      {prediction && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="bg-gradient-to-br from-orange-900/30 to-red-900/30 rounded-2xl border border-orange-500/20 p-6"
+        >
+          <div className="flex items-center gap-3 mb-4">
+            <Zap className="w-5 h-5 text-orange-400" />
+            <h3 className="text-lg font-bold text-white">Pronostic</h3>
+            <span className="text-xs text-gray-500">(basé sur les cotes)</span>
+          </div>
+
+          <div className="flex items-center justify-center gap-6">
+            <div className={`flex-1 text-center p-4 rounded-xl border ${
+              prediction.winner === 'home'
+                ? 'bg-pink-500/20 border-pink-500/50'
+                : 'bg-white/5 border-white/10'
+            }`}>
+              <img src={match.homeTeam.crest} alt="" className="w-12 h-12 mx-auto mb-2" />
+              <p className={`font-bold ${prediction.winner === 'home' ? 'text-pink-400' : 'text-gray-500'}`}>
+                {match.homeTeam.shortName || match.homeTeam.name.substring(0, 10)}
+              </p>
+              {prediction.winner === 'home' && (
+                <div className="mt-2 flex items-center justify-center gap-1">
+                  <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                  <span className="text-yellow-400 text-sm font-bold">Favori</span>
+                </div>
+              )}
+            </div>
+
+            <div className={`text-center p-4 rounded-xl border ${
+              prediction.winner === 'draw'
+                ? 'bg-gray-500/20 border-gray-500/50'
+                : 'bg-white/5 border-white/10'
+            }`}>
+              <p className={`text-2xl font-black ${prediction.winner === 'draw' ? 'text-gray-300' : 'text-gray-600'}`}>
+                Nul
+              </p>
+            </div>
+
+            <div className={`flex-1 text-center p-4 rounded-xl border ${
+              prediction.winner === 'away'
+                ? 'bg-blue-500/20 border-blue-500/50'
+                : 'bg-white/5 border-white/10'
+            }`}>
+              <img src={match.awayTeam.crest} alt="" className="w-12 h-12 mx-auto mb-2" />
+              <p className={`font-bold ${prediction.winner === 'away' ? 'text-blue-400' : 'text-gray-500'}`}>
+                {match.awayTeam.shortName || match.awayTeam.name.substring(0, 10)}
+              </p>
+              {prediction.winner === 'away' && (
+                <div className="mt-2 flex items-center justify-center gap-1">
+                  <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                  <span className="text-yellow-400 text-sm font-bold">Favori</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </motion.div>
+      )}
     </div>
   );
 };
@@ -858,36 +1181,49 @@ export default function MatchDetailPage() {
         </div>
       </header>
 
-      {/* Tabs */}
-      <section className="sticky top-20 z-30 bg-black/90 backdrop-blur-xl border-y border-white/10">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex gap-1 py-3 overflow-x-auto scrollbar-hide">
-            {tabs.map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all whitespace-nowrap ${
-                  activeTab === tab.id
-                    ? 'bg-gradient-to-r from-pink-500 to-blue-500 text-white'
-                    : 'text-gray-400 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                <tab.icon className="w-4 h-4" />
-                <span>{tab.label}</span>
-                {tab.count !== undefined && tab.count > 0 && (
-                  <span className="px-1.5 py-0.5 bg-white/20 rounded-full text-xs">{tab.count}</span>
-                )}
-              </button>
-            ))}
+      {/* Tabs - seulement pour matchs en cours ou terminés */}
+      {!isUpcoming && (
+        <section className="sticky top-20 z-30 bg-black/90 backdrop-blur-xl border-y border-white/10">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="flex gap-1 py-3 overflow-x-auto scrollbar-hide">
+              {tabs.map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all whitespace-nowrap ${
+                    activeTab === tab.id
+                      ? 'bg-gradient-to-r from-pink-500 to-blue-500 text-white'
+                      : 'text-gray-400 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <tab.icon className="w-4 h-4" />
+                  <span>{tab.label}</span>
+                  {tab.count !== undefined && tab.count > 0 && (
+                    <span className="px-1.5 py-0.5 bg-white/20 rounded-full text-xs">{tab.count}</span>
+                  )}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Main Content avec Sidebar */}
       <main className="relative max-w-7xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Contenu principal (2/3) */}
           <div className="lg:col-span-2">
+            {/* Mode Avant-Match pour les matchs à venir */}
+            {isUpcoming ? (
+              <MatchPreview
+                match={match}
+                h2h={h2h}
+                homeForm={homeForm}
+                awayForm={awayForm}
+                standings={standings}
+                headerOdds={headerOdds}
+              />
+            ) : (
             <AnimatePresence mode="wait">
               {/* Events Tab */}
               {activeTab === 'events' && (
@@ -1102,6 +1438,7 @@ export default function MatchDetailPage() {
                 </motion.div>
               )}
             </AnimatePresence>
+            )}
           </div>
 
           {/* Sidebar (1/3) */}

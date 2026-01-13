@@ -8,7 +8,6 @@ import { QuickStandingsSection } from '../components/sections/QuickStandingsSect
 import ContentSection from '../components/sections/ContentSection';
 import { EssentialArticlesSection } from '../components/sections/EssentialArticlesSection';
 import { ClubSection } from '../components/sections/ClubSection';
-import { VSPollSection } from '../components/sections/VSPollSection';
 import { Footer } from '../components/layout/Footer';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { useData } from '../context/DataContext';
@@ -282,8 +281,6 @@ export const HomePage = () => {
           {/* 3. Section des derniers articles publiés */}
           <RecentArticlesSection articles={articles} />
 
-          {/* 4. VS Poll - Sondage interactif */}
-          <VSPollSection />
 
           {/* 5. Articles essentiels */}
           <section className="py-20 overflow-hidden">

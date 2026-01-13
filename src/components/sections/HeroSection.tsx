@@ -3,13 +3,15 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { ArrowRight, Calendar, Clock, Sparkles, ChevronUp, ChevronDown, Zap, Flame, TrendingUp } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowRight, Calendar, Clock, Sparkles, ChevronUp, ChevronDown, Zap, Flame, TrendingUp, Swords, Check, Users } from 'lucide-react';
 import SafeImage from '../common/SafeImage';
 import ErrorBoundary from '../common/ErrorBoundary';
 import { useData } from '../../context/DataContext';
 import { LoadingSpinner } from '../common/LoadingSpinner';
-import { SanityArticle } from '../../types/sanity';
+import { SanityArticle, SanityVSPoll } from '../../types/sanity';
+import { getFeaturedVSPoll } from '../../utils/sanityAPI';
+import PlayerComparator from '../widgets/PlayerComparator';
 
 // Clip-paths octogonaux
 const octagonClip = 'polygon(15% 0%, 85% 0%, 100% 15%, 100% 85%, 85% 100%, 15% 100%, 0% 85%, 0% 15%)';
@@ -87,6 +89,13 @@ export const HeroSection = () => {
   const [scrollPosition, setScrollPosition] = useState(0);
   const maxVisibleItems = 10;
 
+  // VS Poll state
+  const [poll, setPoll] = useState<SanityVSPoll | null>(null);
+  const [userVote, setUserVote] = useState<'option1' | 'option2' | null>(null);
+  const [votes, setVotes] = useState({ option1: 0, option2: 0 });
+  const [pollLoading, setPollLoading] = useState(true);
+  const [hasVoted, setHasVoted] = useState(false);
+
   useEffect(() => {
     if (!contextLoading) {
       if (featuredArticles && featuredArticles.length > 0) {
@@ -100,6 +109,45 @@ export const HeroSection = () => {
       }
     }
   }, [contextLoading, featuredArticles, recentArticles, latestArticles]);
+
+  // Fetch VS Poll
+  useEffect(() => {
+    const fetchPoll = async () => {
+      try {
+        setPollLoading(true);
+        const result = await getFeaturedVSPoll();
+        if (result) {
+          setPoll(result);
+          setVotes({
+            option1: result.option1.votes || 0,
+            option2: result.option2.votes || 0
+          });
+          const savedVote = localStorage.getItem(`vs-poll-${result._id}`);
+          if (savedVote) {
+            setUserVote(savedVote as 'option1' | 'option2');
+            setHasVoted(true);
+          }
+        }
+      } catch (error) {
+        console.error('Erreur chargement VS Poll:', error);
+      } finally {
+        setPollLoading(false);
+      }
+    };
+    fetchPoll();
+  }, []);
+
+  const handleVote = (option: 'option1' | 'option2') => {
+    if (hasVoted || !poll) return;
+    setVotes(prev => ({ ...prev, [option]: prev[option] + 1 }));
+    setUserVote(option);
+    setHasVoted(true);
+    localStorage.setItem(`vs-poll-${poll._id}`, option);
+  };
+
+  const totalVotes = votes.option1 + votes.option2;
+  const percentage1 = totalVotes > 0 ? Math.round((votes.option1 / totalVotes) * 100) : 50;
+  const percentage2 = totalVotes > 0 ? Math.round((votes.option2 / totalVotes) * 100) : 50;
 
   const flashArticles = flashWidgetArticles.slice(scrollPosition, scrollPosition + maxVisibleItems);
   const canScrollUp = scrollPosition > 0;
@@ -348,7 +396,7 @@ export const HeroSection = () => {
             </motion.div>
           </div>
 
-          {/* Section Articles Tendances */}
+          {/* Section Articles Tendances + VS Poll */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -373,90 +421,292 @@ export const HeroSection = () => {
             </p>
           </motion.div>
 
-          {/* Grille d'articles avec tailles variées */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-            {displayedArticles.slice(0, 6).map((article, index) => {
-              const catStyle = getCategoryStyle(article.categories?.[0]?.title || '');
+          {/* Layout: 4 Articles + VS Poll sur desktop */}
+          <div className="flex flex-col lg:flex-row gap-6 mb-12">
+            {/* Grille de 4 articles */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:w-2/3">
+              {displayedArticles.slice(0, 4).map((article, index) => {
+                const catStyle = getCategoryStyle(article.categories?.[0]?.title || '');
 
-              return (
-                <motion.article
-                  key={article._id}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                  className="group"
-                >
-                  <Link to={`/article/${article.slug?.current}`} className="block h-full">
-                    <div
-                      className="relative h-full bg-gray-900/50 backdrop-blur-sm border border-gray-800 overflow-hidden hover:border-pink-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-pink-500/10 hover:-translate-y-1"
-                      style={{ clipPath: octagonClipCard }}
-                    >
-                      {/* Image */}
-                      <div className="relative aspect-[16/9] overflow-hidden">
-                        <SafeImage
-                          source={article.mainImage}
-                          alt={article.title}
-                          width={600}
-                          height={338}
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                        />
+                return (
+                  <motion.article
+                    key={article._id}
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.1 }}
+                    className="group"
+                  >
+                    <Link to={`/article/${article.slug?.current}`} className="block h-full">
+                      <div
+                        className="relative h-full bg-gray-900/50 backdrop-blur-sm border border-gray-800 overflow-hidden hover:border-pink-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-pink-500/10 hover:-translate-y-1"
+                        style={{ clipPath: octagonClipCard }}
+                      >
+                        {/* Image */}
+                        <div className="relative aspect-[16/9] overflow-hidden">
+                          <SafeImage
+                            source={article.mainImage}
+                            alt={article.title}
+                            width={600}
+                            height={338}
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                          />
 
+                          {/* Badge catégorie octogonal */}
+                          {article.categories?.[0] && (
+                            <div className="absolute top-3 left-3">
+                              <div
+                                className={`px-2 py-1 bg-gradient-to-r ${catStyle.gradient} shadow-lg`}
+                                style={{ clipPath: octagonClipSubtle }}
+                              >
+                                <span className="text-[10px] font-bold text-white uppercase tracking-wider">
+                                  {article.categories[0].title}
+                                </span>
+                              </div>
+                            </div>
+                          )}
 
-                        {/* Badge catégorie octogonal */}
-                        {article.categories?.[0] && (
-                          <div className="absolute top-4 left-4">
-                            <div
-                              className={`px-3 py-1.5 bg-gradient-to-r ${catStyle.gradient} shadow-lg`}
+                          {/* Badge temps de lecture */}
+                          <div className="absolute bottom-3 right-3">
+                            <span className="inline-flex items-center gap-1 px-2 py-1 bg-black/60 backdrop-blur-sm text-white text-[10px] font-medium"
                               style={{ clipPath: octagonClipSubtle }}
                             >
-                              <span className="text-xs font-bold text-white uppercase tracking-wider">
-                                {article.categories[0].title}
-                              </span>
-                            </div>
+                              <Clock className="w-3 h-3" />
+                              {article.readingTime || '5 min'}
+                            </span>
                           </div>
-                        )}
-
-                        {/* Badge temps de lecture */}
-                        <div className="absolute bottom-4 right-4">
-                          <span className="inline-flex items-center gap-1 px-3 py-1 bg-black/60 backdrop-blur-sm text-white text-xs font-medium"
-                            style={{ clipPath: octagonClipSubtle }}
-                          >
-                            <Clock className="w-3 h-3" />
-                            {article.readingTime || '5 min'}
-                          </span>
                         </div>
-                      </div>
 
-                      {/* Contenu */}
-                      <div className="p-6">
-                        <h3 className="text-lg font-bold text-white mb-2 line-clamp-2 group-hover:text-pink-400 transition-colors">
-                          {article.title}
-                        </h3>
+                        {/* Contenu */}
+                        <div className="p-4">
+                          <h3 className="text-base font-bold text-white mb-2 line-clamp-2 group-hover:text-pink-400 transition-colors">
+                            {article.title}
+                          </h3>
 
-                        <p className="text-sm text-gray-400 line-clamp-2 mb-4">
-                          {article.excerpt}
-                        </p>
+                          <p className="text-xs text-gray-400 line-clamp-2 mb-3">
+                            {article.excerpt}
+                          </p>
 
-                        <div className="flex items-center justify-between">
-                          <time className="text-xs text-gray-500">
-                            {new Date(article.publishedAt || '').toLocaleDateString('fr-FR')}
-                          </time>
+                          <div className="flex items-center justify-between">
+                            <time className="text-xs text-gray-500">
+                              {new Date(article.publishedAt || '').toLocaleDateString('fr-FR')}
+                            </time>
 
-                          <span className="flex items-center gap-1 text-pink-400 text-sm font-medium group-hover:gap-2 transition-all">
-                            Lire
-                            <ArrowRight className="w-4 h-4" />
-                          </span>
+                            <span className="flex items-center gap-1 text-pink-400 text-xs font-medium group-hover:gap-2 transition-all">
+                              Lire
+                              <ArrowRight className="w-3 h-3" />
+                            </span>
+                          </div>
                         </div>
-                      </div>
 
-                      {/* Bordure animée au hover */}
-                      <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-pink-500 to-blue-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
+                        {/* Bordure animée au hover */}
+                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-pink-500 to-blue-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
+                      </div>
+                    </Link>
+                  </motion.article>
+                );
+              })}
+            </div>
+
+            {/* Colonne droite: VS Poll + Comparateur */}
+            <div className="lg:w-1/3 flex flex-col gap-4">
+              {/* VS Poll Widget Compact */}
+              <motion.div
+                initial={{ opacity: 0, x: 30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.3 }}
+              >
+                {pollLoading ? (
+                  <div className="h-[280px] rounded-2xl bg-gray-900/50 animate-pulse" />
+                ) : poll ? (
+                  <div
+                    className="relative rounded-2xl overflow-hidden border border-white/10 bg-gray-900/70 backdrop-blur-xl"
+                  >
+                  {/* Background gradients */}
+                  <div className="absolute inset-0 pointer-events-none">
+                    <div
+                      className="absolute top-0 left-0 right-0 h-1/2 opacity-20"
+                      style={{
+                        background: `linear-gradient(180deg, ${poll.option1.color || '#ec4899'}40 0%, transparent 100%)`
+                      }}
+                    />
+                    <div
+                      className="absolute bottom-0 left-0 right-0 h-1/2 opacity-20"
+                      style={{
+                        background: `linear-gradient(0deg, ${poll.option2.color || '#3b82f6'}40 0%, transparent 100%)`
+                      }}
+                    />
+                  </div>
+
+                  {/* Header compact */}
+                  <div className="relative px-4 py-3 border-b border-white/10 bg-black/30">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-pink-500 to-blue-500 flex items-center justify-center">
+                        <Swords className="w-3.5 h-3.5 text-white" />
+                      </div>
+                      <div>
+                        <span className="text-[10px] font-medium text-gray-500 uppercase tracking-wider">VS de la semaine</span>
+                        <h3 className="text-sm font-bold text-white leading-tight">{poll.title}</h3>
+                      </div>
                     </div>
-                  </Link>
-                </motion.article>
-              );
-            })}
+                  </div>
+
+                  {/* VS Arena Compact */}
+                  <div className="relative flex flex-col">
+                    {/* Option 1 */}
+                    <div className="relative px-3 py-2.5 flex items-center gap-3 border-b border-white/10">
+                      <div className="relative flex-shrink-0">
+                        <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-white/20 shadow-lg">
+                          <SafeImage
+                            source={poll.option1.image}
+                            alt={poll.option1.name}
+                            width={48}
+                            height={48}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        {userVote === 'option1' && (
+                          <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center"
+                          >
+                            <Check size={10} className="text-white" />
+                          </motion.div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-sm font-bold text-white truncate">{poll.option1.name}</h4>
+                        {poll.option1.subtitle && (
+                          <p className="text-[10px] text-gray-500 truncate">{poll.option1.subtitle}</p>
+                        )}
+                      </div>
+                      <motion.button
+                        whileHover={{ scale: hasVoted ? 1 : 1.03 }}
+                        whileTap={{ scale: hasVoted ? 1 : 0.97 }}
+                        onClick={() => handleVote('option1')}
+                        disabled={hasVoted}
+                        className={`
+                          px-3 py-1.5 rounded-lg font-bold text-xs transition-all flex-shrink-0
+                          ${hasVoted
+                            ? userVote === 'option1'
+                              ? 'bg-gradient-to-r from-pink-500 to-pink-600 text-white'
+                              : 'bg-gray-800 text-gray-500'
+                            : 'bg-gradient-to-r from-pink-500 to-pink-600 text-white shadow-lg shadow-pink-500/30'
+                          }
+                        `}
+                      >
+                        {hasVoted ? `${percentage1}%` : 'Voter'}
+                      </motion.button>
+                    </div>
+
+                    {/* Badge VS central */}
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
+                      <div className="w-8 h-8 bg-gradient-to-br from-pink-500 via-purple-500 to-blue-500 rounded-lg rotate-45 flex items-center justify-center shadow-xl border border-white/20">
+                        <span className="text-white font-black text-[10px] -rotate-45">VS</span>
+                      </div>
+                    </div>
+
+                    {/* Option 2 */}
+                    <div className="relative px-3 py-2.5 flex items-center gap-3">
+                      <div className="relative flex-shrink-0">
+                        <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-white/20 shadow-lg">
+                          <SafeImage
+                            source={poll.option2.image}
+                            alt={poll.option2.name}
+                            width={48}
+                            height={48}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        {userVote === 'option2' && (
+                          <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center"
+                          >
+                            <Check size={10} className="text-white" />
+                          </motion.div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-sm font-bold text-white truncate">{poll.option2.name}</h4>
+                        {poll.option2.subtitle && (
+                          <p className="text-[10px] text-gray-500 truncate">{poll.option2.subtitle}</p>
+                        )}
+                      </div>
+                      <motion.button
+                        whileHover={{ scale: hasVoted ? 1 : 1.03 }}
+                        whileTap={{ scale: hasVoted ? 1 : 0.97 }}
+                        onClick={() => handleVote('option2')}
+                        disabled={hasVoted}
+                        className={`
+                          px-3 py-1.5 rounded-lg font-bold text-xs transition-all flex-shrink-0
+                          ${hasVoted
+                            ? userVote === 'option2'
+                              ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white'
+                              : 'bg-gray-800 text-gray-500'
+                            : 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30'
+                          }
+                        `}
+                      >
+                        {hasVoted ? `${percentage2}%` : 'Voter'}
+                      </motion.button>
+                    </div>
+                  </div>
+
+                  {/* Progress Bar */}
+                  <AnimatePresence>
+                    {hasVoted && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        className="border-t border-white/10"
+                      >
+                        <div className="h-2 flex overflow-hidden">
+                          <motion.div
+                            initial={{ width: '50%' }}
+                            animate={{ width: `${percentage1}%` }}
+                            transition={{ duration: 0.8 }}
+                            style={{ backgroundColor: poll.option1.color || '#ec4899' }}
+                          />
+                          <motion.div
+                            initial={{ width: '50%' }}
+                            animate={{ width: `${percentage2}%` }}
+                            transition={{ duration: 0.8 }}
+                            style={{ backgroundColor: poll.option2.color || '#3b82f6' }}
+                          />
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Footer */}
+                  <div className="px-5 py-3 border-t border-white/10 bg-black/30">
+                    <div className="flex items-center justify-center gap-2 text-sm text-gray-400">
+                      <Users size={16} className="text-pink-400" />
+                      <span>{totalVotes.toLocaleString()} participants</span>
+                    </div>
+                  </div>
+                </div>
+                ) : (
+                  <div className="h-[280px] rounded-2xl bg-gray-900/50 flex items-center justify-center">
+                    <p className="text-gray-500 text-sm">Aucun sondage disponible</p>
+                  </div>
+                )}
+              </motion.div>
+
+              {/* Comparateur de Joueurs */}
+              <motion.div
+                initial={{ opacity: 0, x: 30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.4 }}
+              >
+                <PlayerComparator />
+              </motion.div>
+            </div>
           </div>
 
           {/* CTA */}

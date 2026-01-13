@@ -10,3 +10,10 @@ export { default as CtaButton } from './CtaButton';
 export { default as Spoiler } from './Spoiler';
 export { default as Accordion } from './Accordion';
 export { default as DataTable } from './DataTable';
+export { default as TeamLineupBlock } from './TeamLineupBlock';
+
+// Nouveaux blocs v2.2
+export { default as FootballQuizBlock } from './FootballQuizBlock';
+export { default as MercatoRumorBlock } from './MercatoRumorBlock';
+export { default as QuickPollBlock } from './QuickPollBlock';
+export { default as TopListBlock } from './TopListBlock';

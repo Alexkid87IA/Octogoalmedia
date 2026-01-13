@@ -9,7 +9,7 @@ import InstagramEmbed from "../embeds/InstagramEmbed";
 import YouTubeEmbed from "../embeds/YouTubeEmbed";
 import TwitterEmbed from "../embeds/TwitterEmbed";
 
-// Blocs éditeur v2.1
+// Blocs éditeur v2.2
 import {
   Callout,
   StyledQuote,
@@ -20,6 +20,11 @@ import {
   Spoiler,
   Accordion,
   DataTable,
+  TeamLineupBlock,
+  FootballQuizBlock,
+  MercatoRumorBlock,
+  QuickPollBlock,
+  TopListBlock,
 } from "../blocks";
 
 interface ArticleContentProps {
@@ -236,7 +241,7 @@ const ArticleContent: React.FC<ArticleContentProps> = memo(({ article, colors, i
         <TwitterEmbed url={value?.url} caption={value?.caption} />
       ),
 
-      // Blocs éditeur v2.1
+      // Blocs éditeur v2.2
       callout: ({ value }: any) => <Callout value={value} />,
       styledQuote: ({ value }: any) => <StyledQuote value={value} />,
       statsCard: ({ value }: any) => <StatsCard value={value} />,
@@ -246,6 +251,11 @@ const ArticleContent: React.FC<ArticleContentProps> = memo(({ article, colors, i
       spoiler: ({ value }: any) => <Spoiler value={value} />,
       accordion: ({ value }: any) => <Accordion value={value} />,
       dataTable: ({ value }: any) => <DataTable value={value} />,
+      teamLineup: ({ value }: any) => <TeamLineupBlock value={value} />,
+      footballQuiz: ({ value }: any) => <FootballQuizBlock value={value} />,
+      mercatoRumor: ({ value }: any) => <MercatoRumorBlock value={value} />,
+      quickPoll: ({ value }: any) => <QuickPollBlock value={value} />,
+      topList: ({ value }: any) => <TopListBlock value={value} />,
     },
   }), [colors.primary, colors.bgGradient, handleCopyCode, copied]);
 
