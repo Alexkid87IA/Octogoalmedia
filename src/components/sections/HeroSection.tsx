@@ -12,6 +12,7 @@ import { LoadingSpinner } from '../common/LoadingSpinner';
 import { SanityArticle, SanityVSPoll } from '../../types/sanity';
 import { getFeaturedVSPoll } from '../../utils/sanityAPI';
 import PlayerComparator from '../widgets/PlayerComparator';
+import VideoPromoSection from './VideoPromoSection';
 
 // Clip-paths octogonaux
 const octagonClip = 'polygon(15% 0%, 85% 0%, 100% 15%, 100% 85%, 85% 100%, 15% 100%, 0% 85%, 0% 15%)';
@@ -274,12 +275,6 @@ export const HeroSection = () => {
                             month: 'long'
                           })}
                         </span>
-                        {featuredArticle.readingTime && (
-                          <span className="flex items-center gap-2">
-                            <Clock className="w-4 h-4" />
-                            {featuredArticle.readingTime}
-                          </span>
-                        )}
                       </div>
 
                       <span
@@ -396,6 +391,9 @@ export const HeroSection = () => {
             </motion.div>
           </div>
 
+          {/* Section Vidéos Octogoal */}
+          <VideoPromoSection />
+
           {/* Section Articles Tendances + VS Poll */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -466,15 +464,6 @@ export const HeroSection = () => {
                             </div>
                           )}
 
-                          {/* Badge temps de lecture */}
-                          <div className="absolute bottom-3 right-3">
-                            <span className="inline-flex items-center gap-1 px-2 py-1 bg-black/60 backdrop-blur-sm text-white text-[10px] font-medium"
-                              style={{ clipPath: octagonClipSubtle }}
-                            >
-                              <Clock className="w-3 h-3" />
-                              {article.readingTime || '5 min'}
-                            </span>
-                          </div>
                         </div>
 
                         {/* Contenu */}
@@ -545,11 +534,14 @@ export const HeroSection = () => {
                       <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-pink-500 to-blue-500 flex items-center justify-center">
                         <Swords className="w-3.5 h-3.5 text-white" />
                       </div>
-                      <div>
+                      <div className="flex-1 min-w-0">
                         <span className="text-[10px] font-medium text-gray-500 uppercase tracking-wider">VS de la semaine</span>
-                        <h3 className="text-sm font-bold text-white leading-tight">{poll.title}</h3>
+                        <h3 className="text-sm font-bold text-white leading-tight truncate">{poll.title}</h3>
                       </div>
                     </div>
+                    {poll.question && (
+                      <p className="text-sm font-semibold text-pink-400 mt-2">🎯 {poll.question}</p>
+                    )}
                   </div>
 
                   {/* VS Arena Compact */}

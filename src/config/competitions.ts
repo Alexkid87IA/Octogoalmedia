@@ -13,6 +13,8 @@ export type CompetitionCategory =
   | 'other_leagues'
   | 'national_cups';
 
+export type CompetitionType = 'league' | 'cup' | 'tournament';
+
 export interface Competition {
   id: number;
   name: string;
@@ -20,6 +22,7 @@ export interface Competition {
   country: string;
   flag: string;
   category: CompetitionCategory;
+  type: CompetitionType; // Type de compétition: league (championnat), cup (coupe nationale), tournament (tournoi européen/international)
   priority: number; // Plus bas = plus prioritaire
   color: string; // Gradient TailwindCSS
   totalMatchdays: number;
@@ -39,6 +42,7 @@ export const COMPETITIONS: Record<number, Competition> = {
     country: 'Europe',
     flag: '🏆',
     category: 'europe',
+    type: 'tournament',
     priority: 1,
     color: 'from-blue-900 to-indigo-900',
     totalMatchdays: 8,
@@ -51,6 +55,7 @@ export const COMPETITIONS: Record<number, Competition> = {
     country: 'Europe',
     flag: '🏆',
     category: 'europe',
+    type: 'tournament',
     priority: 2,
     color: 'from-orange-500 to-orange-700',
     totalMatchdays: 8,
@@ -63,6 +68,7 @@ export const COMPETITIONS: Record<number, Competition> = {
     country: 'Europe',
     flag: '🏆',
     category: 'europe',
+    type: 'tournament',
     priority: 3,
     color: 'from-green-600 to-green-800',
     totalMatchdays: 8,
@@ -77,6 +83,7 @@ export const COMPETITIONS: Record<number, Competition> = {
     country: 'France',
     flag: '🇫🇷',
     category: 'top',
+    type: 'league',
     priority: 10,
     color: 'from-blue-600 to-blue-800',
     totalMatchdays: 34,
@@ -89,6 +96,7 @@ export const COMPETITIONS: Record<number, Competition> = {
     country: 'Angleterre',
     flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
     category: 'top',
+    type: 'league',
     priority: 11,
     color: 'from-purple-600 to-purple-800',
     totalMatchdays: 38,
@@ -101,6 +109,7 @@ export const COMPETITIONS: Record<number, Competition> = {
     country: 'Espagne',
     flag: '🇪🇸',
     category: 'top',
+    type: 'league',
     priority: 12,
     color: 'from-red-600 to-orange-600',
     totalMatchdays: 38,
@@ -113,6 +122,7 @@ export const COMPETITIONS: Record<number, Competition> = {
     country: 'Italie',
     flag: '🇮🇹',
     category: 'top',
+    type: 'league',
     priority: 13,
     color: 'from-green-600 to-green-800',
     totalMatchdays: 38,
@@ -125,6 +135,7 @@ export const COMPETITIONS: Record<number, Competition> = {
     country: 'Allemagne',
     flag: '🇩🇪',
     category: 'top',
+    type: 'league',
     priority: 14,
     color: 'from-red-600 to-yellow-500',
     totalMatchdays: 34,
@@ -139,6 +150,7 @@ export const COMPETITIONS: Record<number, Competition> = {
     country: 'France',
     flag: '🇫🇷',
     category: 'france',
+    type: 'league',
     priority: 20,
     color: 'from-blue-500 to-blue-700',
     totalMatchdays: 34,
@@ -151,6 +163,7 @@ export const COMPETITIONS: Record<number, Competition> = {
     country: 'France',
     flag: '🇫🇷',
     category: 'france',
+    type: 'cup',
     priority: 21,
     color: 'from-blue-700 to-red-600',
     totalMatchdays: 10,

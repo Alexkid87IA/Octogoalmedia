@@ -35,13 +35,16 @@ import {
   getMatchesByMatchday,
   getMatchesByRound,
   getMatchPlayerStats,
-  getTeamInjuries,
   formatDateFR,
 } from '../services/apiFootball';
 import { getCompetition } from '../config/competitions';
 import OddsWidget from '../components/football/OddsWidget';
 import { findMatchOdds } from '../services/oddsService';
+import Footer from '../components/layout/Footer';
 import { MatchOdds, formatOdds } from '../types/odds.types';
+import { getAllArticles } from '../utils/sanityAPI';
+import { SanityArticle } from '../types/sanity';
+import { urlFor } from '../utils/sanityClient';
 
 // =============================================
 // TYPES
@@ -178,6 +181,120 @@ const FormBadge = ({ result }: { result: 'W' | 'D' | 'L' }) => {
 // =============================================
 // COMPOSANTS SIDEBAR
 // =============================================
+
+// Article à la une Sidebar
+const FeaturedArticleSidebar = ({ article }: { article: SanityArticle | null }) => {
+  if (!article) return null;
+
+  const getArticleImage = () => {
+    try {
+      if (article.mainImage?.asset?.url) return article.mainImage.asset.url;
+      if (article.mainImage?.asset?._ref) return urlFor(article.mainImage).width(400).height(200).url();
+      return null;
+    } catch { return null; }
+  };
+
+  const imageUrl = getArticleImage();
+
+  return (
+    <Link
+      to={`/article/${article.slug?.current}`}
+      className="block group rounded-xl overflow-hidden bg-gray-900/50 border border-white/10"
+    >
+      {/* Image */}
+      <div className="relative aspect-video overflow-hidden">
+        {imageUrl ? (
+          <img
+            src={imageUrl}
+            alt=""
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-pink-500/20 to-gray-900" />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+
+        {/* Badge */}
+        <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2 py-1 bg-pink-500 rounded-md">
+          <Star size={12} className="text-white" />
+          <span className="text-xs font-bold text-white">À la une</span>
+        </div>
+      </div>
+
+      {/* Contenu */}
+      <div className="p-4">
+        <h3 className="text-sm font-bold text-white group-hover:text-pink-400 transition-colors line-clamp-2">
+          {article.title}
+        </h3>
+        {article.excerpt && (
+          <p className="text-xs text-gray-400 mt-2 line-clamp-2">{article.excerpt}</p>
+        )}
+      </div>
+    </Link>
+  );
+};
+
+// Flash Info Sidebar
+const FlashInfoSidebar = ({ articles }: { articles: SanityArticle[] }) => {
+  if (!articles || articles.length === 0) return null;
+
+  const getArticleImage = (article: SanityArticle) => {
+    try {
+      if (article.mainImage?.asset?.url) return article.mainImage.asset.url;
+      if (article.mainImage?.asset?._ref) return urlFor(article.mainImage).width(100).height(60).url();
+      return null;
+    } catch { return null; }
+  };
+
+  const getRelativeTime = (date: string) => {
+    if (!date) return '';
+    const diff = Date.now() - new Date(date).getTime();
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    if (hours < 1) return "À l'instant";
+    if (hours < 24) return `${hours}h`;
+    const days = Math.floor(hours / 24);
+    if (days === 1) return "Hier";
+    return `${days}j`;
+  };
+
+  return (
+    <div className="bg-gray-900/50 rounded-xl border border-white/10 overflow-hidden">
+      <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Zap className="w-4 h-4 text-pink-500" />
+          <span className="text-white font-bold text-sm">Flash Info</span>
+        </div>
+        <Link to="/articles" className="text-xs text-pink-400 hover:text-pink-300">
+          Voir tout →
+        </Link>
+      </div>
+      <div className="p-2 space-y-1 max-h-[280px] overflow-y-auto">
+        {articles.slice(0, 5).map((article) => {
+          const imageUrl = getArticleImage(article);
+          return (
+            <Link
+              key={article._id}
+              to={`/article/${article.slug?.current}`}
+              className="flex items-start gap-2 p-2 rounded-lg hover:bg-white/5 transition-colors group"
+            >
+              {imageUrl && (
+                <div className="w-12 h-8 rounded overflow-hidden flex-shrink-0 bg-gray-800">
+                  <img src={imageUrl} alt="" className="w-full h-full object-cover" />
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <h4 className="text-xs text-gray-300 group-hover:text-white transition-colors line-clamp-2 leading-tight">
+                  {article.title}
+                </h4>
+                <span className="text-[10px] text-gray-500">{getRelativeTime(article.publishedAt || '')}</span>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
 
 // Mini classement
 const MiniStandings = ({ standings, homeTeamId, awayTeamId, competitionId }: {
@@ -794,7 +911,6 @@ export default function MatchDetailPage() {
   const [lineups, setLineups] = useState<any>(null);
   const [h2h, setH2H] = useState<Match[]>([]);
   const [playerStats, setPlayerStats] = useState<any>(null);
-  const [injuries, setInjuries] = useState<any[]>([]);
 
   // États sidebar
   const [standings, setStandings] = useState<TeamStanding[]>([]);
@@ -803,6 +919,8 @@ export default function MatchDetailPage() {
   const [awayForm, setAwayForm] = useState<('W' | 'D' | 'L')[]>([]);
   const [matchdayMatches, setMatchdayMatches] = useState<Match[]>([]);
   const [headerOdds, setHeaderOdds] = useState<MatchOdds | null>(null);
+  const [flashArticles, setFlashArticles] = useState<SanityArticle[]>([]);
+  const [featuredArticle, setFeaturedArticle] = useState<SanityArticle | null>(null);
 
   // États UI
   const [activeTab, setActiveTab] = useState<TabType>('events');
@@ -861,18 +979,6 @@ export default function MatchDetailPage() {
         if (matchData.status === 'FINISHED' || isLive) {
           getMatchPlayerStats(fixtureId, isLive)
             .then(data => setPlayerStats(data))
-            .catch(() => {});
-        }
-
-        // Blessures des deux équipes
-        if (homeTeamId) {
-          getTeamInjuries(homeTeamId)
-            .then(data => setInjuries(prev => [...prev, ...data.map((i: any) => ({ ...i, side: 'home' }))]))
-            .catch(() => {});
-        }
-        if (awayTeamId) {
-          getTeamInjuries(awayTeamId)
-            .then(data => setInjuries(prev => [...prev, ...data.map((i: any) => ({ ...i, side: 'away' }))]))
             .catch(() => {});
         }
 
@@ -992,6 +1098,22 @@ export default function MatchDetailPage() {
 
     fetchMatchData();
   }, [id]);
+
+  // Fetch flash articles and featured article
+  useEffect(() => {
+    getAllArticles()
+      .then(articles => {
+        if (articles && articles.length > 0) {
+          // Article à la une (isFeatured ou le premier)
+          const featured = articles.find(a => a.isFeatured) || articles[0];
+          setFeaturedArticle(featured);
+          // Flash articles (exclure le featured)
+          const flash = articles.filter(a => a._id !== featured?._id).slice(0, 5);
+          setFlashArticles(flash);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // Loading state
   if (loading) {
@@ -1140,57 +1262,111 @@ export default function MatchDetailPage() {
                 </Link>
               </div>
 
-              {/* Scorers Section - Below score, clickable */}
-              {!isUpcoming && events.filter(e => e.type === 'Goal').length > 0 && (
-                <button
-                  onClick={() => setActiveTab('events')}
-                  className="mt-4 w-full max-w-xl mx-auto"
-                >
-                  <div className="flex justify-center gap-8 md:gap-16 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors cursor-pointer">
-                    {/* Home Scorers */}
-                    <div className="text-right flex-1">
-                      {events
-                        .filter(e => e.type === 'Goal' && e.team?.id === match.homeTeam.id)
-                        .slice(0, 4)
-                        .map((goal, idx) => (
-                          <div key={idx} className="text-xs text-gray-300">
-                            <span className="text-pink-400">⚽</span>{' '}
-                            {goal.player?.name?.split(' ').pop()} {goal.time?.elapsed}'{goal.time?.extra ? `+${goal.time.extra}` : ''}
-                            {goal.detail?.includes('Penalty') ? ' (P)' : ''}
-                          </div>
-                        ))}
-                      {events.filter(e => e.type === 'Goal' && e.team?.id === match.homeTeam.id).length > 4 && (
-                        <div className="text-[10px] text-gray-500 mt-1">
-                          +{events.filter(e => e.type === 'Goal' && e.team?.id === match.homeTeam.id).length - 4} autres
+              {/* Scorers Section - Below score */}
+              {!isUpcoming && events.filter(e => e.type === 'Goal').length > 0 && (() => {
+                const homeGoals = events.filter(e => e.type === 'Goal' && e.team?.id === match.homeTeam.id);
+                const awayGoals = events.filter(e => e.type === 'Goal' && e.team?.id === match.awayTeam.id);
+                const maxVisible = 7;
+
+                const scrollToEvents = () => {
+                  setActiveTab('events');
+                  const eventsSection = document.getElementById('match-tabs');
+                  if (eventsSection) {
+                    eventsSection.scrollIntoView({ behavior: 'smooth' });
+                  }
+                };
+
+                return (
+                  <div className="mt-3 flex items-start justify-between gap-4 md:gap-8 max-w-2xl mx-auto">
+                    {/* Home Scorers - right aligned */}
+                    <div className="flex-1 flex flex-col items-end">
+                      {homeGoals.slice(0, maxVisible).map((goal, idx) => (
+                        <div key={idx} className="text-xs text-gray-400 flex items-center gap-1">
+                          <span>{goal.player?.name?.split(' ').pop()} {goal.time?.elapsed}'{goal.time?.extra ? `+${goal.time.extra}` : ''}{goal.detail?.includes('Penalty') ? ' (P)' : ''}</span>
+                          <span className="text-pink-400">⚽</span>
                         </div>
+                      ))}
+                      {homeGoals.length > maxVisible && (
+                        <button
+                          type="button"
+                          onClick={scrollToEvents}
+                          className="text-[10px] text-pink-400 hover:text-pink-300 mt-1 cursor-pointer"
+                        >
+                          +{homeGoals.length - maxVisible} autres →
+                        </button>
                       )}
                     </div>
 
-                    {/* Divider */}
-                    <div className="w-px bg-gray-700" />
+                    {/* Separator */}
+                    <div className="flex-shrink-0 w-8" />
 
-                    {/* Away Scorers */}
-                    <div className="text-left flex-1">
-                      {events
-                        .filter(e => e.type === 'Goal' && e.team?.id === match.awayTeam.id)
-                        .slice(0, 4)
-                        .map((goal, idx) => (
-                          <div key={idx} className="text-xs text-gray-300">
-                            <span className="text-blue-400">⚽</span>{' '}
-                            {goal.player?.name?.split(' ').pop()} {goal.time?.elapsed}'{goal.time?.extra ? `+${goal.time.extra}` : ''}
-                            {goal.detail?.includes('Penalty') ? ' (P)' : ''}
-                          </div>
-                        ))}
-                      {events.filter(e => e.type === 'Goal' && e.team?.id === match.awayTeam.id).length > 4 && (
-                        <div className="text-[10px] text-gray-500 mt-1">
-                          +{events.filter(e => e.type === 'Goal' && e.team?.id === match.awayTeam.id).length - 4} autres
+                    {/* Away Scorers - left aligned */}
+                    <div className="flex-1 flex flex-col items-start">
+                      {awayGoals.slice(0, maxVisible).map((goal, idx) => (
+                        <div key={idx} className="text-xs text-gray-400 flex items-center gap-1">
+                          <span className="text-blue-400">⚽</span>
+                          <span>{goal.player?.name?.split(' ').pop()} {goal.time?.elapsed}'{goal.time?.extra ? `+${goal.time.extra}` : ''}{goal.detail?.includes('Penalty') ? ' (P)' : ''}</span>
                         </div>
+                      ))}
+                      {awayGoals.length > maxVisible && (
+                        <button
+                          type="button"
+                          onClick={scrollToEvents}
+                          className="text-[10px] text-blue-400 hover:text-blue-300 mt-1 cursor-pointer"
+                        >
+                          +{awayGoals.length - maxVisible} autres →
+                        </button>
                       )}
                     </div>
                   </div>
-                  <div className="text-[10px] text-gray-500 mt-1 text-center">Cliquer pour voir tous les temps forts</div>
-                </button>
-              )}
+                );
+              })()}
+
+              {/* Cards Section - Below scorers */}
+              {!isUpcoming && events.filter(e => e.type === 'Card').length > 0 && (() => {
+                const homeCards = events.filter(e => e.type === 'Card' && e.team?.id === match.homeTeam.id);
+                const awayCards = events.filter(e => e.type === 'Card' && e.team?.id === match.awayTeam.id);
+
+                const getCardEmoji = (detail: string) => {
+                  if (detail?.includes('Red') || detail?.includes('Second Yellow')) return '🟥';
+                  return '🟨';
+                };
+
+                if (homeCards.length === 0 && awayCards.length === 0) return null;
+
+                return (
+                  <div className="mt-2 flex items-start justify-between gap-4 md:gap-8 max-w-2xl mx-auto opacity-70">
+                    {/* Home Cards - right aligned */}
+                    <div className="flex-1 flex flex-col items-end">
+                      {homeCards.slice(0, 4).map((card, idx) => (
+                        <div key={idx} className="text-[10px] text-gray-500 flex items-center gap-1">
+                          <span>{card.player?.name?.split(' ').pop()} {card.time?.elapsed}'</span>
+                          <span>{getCardEmoji(card.detail || '')}</span>
+                        </div>
+                      ))}
+                      {homeCards.length > 4 && (
+                        <span className="text-[9px] text-gray-600">+{homeCards.length - 4}</span>
+                      )}
+                    </div>
+
+                    {/* Separator */}
+                    <div className="flex-shrink-0 w-8" />
+
+                    {/* Away Cards - left aligned */}
+                    <div className="flex-1 flex flex-col items-start">
+                      {awayCards.slice(0, 4).map((card, idx) => (
+                        <div key={idx} className="text-[10px] text-gray-500 flex items-center gap-1">
+                          <span>{getCardEmoji(card.detail || '')}</span>
+                          <span>{card.player?.name?.split(' ').pop()} {card.time?.elapsed}'</span>
+                        </div>
+                      ))}
+                      {awayCards.length > 4 && (
+                        <span className="text-[9px] text-gray-600">+{awayCards.length - 4}</span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Match info badges */}
               <div className="mt-6 flex flex-wrap justify-center gap-3">
@@ -1264,7 +1440,7 @@ export default function MatchDetailPage() {
 
       {/* Tabs - seulement pour matchs en cours ou terminés */}
       {!isUpcoming && (
-        <section className="sticky top-20 z-30 bg-black/90 backdrop-blur-xl border-y border-white/10">
+        <section id="match-tabs" className="sticky top-20 z-30 bg-black/90 backdrop-blur-xl border-y border-white/10">
           <div className="max-w-7xl mx-auto px-4">
             <div className="flex gap-1 py-3 overflow-x-auto scrollbar-hide">
               {tabs.map(tab => (
@@ -1592,59 +1768,7 @@ export default function MatchDetailPage() {
                     </div>
                   )}
 
-                  {/* Blessures & Absents */}
-                  {injuries.length > 0 && (
-                    <div className="mt-6 bg-gray-900/50 rounded-2xl border border-white/10 p-4 md:p-6">
-                      <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                        <AlertCircle className="w-5 h-5 text-red-500" />
-                        Blessures & Absents
-                      </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {/* Blessés domicile */}
-                        <div>
-                          <div className="flex items-center gap-2 mb-3">
-                            <img src={match.homeTeam.crest} alt="" className="w-5 h-5" />
-                            <span className="text-gray-400 text-sm">{match.homeTeam.name}</span>
-                          </div>
-                          <div className="space-y-2">
-                            {injuries.filter((i: any) => i.side === 'home').slice(0, 5).map((injury: any, idx: number) => (
-                              <div key={idx} className="flex items-center gap-2 p-2 rounded-lg bg-white/5">
-                                <img src={injury.player?.photo} alt="" className="w-8 h-8 rounded-full" />
-                                <div className="flex-1">
-                                  <p className="text-white text-sm">{injury.player?.name}</p>
-                                  <p className="text-red-400 text-xs">{injury.reason}</p>
-                                </div>
-                              </div>
-                            ))}
-                            {injuries.filter((i: any) => i.side === 'home').length === 0 && (
-                              <p className="text-gray-500 text-sm">Aucun absent signalé</p>
-                            )}
-                          </div>
-                        </div>
-                        {/* Blessés extérieur */}
-                        <div>
-                          <div className="flex items-center gap-2 mb-3">
-                            <img src={match.awayTeam.crest} alt="" className="w-5 h-5" />
-                            <span className="text-gray-400 text-sm">{match.awayTeam.name}</span>
-                          </div>
-                          <div className="space-y-2">
-                            {injuries.filter((i: any) => i.side === 'away').slice(0, 5).map((injury: any, idx: number) => (
-                              <div key={idx} className="flex items-center gap-2 p-2 rounded-lg bg-white/5">
-                                <img src={injury.player?.photo} alt="" className="w-8 h-8 rounded-full" />
-                                <div className="flex-1">
-                                  <p className="text-white text-sm">{injury.player?.name}</p>
-                                  <p className="text-red-400 text-xs">{injury.reason}</p>
-                                </div>
-                              </div>
-                            ))}
-                            {injuries.filter((i: any) => i.side === 'away').length === 0 && (
-                              <p className="text-gray-500 text-sm">Aucun absent signalé</p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                  {/* Section Blessures retirée - données API non fiables */}
                 </motion.div>
               )}
 
@@ -1804,6 +1928,12 @@ export default function MatchDetailPage() {
 
           {/* Sidebar (1/3) */}
           <div className="space-y-4">
+            {/* Article à la une */}
+            <FeaturedArticleSidebar article={featuredArticle} />
+
+            {/* Flash Info */}
+            <FlashInfoSidebar articles={flashArticles} />
+
             {/* Détection des matchs à élimination directe (pas de classement pour ces matchs) */}
             {(() => {
               const round = match.round || '';
@@ -1913,6 +2043,8 @@ export default function MatchDetailPage() {
           </div>
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 }

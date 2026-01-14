@@ -1,12 +1,163 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
-  <url><loc>https://octogoal.media/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>
-  <url><loc>https://octogoal.media/articles</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
-  <url><loc>https://octogoal.media/rubrique/football</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://octogoal.media/rubrique/clash</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://octogoal.media/rubrique/divertissement</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://octogoal.media/rubrique/sport</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://octogoal.media/podcasts</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://octogoal.media/emissions</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://octogoal.media/about</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:news="http://www.google.com/schemas/sitemap-news/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+
+  <!-- Pages principales -->
+  <url>
+    <loc>https://octogoal.media/</loc>
+    <changefreq>hourly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://octogoal.media/articles</loc>
+    <changefreq>hourly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://octogoal.media/matchs</loc>
+    <changefreq>hourly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://octogoal.media/paris</loc>
+    <changefreq>hourly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://octogoal.media/classements</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://octogoal.media/classements/europe</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Catégories principales -->
+  <url>
+    <loc>https://octogoal.media/rubrique/actus</loc>
+    <changefreq>hourly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://octogoal.media/rubrique/matchs</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://octogoal.media/rubrique/clubs</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://octogoal.media/joueurs</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://octogoal.media/formats</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://octogoal.media/rubrique/memes</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Sous-catégories Actus -->
+  <url>
+    <loc>https://octogoal.media/rubrique/actus/mercato</loc>
+    <changefreq>hourly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://octogoal.media/rubrique/actus/rumeurs</loc>
+    <changefreq>hourly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://octogoal.media/rubrique/actus/officialisations</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Championnats -->
+  <url>
+    <loc>https://octogoal.media/rubrique/actus/ligue-1</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://octogoal.media/rubrique/actus/premier-league</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://octogoal.media/rubrique/actus/liga</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://octogoal.media/rubrique/actus/serie-a</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://octogoal.media/rubrique/actus/bundesliga</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <!-- Formats Octogoal -->
+  <url>
+    <loc>https://octogoal.media/rubrique/formats-octogoal</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://octogoal.media/rubrique/formats-octogoal/culture-foot</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://octogoal.media/rubrique/formats-octogoal/moments-viraux</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Médias -->
+  <url>
+    <loc>https://octogoal.media/podcasts</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://octogoal.media/emissions</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Clubs -->
+  <url>
+    <loc>https://octogoal.media/clubs</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Pages institutionnelles -->
+  <url>
+    <loc>https://octogoal.media/about</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://octogoal.media/mission</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
 </urlset>
