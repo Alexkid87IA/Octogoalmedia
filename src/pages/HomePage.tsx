@@ -257,16 +257,10 @@ export const HomePage = () => {
     <>
       <SEO {...staticSEO.home} />
       <div className="relative min-h-screen bg-black overflow-hidden">
-        {/* Background effects */}
-        <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(0,164,249,0.15),transparent_50%)]" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,rgba(99,253,253,0.15),transparent_50%)]" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(0,164,249,0.15),transparent_50%)]" />
-          <div className="absolute inset-0 backdrop-blur-[100px]" />
-        </div>
+        {/* Background effects - retiré pour le skin publicitaire */}
 
         {/* Ticker unifié - Sticky sous la navbar */}
-        <div className="relative z-[45] pt-20">
+        <div className="relative z-[45] pt-4">
           <UnifiedMatchTicker />
         </div>
 

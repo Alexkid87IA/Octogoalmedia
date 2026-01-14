@@ -68,7 +68,7 @@ const ShortCard: React.FC<{ extrait: Extrait; index: number }> = ({ extrait, ind
           />
         ) : videoId ? (
           <img
-            src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
+            src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`}
             alt={extrait.title}
             className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />

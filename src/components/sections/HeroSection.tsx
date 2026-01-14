@@ -88,7 +88,7 @@ export const HeroSection = () => {
   const [flashWidgetArticles, setFlashWidgetArticles] = useState<SanityArticle[]>(mockRecentArticles);
 
   const [scrollPosition, setScrollPosition] = useState(0);
-  const maxVisibleItems = 10;
+  const maxVisibleItems = 7;
 
   // VS Poll state
   const [poll, setPoll] = useState<SanityVSPoll | null>(null);
@@ -468,11 +468,11 @@ export const HeroSection = () => {
 
                         {/* Contenu */}
                         <div className="p-4">
-                          <h3 className="text-base font-bold text-white mb-2 line-clamp-2 group-hover:text-pink-400 transition-colors">
+                          <h3 className="text-base font-bold text-white mb-2 group-hover:text-pink-400 transition-colors">
                             {article.title}
                           </h3>
 
-                          <p className="text-xs text-gray-400 line-clamp-2 mb-3">
+                          <p className="text-xs text-gray-400 line-clamp-3 mb-3">
                             {article.excerpt}
                           </p>
 
@@ -536,7 +536,7 @@ export const HeroSection = () => {
                       </div>
                       <div className="flex-1 min-w-0">
                         <span className="text-[10px] font-medium text-gray-500 uppercase tracking-wider">VS de la semaine</span>
-                        <h3 className="text-sm font-bold text-white leading-tight truncate">{poll.title}</h3>
+                        <h3 className="text-xs font-bold text-white leading-tight whitespace-nowrap">{poll.title}</h3>
                       </div>
                     </div>
                     {poll.question && (

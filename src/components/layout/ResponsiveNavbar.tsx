@@ -272,12 +272,23 @@ export const ResponsiveNavbar = () => {
               </button>
 
               {/* CTA */}
-              <Link
-                to={ctaConfig.path}
-                className="px-3 xl:px-5 py-2 bg-gradient-to-r from-pink-500 to-blue-500 text-white text-xs xl:text-sm font-semibold rounded-full shadow-lg shadow-pink-500/25 hover:shadow-pink-500/40 hover:scale-105 transition-all duration-300 whitespace-nowrap"
-              >
-                {ctaConfig.label}
-              </Link>
+              {(ctaConfig as any).external ? (
+                <a
+                  href={ctaConfig.path}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 xl:px-5 py-2 bg-gradient-to-r from-pink-500 to-blue-500 text-white text-xs xl:text-sm font-semibold rounded-full shadow-lg shadow-pink-500/25 hover:shadow-pink-500/40 hover:scale-105 transition-all duration-300 whitespace-nowrap"
+                >
+                  {ctaConfig.label}
+                </a>
+              ) : (
+                <Link
+                  to={ctaConfig.path}
+                  className="px-3 xl:px-5 py-2 bg-gradient-to-r from-pink-500 to-blue-500 text-white text-xs xl:text-sm font-semibold rounded-full shadow-lg shadow-pink-500/25 hover:shadow-pink-500/40 hover:scale-105 transition-all duration-300 whitespace-nowrap"
+                >
+                  {ctaConfig.label}
+                </Link>
+              )}
             </div>
 
             {/* Mobile : Match Center + Émissions + Menu Button */}
@@ -470,13 +481,25 @@ export const ResponsiveNavbar = () => {
 
               {/* CTA Mobile */}
               <div className="p-4 border-t border-gray-800">
-                <Link
-                  to={ctaConfig.path}
-                  onClick={() => setIsOpen(false)}
-                  className="block w-full py-3 text-center bg-gradient-to-r from-pink-500 to-blue-500 text-white font-semibold rounded-xl shadow-lg shadow-pink-500/25"
-                >
-                  {ctaConfig.label}
-                </Link>
+                {(ctaConfig as any).external ? (
+                  <a
+                    href={ctaConfig.path}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setIsOpen(false)}
+                    className="block w-full py-3 text-center bg-gradient-to-r from-pink-500 to-blue-500 text-white font-semibold rounded-xl shadow-lg shadow-pink-500/25"
+                  >
+                    {ctaConfig.label}
+                  </a>
+                ) : (
+                  <Link
+                    to={ctaConfig.path}
+                    onClick={() => setIsOpen(false)}
+                    className="block w-full py-3 text-center bg-gradient-to-r from-pink-500 to-blue-500 text-white font-semibold rounded-xl shadow-lg shadow-pink-500/25"
+                  >
+                    {ctaConfig.label}
+                  </Link>
+                )}
               </div>
             </motion.div>
           </>

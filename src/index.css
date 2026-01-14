@@ -223,17 +223,97 @@ html {
   .article-content h1 {
     @apply text-3xl;
   }
-  
+
   .article-content h2 {
     @apply text-2xl;
   }
-  
+
   .article-content h3 {
     @apply text-xl;
   }
-  
+
   .article-content p,
   .article-content li {
     @apply text-base;
+  }
+}
+
+/* ========== SITE SKIN - Habillage Publicitaire ========== */
+
+/* Background skin container - styles de base, image via inline style */
+.site-skin {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+  background-color: #0a0a1a;
+  background-attachment: fixed;
+  background-position: top center;
+  background-repeat: no-repeat;
+  background-size: 100% auto;
+}
+
+/* Main content wrapper - centré avec max-width réduit pour exposer le skin */
+.site-content-wrapper {
+  position: relative;
+  z-index: 1;
+  max-width: 920px;
+  margin: 0 auto;
+  margin-top: 150px;
+  background-color: #000;
+  min-height: 100vh;
+  box-shadow: 0 0 60px rgba(0, 0, 0, 0.9);
+  border-radius: 16px 16px 0 0;
+}
+
+/* Responsive - pleine largeur sur écrans < 1100px */
+@media (max-width: 1100px) {
+  .site-skin {
+    display: none;
+  }
+
+  .site-content-wrapper {
+    max-width: 100%;
+    margin-top: 0;
+    box-shadow: none;
+    border-radius: 0;
+  }
+}
+
+/* Zone cliquable pour le skin (tracking pub) */
+.site-skin-clickable {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: calc((100vw - 920px) / 2);
+  z-index: 0; /* Sous le contenu */
+  cursor: pointer;
+}
+
+.site-skin-clickable.top {
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 920px;
+  height: 150px;
+  bottom: auto;
+}
+
+.site-skin-clickable.left {
+  left: 0;
+  top: 150px;
+}
+
+.site-skin-clickable.right {
+  right: 0;
+  top: 150px;
+}
+
+@media (max-width: 1100px) {
+  .site-skin-clickable,
+  .site-skin-clickable.top {
+    display: none;
   }
 }

@@ -191,12 +191,9 @@ export const matchCenterConfig = highlightedItems.matchCenter;
 // ============================================
 
 export const ctaConfig = {
-  label: 'Rejoins la team',
-  path: '/newsletter',
-  // Alternatives possibles :
-  // label: 'Discord',
-  // path: 'https://discord.gg/octogoal',
-  // external: true,
+  label: 'Discord',
+  path: 'https://discord.gg/octogoal', // À remplacer par le vrai lien
+  external: true,
 };
 
 // ============================================

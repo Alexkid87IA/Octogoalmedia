@@ -12,39 +12,40 @@ const client = createClient({
 });
 
 // ============= ÉMISSIONS (Videos longues) =============
+// Épisodes 6, 5, 4, 3 (les 2 premiers ne sont pas fournis)
 const emissions = [
   {
     _type: 'emission',
-    title: 'Émission Octogoal #1',
-    slug: { _type: 'slug', current: 'emission-octogoal-1' },
-    episodeNumber: 1,
+    title: 'Émission Octogoal #6',
+    slug: { _type: 'slug', current: 'emission-octogoal-6' },
+    episodeNumber: 6,
     youtubeUrl: 'https://www.youtube.com/watch?v=m85LBJ75Lwk',
     description: 'Dernière émission Octogoal',
     publishedAt: new Date().toISOString()
   },
   {
     _type: 'emission',
-    title: 'Émission Octogoal #2',
-    slug: { _type: 'slug', current: 'emission-octogoal-2' },
-    episodeNumber: 2,
+    title: 'Émission Octogoal #5',
+    slug: { _type: 'slug', current: 'emission-octogoal-5' },
+    episodeNumber: 5,
     youtubeUrl: 'https://www.youtube.com/watch?v=qip4oKBARak',
     description: 'Émission Octogoal',
     publishedAt: new Date(Date.now() - 86400000).toISOString() // -1 jour
   },
   {
     _type: 'emission',
-    title: 'Émission Octogoal #3',
-    slug: { _type: 'slug', current: 'emission-octogoal-3' },
-    episodeNumber: 3,
+    title: 'Émission Octogoal #4',
+    slug: { _type: 'slug', current: 'emission-octogoal-4' },
+    episodeNumber: 4,
     youtubeUrl: 'https://www.youtube.com/watch?v=aIStLalPrSg',
     description: 'Émission Octogoal',
     publishedAt: new Date(Date.now() - 172800000).toISOString() // -2 jours
   },
   {
     _type: 'emission',
-    title: 'Émission Octogoal #4',
-    slug: { _type: 'slug', current: 'emission-octogoal-4' },
-    episodeNumber: 4,
+    title: 'Émission Octogoal #3',
+    slug: { _type: 'slug', current: 'emission-octogoal-3' },
+    episodeNumber: 3,
     youtubeUrl: 'https://www.youtube.com/watch?v=N2sntkVGvY0',
     description: 'Émission Octogoal',
     publishedAt: new Date(Date.now() - 259200000).toISOString() // -3 jours

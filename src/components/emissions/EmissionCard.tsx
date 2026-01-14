@@ -73,7 +73,7 @@ export const EmissionCard: React.FC<EmissionCardProps> = ({ emission, index = 0,
             />
           ) : youtubeId ? (
             <img
-              src={`https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`}
+              src={`https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`}
               alt={emission.title}
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             />

@@ -1215,7 +1215,7 @@ export const getActus = async (limit = 10): Promise<any[]> => {
 export const getOctogoalEmissions = async (limit = 50): Promise<any[]> => {
   return getWithCache(`octogoalEmissions_${limit}`, async () => {
     try {
-      const query = `*[_type == "emission"] | order(publishedAt desc)[0...$limit] {
+      const query = `*[_type == "emission"] | order(episodeNumber desc)[0...$limit] {
         _id,
         title,
         "slug": slug.current,
