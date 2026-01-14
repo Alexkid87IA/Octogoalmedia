@@ -143,7 +143,7 @@ export const EditorialSection = () => {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-20"
+            className="text-center mb-12"
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
@@ -155,7 +155,7 @@ export const EditorialSection = () => {
               <span className="text-sm text-white font-medium">Explore nos univers</span>
             </motion.div>
 
-            <h2 className="text-5xl md:text-6xl lg:text-7xl font-black mb-6 tracking-tight">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-black mb-4 tracking-tight">
               <span className="text-white">Tout le </span>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400">
                 foot
@@ -164,13 +164,13 @@ export const EditorialSection = () => {
               <span className="text-white">en un clic</span>
             </h2>
 
-            <p className="text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-base text-gray-400 max-w-xl mx-auto leading-relaxed">
               Actus, matchs, joueurs, mèmes... Choisis ton univers et plonge dans le meilleur du foot
             </p>
           </motion.div>
 
           {/* Grille des univers avec design octogonal */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
             {universeConfig.map((universe, index) => {
               const style = getStyle();
               const Icon = universe.icon;
@@ -192,13 +192,13 @@ export const EditorialSection = () => {
                   >
                     <div
                       className={`
-                        relative h-full p-6
+                        relative h-full p-4
                         bg-gradient-to-b from-white/[0.08] to-white/[0.02]
                         backdrop-blur-xl
                         border ${style.border} ${style.hoverBorder}
                         transition-all duration-500
                         hover:shadow-2xl ${style.glow}
-                        hover:-translate-y-2
+                        hover:-translate-y-1
                         group overflow-hidden
                       `}
                       style={{ clipPath: octagonClipCard }}

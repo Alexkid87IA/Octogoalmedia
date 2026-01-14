@@ -259,9 +259,9 @@ html {
 .site-content-wrapper {
   position: relative;
   z-index: 1;
-  max-width: 920px;
+  max-width: 1100px;
   margin: 0 auto;
-  margin-top: 150px;
+  margin-top: 100px;
   background-color: #000;
   min-height: 100vh;
   box-shadow: 0 0 60px rgba(0, 0, 0, 0.9);
@@ -287,7 +287,7 @@ html {
   position: fixed;
   top: 0;
   bottom: 0;
-  width: calc((100vw - 920px) / 2);
+  width: calc((100vw - 1100px) / 2);
   z-index: 0; /* Sous le contenu */
   cursor: pointer;
 }
@@ -296,19 +296,19 @@ html {
   top: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 920px;
-  height: 150px;
+  width: 1100px;
+  height: 100px;
   bottom: auto;
 }
 
 .site-skin-clickable.left {
   left: 0;
-  top: 150px;
+  top: 100px;
 }
 
 .site-skin-clickable.right {
   right: 0;
-  top: 150px;
+  top: 100px;
 }
 
 @media (max-width: 1100px) {

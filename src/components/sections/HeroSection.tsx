@@ -88,7 +88,7 @@ export const HeroSection = () => {
   const [flashWidgetArticles, setFlashWidgetArticles] = useState<SanityArticle[]>(mockRecentArticles);
 
   const [scrollPosition, setScrollPosition] = useState(0);
-  const maxVisibleItems = 7;
+  const maxVisibleItems = 8;
 
   // VS Poll state
   const [poll, setPoll] = useState<SanityVSPoll | null>(null);

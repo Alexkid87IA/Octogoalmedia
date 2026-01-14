@@ -138,7 +138,7 @@ export const QuickStandingsSection = () => {
                   <ChevronLeft className="w-5 h-5 text-white" />
                 </button>
 
-                {/* League Pills */}
+                {/* League Pills - Design badge octogonal */}
                 <div
                   ref={carouselRef}
                   className="flex-1 flex gap-2 overflow-x-auto scrollbar-hide py-1"
@@ -149,12 +149,13 @@ export const QuickStandingsSection = () => {
                       key={league.key}
                       onClick={() => setCurrentLeagueIndex(index)}
                       className={`
-                        flex items-center gap-2 px-4 py-2 rounded-lg whitespace-nowrap transition-all
+                        flex items-center gap-2 px-4 py-2 whitespace-nowrap transition-all border
                         ${index === currentLeagueIndex
-                          ? `bg-gradient-to-r ${league.color} text-white shadow-lg`
-                          : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700 hover:text-white'
+                          ? `bg-gradient-to-r ${league.color}/20 border-pink-500/50 text-white shadow-lg`
+                          : 'bg-gray-800/30 border-gray-700/50 text-gray-400 hover:bg-gray-700/30 hover:text-white hover:border-gray-600'
                         }
                       `}
+                      style={{ clipPath: octagonClipSubtle }}
                     >
                       <span className="text-lg">{league.flag}</span>
                       <span className="text-sm font-medium hidden sm:inline">{league.name}</span>
@@ -180,15 +181,7 @@ export const QuickStandingsSection = () => {
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.3 }}
               >
-                {/* Badge octogonal */}
-                <div className={`inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r ${currentLeague.color}/20 border border-pink-500/30 rounded-lg mb-4`}
-                  style={{ clipPath: octagonClipSubtle }}
-                >
-                  <Trophy className="w-4 h-4 text-pink-400" />
-                  <span className="text-sm font-medium text-white">{currentLeague.name}</span>
-                </div>
-
-                <h2 className="text-3xl md:text-4xl lg:text-5xl font-black mb-4">
+                <h2 className="text-2xl md:text-3xl lg:text-4xl font-black mb-4">
                   <span className="text-white">Classement </span>
                   <span className={`text-transparent bg-clip-text bg-gradient-to-r ${currentLeague.color}`}>
                     {currentLeague.name}
@@ -230,36 +223,36 @@ export const QuickStandingsSection = () => {
               style={{ clipPath: octagonClipSubtle }}
             >
               {/* Header du tableau */}
-              <div className={`px-6 py-4 border-b border-gray-800 bg-gradient-to-r ${currentLeague.color}/10`}>
+              <div className={`px-4 py-3 border-b border-gray-800 bg-gradient-to-r ${currentLeague.color}/10`}>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
                     <div
-                      className={`w-10 h-10 bg-gradient-to-br ${currentLeague.color} flex items-center justify-center`}
+                      className={`w-8 h-8 bg-gradient-to-br ${currentLeague.color} flex items-center justify-center`}
                       style={{ clipPath: octagonClip }}
                     >
-                      <span className="text-lg">{currentLeague.flag}</span>
+                      <span className="text-sm">{currentLeague.flag}</span>
                     </div>
                     <div>
-                      <h3 className="text-white font-bold">{currentLeague.name}</h3>
-                      <p className="text-xs text-gray-500">Saison 2025-26</p>
+                      <h3 className="text-white font-bold text-sm">{currentLeague.name}</h3>
+                      <p className="text-xs text-gray-400">Saison 2025-26</p>
                     </div>
                   </div>
-                  <span className="text-xs text-gray-500">Top 5</span>
+                  <span className="text-[10px] text-gray-500">Top 5</span>
                 </div>
               </div>
 
               {/* Liste des équipes */}
-              <div className="divide-y divide-gray-800/50 min-h-[280px]">
+              <div className="divide-y divide-gray-800/50 min-h-[240px]">
                 {isCurrentLoading ? (
-                  <div className="flex items-center justify-center h-[280px]">
-                    <div className="w-8 h-8 border-2 border-pink-500 border-t-transparent rounded-full animate-spin" />
+                  <div className="flex items-center justify-center h-[240px]">
+                    <div className="w-6 h-6 border-2 border-pink-500 border-t-transparent rounded-full animate-spin" />
                   </div>
                 ) : currentStandings.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center h-[280px] text-gray-500 gap-4">
-                    <span>{hasError ? 'Erreur de chargement' : 'Aucune donnée disponible'}</span>
+                  <div className="flex flex-col items-center justify-center h-[240px] text-gray-500 gap-3">
+                    <span className="text-sm">{hasError ? 'Erreur de chargement' : 'Aucune donnée disponible'}</span>
                     <button
                       onClick={() => setRetryCount(c => c + 1)}
-                      className="px-4 py-2 bg-pink-500/20 hover:bg-pink-500/30 text-pink-400 rounded-lg text-sm transition-colors"
+                      className="px-3 py-1.5 bg-pink-500/20 hover:bg-pink-500/30 text-pink-400 rounded-lg text-xs transition-colors"
                     >
                       Réessayer
                     </button>
@@ -282,12 +275,12 @@ export const QuickStandingsSection = () => {
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: index * 0.05 }}
-                            className="group px-6 py-4 hover:bg-white/5 transition-colors"
+                            className="group px-4 py-2.5 hover:bg-white/5 transition-colors"
                           >
-                            <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-3">
                               {/* Position */}
                               <div className={`
-                                w-8 h-8 flex items-center justify-center font-bold text-sm
+                                w-7 h-7 flex items-center justify-center font-bold text-xs
                                 ${index === 0
                                   ? 'bg-gradient-to-br from-yellow-400 to-amber-500 text-black'
                                   : index < 3
@@ -304,7 +297,7 @@ export const QuickStandingsSection = () => {
                               <img
                                 src={team.team.crest}
                                 alt={team.team.name}
-                                className="w-8 h-8 object-contain"
+                                className="w-6 h-6 object-contain"
                                 onError={(e) => {
                                   // Fallback si le logo ne charge pas
                                   (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23666"><circle cx="12" cy="12" r="10"/></svg>';
@@ -312,28 +305,28 @@ export const QuickStandingsSection = () => {
                               />
 
                               {/* Nom équipe */}
-                              <span className="flex-1 font-medium text-white group-hover:text-pink-400 transition-colors truncate">
+                              <span className="flex-1 font-medium text-sm text-white group-hover:text-pink-400 transition-colors truncate">
                                 {team.team.name}
                               </span>
 
                               {/* Tendance */}
                               {trend && (
                                 <div className={`
-                                  p-1 rounded-full
+                                  p-0.5 rounded-full
                                   ${trend === 'up' ? 'bg-green-500/20 text-green-400' : ''}
                                   ${trend === 'down' ? 'bg-red-500/20 text-red-400' : ''}
                                   ${trend === 'stable' ? 'bg-gray-500/20 text-gray-400' : ''}
                                 `}>
-                                  {trend === 'up' && <TrendingUp className="w-4 h-4" />}
-                                  {trend === 'down' && <TrendingDown className="w-4 h-4" />}
-                                  {trend === 'stable' && <Minus className="w-4 h-4" />}
+                                  {trend === 'up' && <TrendingUp className="w-3.5 h-3.5" />}
+                                  {trend === 'down' && <TrendingDown className="w-3.5 h-3.5" />}
+                                  {trend === 'stable' && <Minus className="w-3.5 h-3.5" />}
                                 </div>
                               )}
 
                               {/* Points */}
                               <div className="text-right">
-                                <span className="text-xl font-black text-white">{team.points}</span>
-                                <span className="text-xs text-gray-500 ml-1">pts</span>
+                                <span className="text-lg font-black text-white">{team.points}</span>
+                                <span className="text-[10px] text-gray-500 ml-1">pts</span>
                               </div>
                             </div>
                           </motion.div>
@@ -345,8 +338,8 @@ export const QuickStandingsSection = () => {
               </div>
 
               {/* Footer */}
-              <div className="px-6 py-3 border-t border-gray-800 bg-black/30">
-                <div className="flex items-center justify-between text-xs text-gray-500">
+              <div className="px-4 py-2 border-t border-gray-800 bg-black/30">
+                <div className="flex items-center justify-between text-[10px] text-gray-500">
                   <span>Mise à jour en temps réel</span>
                   <Link to="/classements" className="text-pink-400 hover:text-pink-300 transition-colors">
                     Classement complet →

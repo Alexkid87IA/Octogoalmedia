@@ -384,20 +384,6 @@ const ContentSection: React.FC<ContentSectionProps> = ({
                         </motion.div>
                       )}
 
-                      {/* Badge durée/temps - octogonal */}
-                      {(item.duration || item.readingTime) && (
-                        <div className="absolute top-4 right-4">
-                          <div
-                            className="px-3 py-1.5 bg-black/80 backdrop-blur-md border border-white/10"
-                            style={{ clipPath: octagonClipSubtle }}
-                          >
-                            <span className="text-xs text-white font-medium flex items-center gap-1">
-                              <Clock className="w-3 h-3" />
-                              {item.duration || `${item.readingTime} min`}
-                            </span>
-                          </div>
-                        </div>
-                      )}
                     </div>
 
                     {/* Contenu */}

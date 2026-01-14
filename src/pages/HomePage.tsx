@@ -3,10 +3,7 @@ import { SEO } from '../components/common/SEO';
 import { staticSEO } from '../utils/seo.config';
 import { HeroSection } from '../components/sections/HeroSection';
 import { RecentArticlesSection } from '../components/sections/RecentArticlesSection';
-import { EditorialSection } from '../components/sections/EditorialSection';
 import { QuickStandingsSection } from '../components/sections/QuickStandingsSection';
-import ContentSection from '../components/sections/ContentSection';
-import { EssentialArticlesSection } from '../components/sections/EssentialArticlesSection';
 import { ClubSection } from '../components/sections/ClubSection';
 import { Footer } from '../components/layout/Footer';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
@@ -275,43 +272,7 @@ export const HomePage = () => {
           {/* 3. Section des derniers articles publiés */}
           <RecentArticlesSection articles={articles} />
 
-
-          {/* 5. Articles essentiels */}
-          <section className="py-20 overflow-hidden">
-            <EssentialArticlesSection />
-          </section>
-
-          {/* 6. Nos formats : Émissions Octogoal */}
-          <section className="py-20 bg-gradient-to-b from-transparent via-purple-900/10 to-transparent overflow-hidden">
-            <ContentSection
-              title="Les émissions Octogoal"
-              description="Réactions live, débats enflammés et analyses décalées"
-              sectionType="emission"
-            />
-          </section>
-
-          {/* 7. Nos formats : Études de cas */}
-          <section className="py-20 overflow-hidden">
-            <ContentSection
-              title="Des études de cas exclusives"
-              description="Découvrez les stratégies et idées qui transforment le monde des affaires"
-              sectionType="business-idea"
-            />
-          </section>
-
-          {/* 8. Nos formats : Parcours exceptionnels */}
-          <section className="py-20 bg-gradient-to-b from-transparent via-blue-900/10 to-transparent overflow-hidden">
-            <ContentSection
-              title="Des parcours inspirants"
-              description="Histoires d'entrepreneurs qui ont réussi à concrétiser leur vision"
-              sectionType="success-story"
-            />
-          </section>
-
-          {/* 9. Navigation thématique + stats + CTA */}
-          <EditorialSection />
-
-          {/* 10. Proposition premium */}
+          {/* 4. Proposition premium */}
           <ClubSection />
         </main>
 
