@@ -351,34 +351,34 @@ function LiveMatchCard({
       transition={{ delay: index * 0.02 }}
     >
       <Link to={`/match/${match.id}`} className="block flex-shrink-0 group">
-        <div className="relative bg-white/[0.04] hover:bg-white/[0.08] rounded-lg px-3 py-2 transition-all duration-200 border border-red-500/30 hover:border-red-500/50">
-          <div className="flex items-center gap-3">
+        <div className="relative bg-white/[0.04] hover:bg-white/[0.08] rounded-lg px-2 sm:px-3 py-1.5 sm:py-2 transition-all duration-200 border border-red-500/30 hover:border-red-500/50">
+          <div className="flex items-center gap-2 sm:gap-3">
             {/* Équipe domicile */}
-            <div className="flex items-center gap-1.5">
-              <img src={match.homeTeam.crest} alt="" className="w-6 h-6 object-contain" />
-              <span className="text-[11px] text-white font-medium">{getTeamCode(match.homeTeam)}</span>
+            <div className="flex items-center gap-1">
+              <img src={match.homeTeam.crest} alt="" className="w-4 h-4 sm:w-6 sm:h-6 object-contain" />
+              <span className="text-[9px] sm:text-[11px] text-white font-medium">{getTeamCode(match.homeTeam)}</span>
             </div>
 
             {/* Score LIVE */}
-            <div className="flex flex-col items-center min-w-[50px]">
-              <div className="flex items-center gap-1 text-white font-bold text-sm">
+            <div className="flex flex-col items-center min-w-[40px] sm:min-w-[50px]">
+              <div className="flex items-center gap-1 text-white font-bold text-xs sm:text-sm">
                 <span>{match.score.fullTime.home ?? 0}</span>
                 <span className="text-gray-500">-</span>
                 <span>{match.score.fullTime.away ?? 0}</span>
               </div>
-              <span className="flex items-center gap-1 text-[8px] px-1.5 py-0.5 bg-red-500/20 rounded mt-0.5">
-                <span className="relative flex h-1.5 w-1.5">
+              <span className="flex items-center gap-0.5 sm:gap-1 text-[7px] sm:text-[8px] px-1 sm:px-1.5 py-0.5 bg-red-500/20 rounded mt-0.5">
+                <span className="relative flex h-1 w-1 sm:h-1.5 sm:w-1.5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-500"></span>
+                  <span className="relative inline-flex rounded-full h-1 w-1 sm:h-1.5 sm:w-1.5 bg-red-500"></span>
                 </span>
                 <span className="text-red-400 font-semibold">LIVE</span>
               </span>
             </div>
 
             {/* Équipe extérieur */}
-            <div className="flex items-center gap-1.5">
-              <span className="text-[11px] text-white font-medium">{getTeamCode(match.awayTeam)}</span>
-              <img src={match.awayTeam.crest} alt="" className="w-6 h-6 object-contain" />
+            <div className="flex items-center gap-1">
+              <span className="text-[9px] sm:text-[11px] text-white font-medium">{getTeamCode(match.awayTeam)}</span>
+              <img src={match.awayTeam.crest} alt="" className="w-4 h-4 sm:w-6 sm:h-6 object-contain" />
             </div>
           </div>
         </div>
@@ -414,25 +414,25 @@ function OddsMatchCard({
       transition={{ delay: index * 0.02 }}
     >
       <Link to={`/match/${match.id}`} className="block flex-shrink-0 group">
-        <div className="relative bg-white/[0.04] hover:bg-white/[0.08] rounded-lg px-2.5 sm:px-3 py-2 sm:py-2.5 transition-all duration-200 border border-transparent hover:border-white/10 w-[140px] sm:w-[170px]">
+        <div className="relative bg-white/[0.04] hover:bg-white/[0.08] rounded-lg px-2 sm:px-3 py-1.5 sm:py-2.5 transition-all duration-200 border border-transparent hover:border-white/10 w-[115px] sm:w-[170px]">
           {/* Date */}
-          <div className="text-[9px] sm:text-[10px] text-gray-400 text-center mb-1.5">{dateLabel}</div>
+          <div className="text-[8px] sm:text-[10px] text-gray-400 text-center mb-1">{dateLabel}</div>
 
           {/* Équipes */}
-          <div className="flex items-center justify-center gap-2 mb-2">
+          <div className="flex items-center justify-center gap-1 sm:gap-2 mb-1.5 sm:mb-2">
             {/* Équipe domicile */}
-            <div className="flex items-center gap-1.5">
-              <img src={match.homeTeam.crest} alt="" className="w-5 h-5 sm:w-6 sm:h-6 object-contain" />
-              <span className="text-[10px] sm:text-[11px] text-white font-semibold">{getTeamCode(match.homeTeam)}</span>
+            <div className="flex items-center gap-1">
+              <img src={match.homeTeam.crest} alt="" className="w-4 h-4 sm:w-6 sm:h-6 object-contain" />
+              <span className="text-[9px] sm:text-[11px] text-white font-semibold">{getTeamCode(match.homeTeam)}</span>
             </div>
 
             {/* Séparateur */}
-            <span className="text-[10px] text-gray-500">-</span>
+            <span className="text-[9px] sm:text-[10px] text-gray-500">-</span>
 
             {/* Équipe extérieur */}
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] sm:text-[11px] text-white font-semibold">{getTeamCode(match.awayTeam)}</span>
-              <img src={match.awayTeam.crest} alt="" className="w-5 h-5 sm:w-6 sm:h-6 object-contain" />
+            <div className="flex items-center gap-1">
+              <span className="text-[9px] sm:text-[11px] text-white font-semibold">{getTeamCode(match.awayTeam)}</span>
+              <img src={match.awayTeam.crest} alt="" className="w-4 h-4 sm:w-6 sm:h-6 object-contain" />
             </div>
           </div>
 
@@ -444,7 +444,7 @@ function OddsMatchCard({
               <OddsPill label="2" value={match.odds.away} isMin={match.odds.away === minOdds} />
             </div>
           ) : (
-            <div className="text-[9px] sm:text-[10px] text-gray-500 text-center">Cotes bientôt</div>
+            <div className="text-[8px] sm:text-[10px] text-gray-500 text-center">Cotes bientôt</div>
           )}
         </div>
       </Link>
@@ -455,13 +455,13 @@ function OddsMatchCard({
 // Pilule de cote
 function OddsPill({ label, value, isMin }: { label: string; value: number; isMin: boolean }) {
   return (
-    <div className={`flex-1 text-center py-1 rounded-sm transition-colors ${
+    <div className={`flex-1 text-center py-0.5 sm:py-1 rounded-sm transition-colors ${
       isMin
         ? 'bg-green-500/20 text-green-400'
         : 'bg-white/5 text-gray-400 hover:bg-white/10'
     }`}>
-      <span className="text-[8px] sm:text-[9px] text-gray-500 block">{label}</span>
-      <span className="text-[11px] sm:text-xs font-bold">{formatOdds(value)}</span>
+      <span className="text-[7px] sm:text-[9px] text-gray-500 block">{label}</span>
+      <span className="text-[9px] sm:text-xs font-bold">{formatOdds(value)}</span>
     </div>
   );
 }

@@ -253,11 +253,11 @@ export const HomePage = () => {
   return (
     <>
       <SEO {...staticSEO.home} />
-      <div className="relative min-h-screen bg-black overflow-hidden">
+      <div className="relative min-h-screen bg-black overflow-hidden pt-16">
         {/* Background effects - retiré pour le skin publicitaire */}
 
         {/* Ticker unifié - Sticky sous la navbar */}
-        <div className="relative z-[45] pt-4">
+        <div className="relative z-[45] pt-2 sm:pt-4">
           <UnifiedMatchTicker />
         </div>
 
