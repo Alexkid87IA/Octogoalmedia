@@ -238,12 +238,12 @@ export const HeroSection = () => {
                       </motion.span>
                     )}
 
-                    {/* Titre avec effet gradient au hover */}
+                    {/* Titre avec gradient par défaut */}
                     <motion.h1
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.5 }}
-                      className="text-xl md:text-2xl lg:text-3xl font-black text-white mb-3 leading-tight group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-pink-400 group-hover:to-blue-400 transition-all duration-300"
+                      className="text-xl md:text-2xl lg:text-3xl font-black mb-3 leading-tight text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-blue-400"
                     >
                       {featuredArticle.title}
                     </motion.h1>
