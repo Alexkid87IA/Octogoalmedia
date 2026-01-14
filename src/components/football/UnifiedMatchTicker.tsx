@@ -351,34 +351,34 @@ function LiveMatchCard({
       transition={{ delay: index * 0.02 }}
     >
       <Link to={`/match/${match.id}`} className="block flex-shrink-0 group">
-        <div className="relative bg-white/[0.04] hover:bg-white/[0.08] rounded-lg px-2 sm:px-3 py-1.5 sm:py-2 transition-all duration-200 border border-red-500/30 hover:border-red-500/50">
-          <div className="flex items-center gap-2 sm:gap-3">
+        <div className="relative bg-white/[0.04] hover:bg-white/[0.08] rounded-lg px-3 sm:px-4 py-2 sm:py-2.5 transition-all duration-200 border border-red-500/30 hover:border-red-500/50 min-w-[140px] sm:min-w-[180px]">
+          <div className="flex items-center justify-between gap-2">
             {/* Équipe domicile */}
-            <div className="flex items-center gap-1">
-              <img src={match.homeTeam.crest} alt="" className="w-4 h-4 sm:w-6 sm:h-6 object-contain" />
-              <span className="text-[9px] sm:text-[11px] text-white font-medium">{getTeamCode(match.homeTeam)}</span>
+            <div className="flex items-center gap-1.5 flex-1 justify-start">
+              <img src={match.homeTeam.crest} alt="" className="w-5 h-5 sm:w-6 sm:h-6 object-contain flex-shrink-0" />
+              <span className="text-[10px] sm:text-[11px] text-white font-medium">{getTeamCode(match.homeTeam)}</span>
             </div>
 
             {/* Score LIVE */}
-            <div className="flex flex-col items-center min-w-[40px] sm:min-w-[50px]">
-              <div className="flex items-center gap-1 text-white font-bold text-xs sm:text-sm">
+            <div className="flex flex-col items-center flex-shrink-0">
+              <div className="flex items-center gap-1.5 text-white font-bold text-sm sm:text-base">
                 <span>{match.score.fullTime.home ?? 0}</span>
                 <span className="text-gray-500">-</span>
                 <span>{match.score.fullTime.away ?? 0}</span>
               </div>
-              <span className="flex items-center gap-0.5 sm:gap-1 text-[7px] sm:text-[8px] px-1 sm:px-1.5 py-0.5 bg-red-500/20 rounded mt-0.5">
-                <span className="relative flex h-1 w-1 sm:h-1.5 sm:w-1.5">
+              <span className="flex items-center gap-1 text-[7px] sm:text-[8px] px-1.5 py-0.5 bg-red-500/20 rounded mt-0.5">
+                <span className="relative flex h-1.5 w-1.5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-1 w-1 sm:h-1.5 sm:w-1.5 bg-red-500"></span>
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-500"></span>
                 </span>
                 <span className="text-red-400 font-semibold">LIVE</span>
               </span>
             </div>
 
             {/* Équipe extérieur */}
-            <div className="flex items-center gap-1">
-              <span className="text-[9px] sm:text-[11px] text-white font-medium">{getTeamCode(match.awayTeam)}</span>
-              <img src={match.awayTeam.crest} alt="" className="w-4 h-4 sm:w-6 sm:h-6 object-contain" />
+            <div className="flex items-center gap-1.5 flex-1 justify-end">
+              <span className="text-[10px] sm:text-[11px] text-white font-medium">{getTeamCode(match.awayTeam)}</span>
+              <img src={match.awayTeam.crest} alt="" className="w-5 h-5 sm:w-6 sm:h-6 object-contain flex-shrink-0" />
             </div>
           </div>
         </div>
