@@ -219,19 +219,6 @@ export default function UnifiedMatchTicker() {
   return (
     <div className="relative bg-black/90 backdrop-blur-sm border-b border-white/5">
       <div className="flex items-center">
-        {/* Header LIVE si matchs en direct */}
-        {hasLiveMatches && (
-          <div className="flex items-center gap-1.5 sm:gap-2 pl-2 sm:pl-4 pr-2 sm:pr-3 py-2 sm:py-2.5 border-r border-white/10 flex-shrink-0">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-            </span>
-            <span className="text-[9px] sm:text-[10px] font-bold text-red-400 uppercase tracking-wide">
-              Live
-            </span>
-          </div>
-        )}
-
         {/* Bouton gauche */}
         <button
           onClick={() => scroll('left')}
@@ -254,38 +241,6 @@ export default function UnifiedMatchTicker() {
           {liveMatches.map((match, index) => (
             <LiveMatchCard key={match.id} match={match} index={index} getTeamCode={getTeamCode} />
           ))}
-
-          {/* Séparateur si les deux existent */}
-          {hasLiveMatches && hasUpcomingMatches && (
-            <div className="flex items-center gap-2 px-2 flex-shrink-0">
-              <div className="w-px h-8 bg-white/10" />
-              <div className="flex items-center gap-1.5">
-                <img
-                  src="/images/winamax-logo.png"
-                  alt="Winamax"
-                  className="w-4 h-4 rounded object-contain"
-                />
-                <span className="text-[8px] text-gray-500 hidden sm:block">Cotes</span>
-              </div>
-              <div className="w-px h-8 bg-white/10" />
-            </div>
-          )}
-
-          {/* Header Winamax si pas de live */}
-          {!hasLiveMatches && hasUpcomingMatches && (
-            <div className="flex items-center gap-1.5 pr-3 flex-shrink-0">
-              <img
-                src="/images/winamax-logo.png"
-                alt="Winamax"
-                className="w-4 h-4 sm:w-5 sm:h-5 rounded object-contain"
-              />
-              <div className="hidden sm:flex flex-col">
-                <span className="text-[10px] font-bold uppercase tracking-wide" style={{ color: '#ED1C24' }}>
-                  Cotes
-                </span>
-              </div>
-            </div>
-          )}
 
           {/* Matchs à venir avec cotes */}
           {upcomingMatches.map((match, index) => (
@@ -414,7 +369,7 @@ function OddsMatchCard({
       transition={{ delay: index * 0.02 }}
     >
       <Link to={`/match/${match.id}`} className="block flex-shrink-0 group">
-        <div className="relative bg-white/[0.04] hover:bg-white/[0.08] rounded-lg px-2 sm:px-3 py-1.5 sm:py-2.5 transition-all duration-200 border border-transparent hover:border-white/10 w-[115px] sm:w-[170px]">
+        <div className="relative bg-white/[0.04] hover:bg-white/[0.08] rounded-lg px-3 py-2 transition-all duration-200 border border-transparent hover:border-white/10 overflow-hidden w-[130px] sm:w-[160px]">
           {/* Date */}
           <div className="text-[8px] sm:text-[10px] text-gray-400 text-center mb-1">{dateLabel}</div>
 
