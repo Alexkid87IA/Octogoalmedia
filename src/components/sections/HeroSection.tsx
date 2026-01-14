@@ -117,11 +117,11 @@ export const HeroSection = () => {
       try {
         setPollLoading(true);
         const result = await getFeaturedVSPoll();
-        if (result) {
+        if (result && result.option1 && result.option2) {
           setPoll(result);
           setVotes({
-            option1: result.option1.votes || 0,
-            option2: result.option2.votes || 0
+            option1: result.option1?.votes || 0,
+            option2: result.option2?.votes || 0
           });
           const savedVote = localStorage.getItem(`vs-poll-${result._id}`);
           if (savedVote) {
