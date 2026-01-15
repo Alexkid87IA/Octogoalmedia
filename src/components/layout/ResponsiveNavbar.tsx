@@ -120,17 +120,17 @@ export const ResponsiveNavbar = () => {
       {/* Navbar principale */}
       <nav className="fixed top-0 left-0 right-0 h-14 bg-gray-950/95 backdrop-blur-xl border-b border-gray-800/50 z-[9999]">
         <div className="max-w-[1600px] mx-auto px-4 h-full">
-          {/* Desktop: Logo | Navigation centrée | 2 CTAs */}
-          <div className="hidden lg:flex items-center justify-between h-full">
+          {/* Desktop: Grid 3 colonnes pour centrage parfait */}
+          <div className="hidden lg:grid grid-cols-[auto_1fr_auto] items-center h-full">
 
-            {/* GAUCHE: Logo seul */}
+            {/* GAUCHE: Logo */}
             <Link to="/" className="flex-shrink-0">
               <img src={logoMedia} alt="Octogoal" className="h-10 w-auto" />
             </Link>
 
-            {/* CENTRE: Navigation */}
+            {/* CENTRE: Navigation - centrée dans sa colonne */}
             <div
-              className="flex items-center gap-1"
+              className="flex items-center justify-center gap-1"
               onMouseLeave={() => {
                 if (hoverIntentTimeout.current) {
                   clearTimeout(hoverIntentTimeout.current);
@@ -175,7 +175,7 @@ export const ResponsiveNavbar = () => {
             </div>
 
             {/* DROITE: 2 CTAs */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center justify-end gap-3">
 
               {/* CTA Émissions - Style secondaire */}
               <Link
