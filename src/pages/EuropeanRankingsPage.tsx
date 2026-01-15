@@ -90,7 +90,7 @@ const HeroSection = ({
         >
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-pink-500/20 to-blue-500/20 rounded-full border border-pink-500/30 mb-6">
             <Globe2 className="w-4 h-4 text-pink-400" />
-            <span className="text-sm font-medium text-pink-400">Top 5 Championnats Européens</span>
+            <span className="text-sm font-medium text-pink-400">Toutes Compétitions Confondues</span>
           </div>
           <h1 className="text-4xl md:text-6xl font-black text-white mb-4">
             Les{' '}
@@ -99,7 +99,7 @@ const HeroSection = ({
             </span>
           </h1>
           <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-            Ligue 1 • Premier League • La Liga • Serie A • Bundesliga
+            Championnats + Champions League + Europa League + Conference League
           </p>
         </motion.div>
 

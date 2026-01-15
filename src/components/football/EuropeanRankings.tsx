@@ -286,7 +286,7 @@ export const EuropeanRankings: React.FC<EuropeanRankingsProps> = ({
                 Classements Européens
               </h2>
               <p className="text-gray-400 text-sm mt-1">
-                Top 5 championnats : Ligue 1, Premier League, La Liga, Serie A, Bundesliga
+                Toutes compétitions : Championnats + Coupes Européennes
               </p>
             </div>
           </div>

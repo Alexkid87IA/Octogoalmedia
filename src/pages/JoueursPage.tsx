@@ -518,7 +518,7 @@ const RankingsListCompact = () => {
           </div>
           <div>
             <h2 className="text-xl md:text-2xl font-black text-white">Classement Europe</h2>
-            <p className="text-gray-500 text-xs">Top 5 championnats</p>
+            <p className="text-gray-500 text-xs">Toutes compétitions</p>
           </div>
         </div>
 

@@ -261,7 +261,7 @@ html {
   z-index: 1;
   max-width: 1100px;
   margin: 0 auto;
-  margin-top: 100px;
+  margin-top: 140px;
   background-color: #000;
   min-height: 100vh;
   box-shadow: 0 0 60px rgba(0, 0, 0, 0.9);
@@ -277,6 +277,7 @@ html {
   .site-content-wrapper {
     max-width: 100%;
     margin-top: 0;
+    padding-top: 64px; /* Hauteur de la navbar (h-16 = 64px) */
     box-shadow: none;
     border-radius: 0;
   }
@@ -297,18 +298,18 @@ html {
   left: 50%;
   transform: translateX(-50%);
   width: 1100px;
-  height: 100px;
+  height: 140px;
   bottom: auto;
 }
 
 .site-skin-clickable.left {
   left: 0;
-  top: 100px;
+  top: 140px;
 }
 
 .site-skin-clickable.right {
   right: 0;
-  top: 100px;
+  top: 140px;
 }
 
 @media (max-width: 1100px) {

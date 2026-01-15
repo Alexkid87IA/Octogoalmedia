@@ -79,11 +79,15 @@ export default function UnifiedMatchTicker() {
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
+  const isFirstLoad = useRef(true);
 
   useEffect(() => {
     async function fetchMatches() {
       try {
-        setLoading(true);
+        // Ne montrer le loading que lors du premier chargement
+        if (isFirstLoad.current) {
+          setLoading(true);
+        }
 
         // 1. Récupérer les matchs LIVE et filtrer par compétitions majeures
         const liveData = await getLiveMatches().catch(() => []);
@@ -162,6 +166,7 @@ export default function UnifiedMatchTicker() {
         console.error('[UnifiedMatchTicker] Error:', err);
       } finally {
         setLoading(false);
+        isFirstLoad.current = false;
       }
     }
 

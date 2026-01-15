@@ -201,9 +201,22 @@ export const ctaConfig = {
 // ============================================
 
 export const socialLinks = {
-  twitter: 'https://twitter.com/octogoal',
-  instagram: 'https://instagram.com/octogoal',
-  youtube: 'https://youtube.com/octogoal',
   discord: 'https://discord.gg/octogoal',
   tiktok: 'https://tiktok.com/@octogoal',
+  x: 'https://x.com/octogoal',
+  facebook: 'https://facebook.com/octogoal',
+  snapchat: 'https://snapchat.com/add/octogoal',
+  youtube: 'https://youtube.com/@octogoal',
+  instagram: 'https://instagram.com/octogoal',
 };
+
+// Liste ordonnée pour l'affichage
+export const socialLinksList = [
+  { name: 'Discord', url: socialLinks.discord, icon: 'discord' },
+  { name: 'TikTok', url: socialLinks.tiktok, icon: 'tiktok' },
+  { name: 'X', url: socialLinks.x, icon: 'x' },
+  { name: 'Facebook', url: socialLinks.facebook, icon: 'facebook' },
+  { name: 'Snapchat', url: socialLinks.snapchat, icon: 'snapchat' },
+  { name: 'YouTube', url: socialLinks.youtube, icon: 'youtube' },
+  { name: 'Instagram', url: socialLinks.instagram, icon: 'instagram' },
+];

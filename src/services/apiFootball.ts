@@ -2362,7 +2362,7 @@ async function fetchWithRetry(
   return apiFetch(url);
 }
 
-// Top 5 ligues européennes
+// Top 5 ligues européennes (championnats domestiques)
 export const TOP_5_LEAGUES = [
   { id: 61, name: 'Ligue 1', country: 'France', flag: '🇫🇷' },
   { id: 39, name: 'Premier League', country: 'England', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿' },
@@ -2370,6 +2370,16 @@ export const TOP_5_LEAGUES = [
   { id: 135, name: 'Serie A', country: 'Italy', flag: '🇮🇹' },
   { id: 78, name: 'Bundesliga', country: 'Germany', flag: '🇩🇪' },
 ];
+
+// Compétitions européennes (coupes)
+export const EUROPEAN_CUPS = [
+  { id: 2, name: 'Champions League', country: 'Europe', flag: '🏆' },
+  { id: 3, name: 'Europa League', country: 'Europe', flag: '🏆' },
+  { id: 848, name: 'Conference League', country: 'Europe', flag: '🏆' },
+];
+
+// Toutes les compétitions (championnats + coupes)
+export const ALL_COMPETITIONS = [...TOP_5_LEAGUES, ...EUROPEAN_CUPS];
 
 export interface EuropeanPlayerStats {
   player: {
@@ -2399,97 +2409,110 @@ export interface EuropeanPlayerStats {
 }
 
 /**
- * Récupère les meilleurs buteurs du Top 5 européen
+ * Récupère les meilleurs buteurs - TOUTES COMPÉTITIONS CONFONDUES
+ * (Championnats domestiques + Champions League + Europa League + Conference League)
  */
 export async function getTopScorersEurope(season?: number): Promise<EuropeanPlayerStats[]> {
   const targetSeason = season || CURRENT_SEASON;
-  const cacheKey = `europe_scorers_${targetSeason}`;
+  const cacheKey = `europe_scorers_all_${targetSeason}`;
   const cached = getEuropeanCached(cacheKey);
   if (cached) {
-    console.log('[API] getTopScorersEurope - from cache:', cached.length);
+    console.log('[API] getTopScorersEurope (all comps) - from cache:', cached.length);
     return cached;
   }
 
   try {
-    console.log('[API] getTopScorersEurope - fetching for season:', targetSeason);
+    console.log('[API] getTopScorersEurope - fetching ALL competitions for season:', targetSeason);
 
-    // Récupérer les buteurs de chaque ligue SÉQUENTIELLEMENT pour éviter le rate limiting
-    const results: EuropeanPlayerStats[][] = [];
+    // Map pour agréger les stats par joueur (clé = player ID)
+    const playerStatsMap = new Map<number, EuropeanPlayerStats & { competitions: string[] }>();
 
-    for (const league of TOP_5_LEAGUES) {
+    // Récupérer les buteurs de TOUTES les compétitions
+    for (const competition of ALL_COMPETITIONS) {
       try {
-        console.log(`[API] Fetching scorers for ${league.name} (${league.id})...`);
+        console.log(`[API] Fetching scorers for ${competition.name} (${competition.id})...`);
         const response = await fetchWithRetry(
-          `/players/topscorers?league=${league.id}&season=${targetSeason}`
+          `/players/topscorers?league=${competition.id}&season=${targetSeason}`
         );
 
         if (!response.ok) {
-          console.error(`[API] ❌ ${league.name} - HTTP ${response.status}`);
-          results.push([]);
+          console.error(`[API] ❌ ${competition.name} - HTTP ${response.status}`);
           continue;
         }
 
         const data = await response.json();
         const count = data.response?.length || 0;
-        console.log(`[API] ✅ ${league.name} - ${count} joueurs`);
+        console.log(`[API] ✅ ${competition.name} - ${count} joueurs`);
 
-        // Mapper avec les infos de la ligue
-        const players = (data.response || []).slice(0, 20).map((item: any) => ({
-          player: {
-            id: item.player.id,
-            name: item.player.name,
-            firstName: item.player.firstname,
-            lastName: item.player.lastname,
-            nationality: item.player.nationality,
-            photo: item.player.photo,
-          },
-          team: {
-            id: item.statistics[0]?.team?.id,
-            name: item.statistics[0]?.team?.name,
-            crest: item.statistics[0]?.team?.logo,
-          },
-          league: {
-            id: league.id,
-            name: league.name,
-            country: league.country,
-            flag: league.flag,
-          },
-          goals: item.statistics[0]?.goals?.total || 0,
-          assists: item.statistics[0]?.goals?.assists || 0,
-          total: (item.statistics[0]?.goals?.total || 0) + (item.statistics[0]?.goals?.assists || 0),
-          playedMatches: item.statistics[0]?.games?.appearences || 0,
-        }));
+        // Traiter chaque joueur
+        for (const item of (data.response || []).slice(0, 30)) {
+          const playerId = item.player.id;
+          const goals = item.statistics[0]?.goals?.total || 0;
+          const assists = item.statistics[0]?.goals?.assists || 0;
+          const matches = item.statistics[0]?.games?.appearences || 0;
 
-        results.push(players);
+          if (playerStatsMap.has(playerId)) {
+            // Joueur déjà présent - agréger les stats
+            const existing = playerStatsMap.get(playerId)!;
+            existing.goals += goals;
+            existing.assists += assists;
+            existing.total += goals + assists;
+            existing.playedMatches += matches;
+            existing.competitions.push(competition.name);
+          } else {
+            // Nouveau joueur
+            playerStatsMap.set(playerId, {
+              player: {
+                id: item.player.id,
+                name: item.player.name,
+                firstName: item.player.firstname,
+                lastName: item.player.lastname,
+                nationality: item.player.nationality,
+                photo: item.player.photo,
+              },
+              team: {
+                id: item.statistics[0]?.team?.id,
+                name: item.statistics[0]?.team?.name,
+                crest: item.statistics[0]?.team?.logo,
+              },
+              league: {
+                id: competition.id,
+                name: competition.name,
+                country: competition.country,
+                flag: competition.flag,
+              },
+              goals,
+              assists,
+              total: goals + assists,
+              playedMatches: matches,
+              competitions: [competition.name],
+            });
+          }
+        }
 
-        // Petit délai entre chaque ligue pour éviter le rate limiting
-        await delay(200);
+        // Délai pour éviter le rate limiting
+        await delay(250);
       } catch (error) {
-        console.error(`[API] Error fetching scorers for league ${league.id}:`, error);
-        results.push([]);
+        console.error(`[API] Error fetching scorers for ${competition.name}:`, error);
       }
     }
 
-    // Log combien de joueurs par ligue
-    results.forEach((players, index) => {
-      console.log(`[API] ${TOP_5_LEAGUES[index].name}: ${players.length} joueurs récupérés`);
-    });
-
-    // Fusionner et trier par buts
-    const allScorers = results.flat();
-    console.log(`[API] Total avant tri: ${allScorers.length} joueurs`);
+    // Convertir la Map en tableau et trier par buts
+    const allScorers = Array.from(playerStatsMap.values());
+    console.log(`[API] Total joueurs uniques: ${allScorers.length}`);
     allScorers.sort((a, b) => b.goals - a.goals);
 
     // Log top 5 pour debug
-    console.log('[API] Top 5 buteurs:');
+    console.log('[API] Top 5 buteurs (toutes compétitions):');
     allScorers.slice(0, 5).forEach((p, i) => {
-      console.log(`  ${i + 1}. ${p.player.name} (${p.team.name}) - ${p.goals} buts - ${p.league.name}`);
+      const comps = (p as any).competitions?.join(', ') || p.league.name;
+      console.log(`  ${i + 1}. ${p.player.name} (${p.team.name}) - ${p.goals} buts [${comps}]`);
     });
 
     // Garder le top 50
     const topScorers = allScorers.slice(0, 50);
 
-    console.log('[API] getTopScorersEurope - total:', topScorers.length);
+    console.log('[API] getTopScorersEurope (all comps) - total:', topScorers.length);
     setEuropeanCache(cacheKey, topScorers);
     return topScorers;
   } catch (error) {
@@ -2499,83 +2522,94 @@ export async function getTopScorersEurope(season?: number): Promise<EuropeanPlay
 }
 
 /**
- * Récupère les meilleurs passeurs du Top 5 européen
+ * Récupère les meilleurs passeurs - TOUTES COMPÉTITIONS CONFONDUES
  */
 export async function getTopAssistsEurope(season?: number): Promise<EuropeanPlayerStats[]> {
   const targetSeason = season || CURRENT_SEASON;
-  const cacheKey = `europe_assists_${targetSeason}`;
+  const cacheKey = `europe_assists_all_${targetSeason}`;
   const cached = getEuropeanCached(cacheKey);
   if (cached) {
-    console.log('[API] getTopAssistsEurope - from cache:', cached.length);
+    console.log('[API] getTopAssistsEurope (all comps) - from cache:', cached.length);
     return cached;
   }
 
   try {
-    console.log('[API] getTopAssistsEurope - fetching for season:', targetSeason);
+    console.log('[API] getTopAssistsEurope - fetching ALL competitions for season:', targetSeason);
 
-    // Récupérer SÉQUENTIELLEMENT pour éviter le rate limiting
-    const results: EuropeanPlayerStats[][] = [];
+    // Map pour agréger les stats par joueur
+    const playerStatsMap = new Map<number, EuropeanPlayerStats & { competitions: string[] }>();
 
-    for (const league of TOP_5_LEAGUES) {
+    for (const competition of ALL_COMPETITIONS) {
       try {
-        console.log(`[API] Fetching assists for ${league.name} (${league.id})...`);
+        console.log(`[API] Fetching assists for ${competition.name} (${competition.id})...`);
         const response = await fetchWithRetry(
-          `/players/topassists?league=${league.id}&season=${targetSeason}`
+          `/players/topassists?league=${competition.id}&season=${targetSeason}`
         );
 
         if (!response.ok) {
-          console.error(`[API] ❌ ${league.name} assists - HTTP ${response.status}`);
-          results.push([]);
+          console.error(`[API] ❌ ${competition.name} assists - HTTP ${response.status}`);
           continue;
         }
 
         const data = await response.json();
         const count = data.response?.length || 0;
-        console.log(`[API] ✅ ${league.name} assists - ${count} joueurs`);
+        console.log(`[API] ✅ ${competition.name} assists - ${count} joueurs`);
 
-        const players = (data.response || []).slice(0, 20).map((item: any) => ({
-          player: {
-            id: item.player.id,
-            name: item.player.name,
-            firstName: item.player.firstname,
-            lastName: item.player.lastname,
-            nationality: item.player.nationality,
-            photo: item.player.photo,
-          },
-          team: {
-            id: item.statistics[0]?.team?.id,
-            name: item.statistics[0]?.team?.name,
-            crest: item.statistics[0]?.team?.logo,
-          },
-          league: {
-            id: league.id,
-            name: league.name,
-            country: league.country,
-            flag: league.flag,
-          },
-          goals: item.statistics[0]?.goals?.total || 0,
-          assists: item.statistics[0]?.goals?.assists || 0,
-          total: (item.statistics[0]?.goals?.total || 0) + (item.statistics[0]?.goals?.assists || 0),
-          playedMatches: item.statistics[0]?.games?.appearences || 0,
-        }));
+        for (const item of (data.response || []).slice(0, 30)) {
+          const playerId = item.player.id;
+          const goals = item.statistics[0]?.goals?.total || 0;
+          const assists = item.statistics[0]?.goals?.assists || 0;
+          const matches = item.statistics[0]?.games?.appearences || 0;
 
-        results.push(players);
+          if (playerStatsMap.has(playerId)) {
+            const existing = playerStatsMap.get(playerId)!;
+            existing.goals += goals;
+            existing.assists += assists;
+            existing.total += goals + assists;
+            existing.playedMatches += matches;
+            existing.competitions.push(competition.name);
+          } else {
+            playerStatsMap.set(playerId, {
+              player: {
+                id: item.player.id,
+                name: item.player.name,
+                firstName: item.player.firstname,
+                lastName: item.player.lastname,
+                nationality: item.player.nationality,
+                photo: item.player.photo,
+              },
+              team: {
+                id: item.statistics[0]?.team?.id,
+                name: item.statistics[0]?.team?.name,
+                crest: item.statistics[0]?.team?.logo,
+              },
+              league: {
+                id: competition.id,
+                name: competition.name,
+                country: competition.country,
+                flag: competition.flag,
+              },
+              goals,
+              assists,
+              total: goals + assists,
+              playedMatches: matches,
+              competitions: [competition.name],
+            });
+          }
+        }
 
-        // Petit délai entre chaque ligue
-        await delay(200);
+        await delay(250);
       } catch (error) {
-        console.error(`[API] Error fetching assists for league ${league.id}:`, error);
-        results.push([]);
+        console.error(`[API] Error fetching assists for ${competition.name}:`, error);
       }
     }
 
-    // Fusionner et trier par passes
-    const allAssists = results.flat();
+    const allAssists = Array.from(playerStatsMap.values());
     allAssists.sort((a, b) => b.assists - a.assists);
 
     const topAssists = allAssists.slice(0, 50);
 
-    console.log('[API] getTopAssistsEurope - total:', topAssists.length);
+    console.log('[API] getTopAssistsEurope (all comps) - total:', topAssists.length);
     setEuropeanCache(cacheKey, topAssists);
     return topAssists;
   } catch (error) {
