@@ -170,18 +170,28 @@ export const ResponsiveNavbar = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
           <div className="flex items-center justify-between h-full">
 
-            {/* Gauche: Logo + Match Center + Émissions */}
-            <div className="flex items-center gap-3">
-              <Link to="/" className="flex-shrink-0">
-                <img
-                  src={logoMedia}
-                  alt="Octogoal"
-                  className="h-11 xl:h-12 w-auto"
-                />
-              </Link>
+            {/* Logo */}
+            <Link to="/" className="flex-shrink-0">
+              <img
+                src={logoMedia}
+                alt="Octogoal"
+                className="h-11 xl:h-12 w-auto"
+              />
+            </Link>
 
-              {/* Match Center + Émissions - Desktop */}
-              <div className="hidden lg:flex items-center gap-2">
+            {/* Navigation Desktop - 3 sections équilibrées */}
+            <div
+              className="hidden lg:flex items-center flex-1 justify-between mx-6"
+              onMouseLeave={() => {
+                if (hoverIntentTimeout.current) {
+                  clearTimeout(hoverIntentTimeout.current);
+                  hoverIntentTimeout.current = null;
+                }
+                setActiveDropdown(null);
+              }}
+            >
+              {/* Match Center + Émissions - centré entre logo et rubriques */}
+              <div className="flex items-center gap-2">
                 <HighlightedNavItem
                   item={highlightedItems.matchCenter}
                   icon={Zap}
@@ -193,19 +203,8 @@ export const ResponsiveNavbar = () => {
                   variant="emissions"
                 />
               </div>
-            </div>
 
-            {/* Centre: Navigation Desktop */}
-            <div
-              className="hidden lg:flex items-center justify-center flex-1"
-              onMouseLeave={() => {
-                if (hoverIntentTimeout.current) {
-                  clearTimeout(hoverIntentTimeout.current);
-                  hoverIntentTimeout.current = null;
-                }
-                setActiveDropdown(null);
-              }}
-            >
+              {/* Rubriques - au centre */}
               <div className="flex items-center">
                 {mainNavItems.map((item) => (
                   <div
@@ -250,6 +249,9 @@ export const ResponsiveNavbar = () => {
                   </div>
                 ))}
               </div>
+
+              {/* Espace vide pour équilibrer avec la section droite */}
+              <div className="w-[120px]" />
             </div>
 
             {/* Section droite : Réseaux sociaux + Search + CTA */}
