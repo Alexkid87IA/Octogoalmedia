@@ -2738,105 +2738,126 @@ export async function getTopContributorsEurope(season?: number): Promise<Europea
 }
 
 /**
- * Récupère les joueurs avec les meilleures notes du Top 5 européen
- * Utilise les statistiques des meilleurs buteurs/passeurs qui incluent les notes
+ * Récupère les joueurs avec les meilleures notes - TOUTES COMPÉTITIONS CONFONDUES
+ * Utilise getPlayerInfo pour chaque joueur afin d'avoir la moyenne réelle
+ * (Championnats + Coupes d'Europe + Coupes nationales + Super Coupes + tout)
  */
 export async function getTopRatingsEurope(season?: number): Promise<EuropeanPlayerStats[]> {
   const targetSeason = season || CURRENT_SEASON;
-  const cacheKey = `europe_ratings_${targetSeason}`;
+  const cacheKey = `europe_ratings_all_real_${targetSeason}`;
   const cached = getEuropeanCached(cacheKey);
   if (cached) {
-    console.log('[API] getTopRatingsEurope - from cache:', cached.length);
+    console.log('[API] getTopRatingsEurope (TOUTES compétitions) - from cache:', cached.length);
     return cached;
   }
 
   try {
-    console.log('[API] getTopRatingsEurope - fetching for season:', targetSeason);
+    console.log('[API] getTopRatingsEurope - fetching with REAL ratings (all competitions)');
 
-    // Récupérer les joueurs SÉQUENTIELLEMENT pour éviter le rate limiting
-    const results: EuropeanPlayerStats[][] = [];
+    // Étape 1: Récupérer les candidats depuis les championnats principaux (buteurs + passeurs)
+    const candidateIds = new Set<number>();
+    const playerBasicInfo = new Map<number, any>();
 
     for (const league of TOP_5_LEAGUES) {
       try {
-        console.log(`[API] Fetching ratings for ${league.name} (${league.id})...`);
+        console.log(`[API] Fetching ratings candidates from ${league.name}...`);
 
-        // Récupérer scorers, puis attendre, puis assists
-        const scorersResponse = await fetchWithRetry(
-          `/players/topscorers?league=${league.id}&season=${targetSeason}`
-        );
-        await delay(200);
-
-        const assistsResponse = await fetchWithRetry(
-          `/players/topassists?league=${league.id}&season=${targetSeason}`
-        );
+        // Récupérer buteurs et passeurs pour avoir un bon pool de candidats
+        const [scorersResponse, assistsResponse] = await Promise.all([
+          fetchWithRetry(`/players/topscorers?league=${league.id}&season=${targetSeason}`),
+          fetchWithRetry(`/players/topassists?league=${league.id}&season=${targetSeason}`),
+        ]);
 
         const scorersData = scorersResponse.ok ? await scorersResponse.json() : { response: [] };
         const assistsData = assistsResponse.ok ? await assistsResponse.json() : { response: [] };
 
-        // Combiner les deux listes
         const allPlayers = [...(scorersData.response || []), ...(assistsData.response || [])];
 
-        // Mapper avec les notes
-        const playersWithRating: EuropeanPlayerStats[] = [];
-        const seenIds = new Set<number>();
-
-        for (const item of allPlayers) {
+        for (const item of allPlayers.slice(0, 30)) {
           const playerId = item.player.id;
-          if (seenIds.has(playerId)) continue;
-          seenIds.add(playerId);
-
-          const rating = item.statistics[0]?.games?.rating;
-          // Ne garder que les joueurs avec une note valide et au moins 5 matchs
-          const appearances = item.statistics[0]?.games?.appearences || 0;
-          if (!rating || appearances < 5) continue;
-
-          playersWithRating.push({
-            player: {
-              id: playerId,
-              name: item.player.name,
-              firstName: item.player.firstname,
-              lastName: item.player.lastname,
-              nationality: item.player.nationality,
-              photo: item.player.photo,
-            },
-            team: {
-              id: item.statistics[0]?.team?.id,
-              name: item.statistics[0]?.team?.name,
-              crest: item.statistics[0]?.team?.logo,
-            },
-            league: {
-              id: league.id,
-              name: league.name,
-              country: league.country,
-              flag: league.flag,
-            },
-            goals: item.statistics[0]?.goals?.total || 0,
-            assists: item.statistics[0]?.goals?.assists || 0,
-            total: (item.statistics[0]?.goals?.total || 0) + (item.statistics[0]?.goals?.assists || 0),
-            playedMatches: appearances,
-            rating: parseFloat(rating),
-          });
+          if (!candidateIds.has(playerId)) {
+            candidateIds.add(playerId);
+            playerBasicInfo.set(playerId, {
+              player: item.player,
+              team: item.statistics[0]?.team,
+              league: league,
+            });
+          }
         }
 
-        console.log(`[API] ✅ ${league.name} ratings - ${playersWithRating.length} joueurs avec notes`);
-        results.push(playersWithRating);
-
-        // Délai entre chaque ligue
         await delay(200);
       } catch (error) {
-        console.error(`[API] Error fetching ratings for league ${league.id}:`, error);
-        results.push([]);
+        console.error(`[API] Error fetching from ${league.name}:`, error);
       }
     }
 
-    // Fusionner et trier par note décroissante
-    const allPlayers = results.flat();
-    allPlayers.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+    console.log(`[API] Found ${candidateIds.size} candidate players, fetching full stats for ratings...`);
 
-    // Garder le top 50
-    const topRated = allPlayers.slice(0, 50);
+    // Étape 2: Pour chaque joueur, récupérer ses stats COMPLÈTES via getPlayerInfo
+    const playersWithRealRatings: EuropeanPlayerStats[] = [];
+    let processed = 0;
 
-    console.log('[API] getTopRatingsEurope - total:', topRated.length);
+    for (const playerId of candidateIds) {
+      try {
+        const playerInfo = await getPlayerInfo(playerId);
+        if (playerInfo && playerInfo.statistics && playerInfo.statistics.length > 0) {
+          const aggregated = aggregateAllPlayerStats(playerInfo.statistics);
+          const basicInfo = playerBasicInfo.get(playerId);
+
+          // Ne garder que les joueurs avec une note valide et au moins 5 matchs
+          if (aggregated.rating && aggregated.matches >= 5) {
+            playersWithRealRatings.push({
+              player: {
+                id: playerInfo.id,
+                name: playerInfo.name,
+                firstName: playerInfo.firstname,
+                lastName: playerInfo.lastname,
+                nationality: playerInfo.nationality,
+                photo: playerInfo.photo,
+              },
+              team: {
+                id: basicInfo?.team?.id || playerInfo.statistics[0]?.team?.id,
+                name: basicInfo?.team?.name || playerInfo.statistics[0]?.team?.name,
+                crest: basicInfo?.team?.logo || playerInfo.statistics[0]?.team?.logo,
+              },
+              league: basicInfo?.league || {
+                id: playerInfo.statistics[0]?.league?.id,
+                name: playerInfo.statistics[0]?.league?.name,
+                country: playerInfo.statistics[0]?.league?.country,
+                flag: '⚽',
+              },
+              goals: aggregated.goals,
+              assists: aggregated.assists,
+              total: aggregated.goals + aggregated.assists,
+              playedMatches: aggregated.matches,
+              rating: aggregated.rating,
+            });
+          }
+        }
+
+        processed++;
+        if (processed % 10 === 0) {
+          console.log(`[API] Processed ${processed}/${candidateIds.size} players for ratings...`);
+        }
+
+        // Petit délai entre les requêtes
+        await delay(100);
+      } catch (error) {
+        console.error(`[API] Error fetching full stats for player ${playerId}:`, error);
+      }
+    }
+
+    // Trier par note (moyenne réelle de TOUTES les compétitions)
+    playersWithRealRatings.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+
+    // Log top 5 pour debug
+    console.log('[API] Top 5 meilleures notes (TOUTES compétitions confondues):');
+    playersWithRealRatings.slice(0, 5).forEach((p, i) => {
+      console.log(`  ${i + 1}. ${p.player.name} (${p.team.name}) - Note: ${p.rating?.toFixed(2)}, ${p.playedMatches} matchs`);
+    });
+
+    const topRated = playersWithRealRatings.slice(0, 50);
+    console.log('[API] getTopRatingsEurope (REAL ratings) - final:', topRated.length);
     setEuropeanCache(cacheKey, topRated);
     return topRated;
   } catch (error) {
