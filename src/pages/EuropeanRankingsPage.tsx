@@ -99,7 +99,7 @@ const HeroSection = ({
             </span>
           </h1>
           <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-            Championnats + Champions League + Europa League + Conference League
+            Stats cumulées : championnats, coupes nationales et compétitions européennes
           </p>
         </motion.div>
 

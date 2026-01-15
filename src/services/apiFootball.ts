@@ -2409,110 +2409,147 @@ export interface EuropeanPlayerStats {
 }
 
 /**
+ * Agrège les stats de TOUTES les compétitions d'un joueur
+ * (comme Face à Face le fait)
+ */
+function aggregateAllPlayerStats(statistics: any[]): { goals: number; assists: number; matches: number; rating: number | null } {
+  let goals = 0;
+  let assists = 0;
+  let matches = 0;
+  let ratingSum = 0;
+  let ratingCount = 0;
+
+  for (const stat of statistics) {
+    goals += stat.goals?.total || 0;
+    assists += stat.goals?.assists || 0;
+    matches += stat.games?.appearences || 0;
+    if (stat.games?.rating) {
+      ratingSum += parseFloat(stat.games.rating);
+      ratingCount += 1;
+    }
+  }
+
+  return {
+    goals,
+    assists,
+    matches,
+    rating: ratingCount > 0 ? ratingSum / ratingCount : null,
+  };
+}
+
+/**
  * Récupère les meilleurs buteurs - TOUTES COMPÉTITIONS CONFONDUES
- * (Championnats domestiques + Champions League + Europa League + Conference League)
+ * Utilise getPlayerInfo pour chaque joueur afin d'avoir le total réel
+ * (Championnats + Coupes d'Europe + Coupes nationales + Super Coupes + tout)
  */
 export async function getTopScorersEurope(season?: number): Promise<EuropeanPlayerStats[]> {
   const targetSeason = season || CURRENT_SEASON;
-  const cacheKey = `europe_scorers_all_${targetSeason}`;
+  const cacheKey = `europe_scorers_all_real_${targetSeason}`;
   const cached = getEuropeanCached(cacheKey);
   if (cached) {
-    console.log('[API] getTopScorersEurope (all comps) - from cache:', cached.length);
+    console.log('[API] getTopScorersEurope (TOUTES compétitions) - from cache:', cached.length);
     return cached;
   }
 
   try {
-    console.log('[API] getTopScorersEurope - fetching ALL competitions for season:', targetSeason);
+    console.log('[API] getTopScorersEurope - fetching with REAL totals (all competitions)');
 
-    // Map pour agréger les stats par joueur (clé = player ID)
-    const playerStatsMap = new Map<number, EuropeanPlayerStats & { competitions: string[] }>();
+    // Étape 1: Récupérer les candidats depuis les championnats principaux
+    const candidateIds = new Set<number>();
+    const playerBasicInfo = new Map<number, any>();
 
-    // Récupérer les buteurs de TOUTES les compétitions
-    for (const competition of ALL_COMPETITIONS) {
+    for (const league of TOP_5_LEAGUES) {
       try {
-        console.log(`[API] Fetching scorers for ${competition.name} (${competition.id})...`);
+        console.log(`[API] Fetching scorers candidates from ${league.name}...`);
         const response = await fetchWithRetry(
-          `/players/topscorers?league=${competition.id}&season=${targetSeason}`
+          `/players/topscorers?league=${league.id}&season=${targetSeason}`
         );
 
-        if (!response.ok) {
-          console.error(`[API] ❌ ${competition.name} - HTTP ${response.status}`);
-          continue;
-        }
+        if (!response.ok) continue;
 
         const data = await response.json();
-        const count = data.response?.length || 0;
-        console.log(`[API] ✅ ${competition.name} - ${count} joueurs`);
-
-        // Traiter chaque joueur
-        for (const item of (data.response || []).slice(0, 30)) {
+        for (const item of (data.response || []).slice(0, 20)) {
           const playerId = item.player.id;
-          const goals = item.statistics[0]?.goals?.total || 0;
-          const assists = item.statistics[0]?.goals?.assists || 0;
-          const matches = item.statistics[0]?.games?.appearences || 0;
-
-          if (playerStatsMap.has(playerId)) {
-            // Joueur déjà présent - agréger les stats
-            const existing = playerStatsMap.get(playerId)!;
-            existing.goals += goals;
-            existing.assists += assists;
-            existing.total += goals + assists;
-            existing.playedMatches += matches;
-            existing.competitions.push(competition.name);
-          } else {
-            // Nouveau joueur
-            playerStatsMap.set(playerId, {
-              player: {
-                id: item.player.id,
-                name: item.player.name,
-                firstName: item.player.firstname,
-                lastName: item.player.lastname,
-                nationality: item.player.nationality,
-                photo: item.player.photo,
-              },
-              team: {
-                id: item.statistics[0]?.team?.id,
-                name: item.statistics[0]?.team?.name,
-                crest: item.statistics[0]?.team?.logo,
-              },
-              league: {
-                id: competition.id,
-                name: competition.name,
-                country: competition.country,
-                flag: competition.flag,
-              },
-              goals,
-              assists,
-              total: goals + assists,
-              playedMatches: matches,
-              competitions: [competition.name],
+          if (!candidateIds.has(playerId)) {
+            candidateIds.add(playerId);
+            playerBasicInfo.set(playerId, {
+              player: item.player,
+              team: item.statistics[0]?.team,
+              league: league,
             });
           }
         }
 
-        // Délai pour éviter le rate limiting
-        await delay(250);
+        await delay(200);
       } catch (error) {
-        console.error(`[API] Error fetching scorers for ${competition.name}:`, error);
+        console.error(`[API] Error fetching from ${league.name}:`, error);
       }
     }
 
-    // Convertir la Map en tableau et trier par buts
-    const allScorers = Array.from(playerStatsMap.values());
-    console.log(`[API] Total joueurs uniques: ${allScorers.length}`);
-    allScorers.sort((a, b) => b.goals - a.goals);
+    console.log(`[API] Found ${candidateIds.size} candidate players, fetching full stats...`);
+
+    // Étape 2: Pour chaque joueur, récupérer ses stats COMPLÈTES via getPlayerInfo
+    const playersWithRealStats: EuropeanPlayerStats[] = [];
+    let processed = 0;
+
+    for (const playerId of candidateIds) {
+      try {
+        const playerInfo = await getPlayerInfo(playerId);
+        if (playerInfo && playerInfo.statistics && playerInfo.statistics.length > 0) {
+          const aggregated = aggregateAllPlayerStats(playerInfo.statistics);
+          const basicInfo = playerBasicInfo.get(playerId);
+
+          playersWithRealStats.push({
+            player: {
+              id: playerInfo.id,
+              name: playerInfo.name,
+              firstName: playerInfo.firstname,
+              lastName: playerInfo.lastname,
+              nationality: playerInfo.nationality,
+              photo: playerInfo.photo,
+            },
+            team: {
+              id: basicInfo?.team?.id || playerInfo.statistics[0]?.team?.id,
+              name: basicInfo?.team?.name || playerInfo.statistics[0]?.team?.name,
+              crest: basicInfo?.team?.logo || playerInfo.statistics[0]?.team?.logo,
+            },
+            league: basicInfo?.league || {
+              id: playerInfo.statistics[0]?.league?.id,
+              name: playerInfo.statistics[0]?.league?.name,
+              country: playerInfo.statistics[0]?.league?.country,
+              flag: '⚽',
+            },
+            goals: aggregated.goals,
+            assists: aggregated.assists,
+            total: aggregated.goals + aggregated.assists,
+            playedMatches: aggregated.matches,
+            rating: aggregated.rating || undefined,
+          });
+        }
+
+        processed++;
+        if (processed % 10 === 0) {
+          console.log(`[API] Processed ${processed}/${candidateIds.size} players...`);
+        }
+
+        // Petit délai entre les requêtes
+        await delay(100);
+      } catch (error) {
+        console.error(`[API] Error fetching full stats for player ${playerId}:`, error);
+      }
+    }
+
+    // Trier par buts (total réel de TOUTES les compétitions)
+    playersWithRealStats.sort((a, b) => b.goals - a.goals);
 
     // Log top 5 pour debug
-    console.log('[API] Top 5 buteurs (toutes compétitions):');
-    allScorers.slice(0, 5).forEach((p, i) => {
-      const comps = (p as any).competitions?.join(', ') || p.league.name;
-      console.log(`  ${i + 1}. ${p.player.name} (${p.team.name}) - ${p.goals} buts [${comps}]`);
+    console.log('[API] Top 5 buteurs (TOUTES compétitions confondues):');
+    playersWithRealStats.slice(0, 5).forEach((p, i) => {
+      console.log(`  ${i + 1}. ${p.player.name} (${p.team.name}) - ${p.goals} buts, ${p.assists} assists`);
     });
 
-    // Garder le top 50
-    const topScorers = allScorers.slice(0, 50);
-
-    console.log('[API] getTopScorersEurope (all comps) - total:', topScorers.length);
+    const topScorers = playersWithRealStats.slice(0, 50);
+    console.log('[API] getTopScorersEurope (REAL totals) - final:', topScorers.length);
     setEuropeanCache(cacheKey, topScorers);
     return topScorers;
   } catch (error) {
@@ -2523,93 +2560,115 @@ export async function getTopScorersEurope(season?: number): Promise<EuropeanPlay
 
 /**
  * Récupère les meilleurs passeurs - TOUTES COMPÉTITIONS CONFONDUES
+ * Utilise getPlayerInfo pour chaque joueur afin d'avoir le total réel
  */
 export async function getTopAssistsEurope(season?: number): Promise<EuropeanPlayerStats[]> {
   const targetSeason = season || CURRENT_SEASON;
-  const cacheKey = `europe_assists_all_${targetSeason}`;
+  const cacheKey = `europe_assists_all_real_${targetSeason}`;
   const cached = getEuropeanCached(cacheKey);
   if (cached) {
-    console.log('[API] getTopAssistsEurope (all comps) - from cache:', cached.length);
+    console.log('[API] getTopAssistsEurope (TOUTES compétitions) - from cache:', cached.length);
     return cached;
   }
 
   try {
-    console.log('[API] getTopAssistsEurope - fetching ALL competitions for season:', targetSeason);
+    console.log('[API] getTopAssistsEurope - fetching with REAL totals (all competitions)');
 
-    // Map pour agréger les stats par joueur
-    const playerStatsMap = new Map<number, EuropeanPlayerStats & { competitions: string[] }>();
+    // Étape 1: Récupérer les candidats depuis les championnats principaux
+    const candidateIds = new Set<number>();
+    const playerBasicInfo = new Map<number, any>();
 
-    for (const competition of ALL_COMPETITIONS) {
+    for (const league of TOP_5_LEAGUES) {
       try {
-        console.log(`[API] Fetching assists for ${competition.name} (${competition.id})...`);
+        console.log(`[API] Fetching assists candidates from ${league.name}...`);
         const response = await fetchWithRetry(
-          `/players/topassists?league=${competition.id}&season=${targetSeason}`
+          `/players/topassists?league=${league.id}&season=${targetSeason}`
         );
 
-        if (!response.ok) {
-          console.error(`[API] ❌ ${competition.name} assists - HTTP ${response.status}`);
-          continue;
-        }
+        if (!response.ok) continue;
 
         const data = await response.json();
-        const count = data.response?.length || 0;
-        console.log(`[API] ✅ ${competition.name} assists - ${count} joueurs`);
-
-        for (const item of (data.response || []).slice(0, 30)) {
+        for (const item of (data.response || []).slice(0, 20)) {
           const playerId = item.player.id;
-          const goals = item.statistics[0]?.goals?.total || 0;
-          const assists = item.statistics[0]?.goals?.assists || 0;
-          const matches = item.statistics[0]?.games?.appearences || 0;
-
-          if (playerStatsMap.has(playerId)) {
-            const existing = playerStatsMap.get(playerId)!;
-            existing.goals += goals;
-            existing.assists += assists;
-            existing.total += goals + assists;
-            existing.playedMatches += matches;
-            existing.competitions.push(competition.name);
-          } else {
-            playerStatsMap.set(playerId, {
-              player: {
-                id: item.player.id,
-                name: item.player.name,
-                firstName: item.player.firstname,
-                lastName: item.player.lastname,
-                nationality: item.player.nationality,
-                photo: item.player.photo,
-              },
-              team: {
-                id: item.statistics[0]?.team?.id,
-                name: item.statistics[0]?.team?.name,
-                crest: item.statistics[0]?.team?.logo,
-              },
-              league: {
-                id: competition.id,
-                name: competition.name,
-                country: competition.country,
-                flag: competition.flag,
-              },
-              goals,
-              assists,
-              total: goals + assists,
-              playedMatches: matches,
-              competitions: [competition.name],
+          if (!candidateIds.has(playerId)) {
+            candidateIds.add(playerId);
+            playerBasicInfo.set(playerId, {
+              player: item.player,
+              team: item.statistics[0]?.team,
+              league: league,
             });
           }
         }
 
-        await delay(250);
+        await delay(200);
       } catch (error) {
-        console.error(`[API] Error fetching assists for ${competition.name}:`, error);
+        console.error(`[API] Error fetching assists from ${league.name}:`, error);
       }
     }
 
-    const allAssists = Array.from(playerStatsMap.values());
-    allAssists.sort((a, b) => b.assists - a.assists);
+    console.log(`[API] Found ${candidateIds.size} assist candidates, fetching full stats...`);
 
-    const topAssists = allAssists.slice(0, 50);
+    // Étape 2: Pour chaque joueur, récupérer ses stats COMPLÈTES
+    const playersWithRealStats: EuropeanPlayerStats[] = [];
+    let processed = 0;
 
-    console.log('[API] getTopAssistsEurope (all comps) - total:', topAssists.length);
+    for (const playerId of candidateIds) {
+      try {
+        const playerInfo = await getPlayerInfo(playerId);
+        if (playerInfo && playerInfo.statistics && playerInfo.statistics.length > 0) {
+          const aggregated = aggregateAllPlayerStats(playerInfo.statistics);
+          const basicInfo = playerBasicInfo.get(playerId);
+
+          playersWithRealStats.push({
+            player: {
+              id: playerInfo.id,
+              name: playerInfo.name,
+              firstName: playerInfo.firstname,
+              lastName: playerInfo.lastname,
+              nationality: playerInfo.nationality,
+              photo: playerInfo.photo,
+            },
+            team: {
+              id: basicInfo?.team?.id || playerInfo.statistics[0]?.team?.id,
+              name: basicInfo?.team?.name || playerInfo.statistics[0]?.team?.name,
+              crest: basicInfo?.team?.logo || playerInfo.statistics[0]?.team?.logo,
+            },
+            league: basicInfo?.league || {
+              id: playerInfo.statistics[0]?.league?.id,
+              name: playerInfo.statistics[0]?.league?.name,
+              country: playerInfo.statistics[0]?.league?.country,
+              flag: '⚽',
+            },
+            goals: aggregated.goals,
+            assists: aggregated.assists,
+            total: aggregated.goals + aggregated.assists,
+            playedMatches: aggregated.matches,
+            rating: aggregated.rating || undefined,
+          });
+        }
+
+        processed++;
+        if (processed % 10 === 0) {
+          console.log(`[API] Processed ${processed}/${candidateIds.size} assist players...`);
+        }
+
+        await delay(100);
+      } catch (error) {
+        console.error(`[API] Error fetching full stats for assist player ${playerId}:`, error);
+      }
+    }
+
+    // Trier par passes (total réel de TOUTES les compétitions)
+    playersWithRealStats.sort((a, b) => b.assists - a.assists);
+
+    // Log top 5 pour debug
+    console.log('[API] Top 5 passeurs (TOUTES compétitions confondues):');
+    playersWithRealStats.slice(0, 5).forEach((p, i) => {
+      console.log(`  ${i + 1}. ${p.player.name} (${p.team.name}) - ${p.assists} assists, ${p.goals} buts`);
+    });
+
+    const topAssists = playersWithRealStats.slice(0, 50);
+    console.log('[API] getTopAssistsEurope (REAL totals) - final:', topAssists.length);
     setEuropeanCache(cacheKey, topAssists);
     return topAssists;
   } catch (error) {
