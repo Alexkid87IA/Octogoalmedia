@@ -95,7 +95,7 @@ export const ResponsiveNavbar = () => {
           <div className="hidden lg:flex items-center h-full">
 
             {/* Left zone - fixed width */}
-            <div className="w-[200px] flex-shrink-0">
+            <div className="w-[280px] flex-shrink-0">
               <Link to="/">
                 <img src={logoMedia} alt="Octogoal" className="h-10 w-auto" />
               </Link>
@@ -146,7 +146,7 @@ export const ResponsiveNavbar = () => {
             </div>
 
             {/* Right zone - fixed width, same as left */}
-            <div className="w-[200px] flex-shrink-0 flex justify-end items-center gap-3">
+            <div className="w-[280px] flex-shrink-0 flex justify-end items-center gap-3">
               {/* Émissions - secondary */}
               <Link
                 to={highlightedItems.emissions.path}
