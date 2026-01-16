@@ -214,21 +214,21 @@ const ContentSection: React.FC<ContentSectionProps> = ({
           let filtered = articles;
           
           if (sectionType === 'emission') {
-            filtered = articles.filter((a: any) => 
-              a.categories?.some((c: any) => 
-                ['vidéos', 'émissions', 'emission', 'videos'].includes(c.title?.toLowerCase() || c.slug?.current?.toLowerCase())
+            filtered = articles.filter((a) =>
+              a.categories?.some((c) =>
+                ['vidéos', 'émissions', 'emission', 'videos'].includes(c.title?.toLowerCase() || c.slug?.current?.toLowerCase() || '')
               )
             );
           } else if (sectionType === 'business-idea') {
-            filtered = articles.filter((a: any) => 
-              a.categories?.some((c: any) => 
-                ['matchs', 'match'].includes(c.title?.toLowerCase() || c.slug?.current?.toLowerCase())
+            filtered = articles.filter((a) =>
+              a.categories?.some((c) =>
+                ['matchs', 'match'].includes(c.title?.toLowerCase() || c.slug?.current?.toLowerCase() || '')
               )
             );
           } else if (sectionType === 'success-story') {
-            filtered = articles.filter((a: any) => 
-              a.categories?.some((c: any) => 
-                ['joueurs', 'joueur'].includes(c.title?.toLowerCase() || c.slug?.current?.toLowerCase())
+            filtered = articles.filter((a) =>
+              a.categories?.some((c) =>
+                ['joueurs', 'joueur'].includes(c.title?.toLowerCase() || c.slug?.current?.toLowerCase() || '')
               )
             );
           }

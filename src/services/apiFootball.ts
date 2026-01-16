@@ -57,15 +57,15 @@ async function apiFetch(endpoint: string): Promise<Response> {
 // SYSTÈME DE CACHE
 // =============================================
 
-interface CacheEntry {
-  data: any;
+interface CacheEntry<T = unknown> {
+  data: T;
   timestamp: number;
 }
 
 const cache: Record<string, CacheEntry> = {};
 const CACHE_DURATION = 15 * 60 * 1000; // 15 minutes en millisecondes - augmenté pour éviter le rate limiting
 
-function getCached(key: string): any | null {
+function getCached<T = unknown>(key: string): T | null {
   const entry = cache[key];
   if (!entry) return null;
 
@@ -75,10 +75,10 @@ function getCached(key: string): any | null {
     return null;
   }
 
-  return entry.data;
+  return entry.data as T;
 }
 
-function setCache(key: string, data: any): void {
+function setCache<T = unknown>(key: string, data: T): void {
   cache[key] = {
     data,
     timestamp: Date.now(),

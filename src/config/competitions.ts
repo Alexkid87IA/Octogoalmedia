@@ -658,14 +658,24 @@ export function getAllActiveCompetitionIds(): number[] {
     .map(c => c.id);
 }
 
+// Type pour les matchs avec compétition
+interface MatchWithCompetition {
+  competition?: {
+    id: number;
+    name?: string;
+    logo?: string;
+  };
+  [key: string]: unknown;
+}
+
 /**
  * Trie les matchs par compétition selon l'ordre d'affichage
  */
-export function sortMatchesByCompetitionOrder(matches: any[]): any[] {
+export function sortMatchesByCompetitionOrder<T extends MatchWithCompetition>(matches: T[]): T[] {
   const order = getMatchesDisplayOrder();
   return [...matches].sort((a, b) => {
-    const orderA = order.indexOf(a.competition?.id) ?? 999;
-    const orderB = order.indexOf(b.competition?.id) ?? 999;
+    const orderA = order.indexOf(a.competition?.id ?? -1) ?? 999;
+    const orderB = order.indexOf(b.competition?.id ?? -1) ?? 999;
     return orderA - orderB;
   });
 }
@@ -673,8 +683,8 @@ export function sortMatchesByCompetitionOrder(matches: any[]): any[] {
 /**
  * Groupe les matchs par compétition
  */
-export function groupMatchesByCompetition(matches: any[]): Record<number, any[]> {
-  const grouped: Record<number, any[]> = {};
+export function groupMatchesByCompetition<T extends MatchWithCompetition>(matches: T[]): Record<number, T[]> {
+  const grouped: Record<number, T[]> = {};
 
   matches.forEach(match => {
     const compId = match.competition?.id;
@@ -692,7 +702,7 @@ export function groupMatchesByCompetition(matches: any[]): Record<number, any[]>
 /**
  * Récupère les compétitions présentes dans une liste de matchs
  */
-export function getCompetitionsFromMatches(matches: any[]): Competition[] {
+export function getCompetitionsFromMatches(matches: MatchWithCompetition[]): Competition[] {
   const compIds = new Set<number>();
   matches.forEach(match => {
     if (match.competition?.id) {

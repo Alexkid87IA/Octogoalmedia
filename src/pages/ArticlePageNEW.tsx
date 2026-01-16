@@ -197,40 +197,40 @@ const ArticlePageNEW: React.FC<{ isEmission?: boolean }> = ({ isEmission = false
           try {
             const allArticles = await getAllArticles();
             
-            const cleanedArticles = allArticles.map((a: any) => ({
+            const cleanedArticles = allArticles.map((a) => ({
               ...a,
               excerpt: cleanPortableText(a.excerpt)
             }));
-            
-            let filtered;
+
+            let filtered: typeof cleanedArticles | undefined;
             if (fetchedArticle.categories && fetchedArticle.categories.length > 0) {
-              const categoryIds = fetchedArticle.categories.map((c: any) => c._id);
+              const categoryIds = fetchedArticle.categories.map((c) => c._id);
               filtered = cleanedArticles
-                .filter((a: any) => {
+                .filter((a) => {
                   if (a._id === fetchedArticle._id) return false;
                   if (a.categories && a.categories.length > 0) {
-                    return a.categories.some((c: any) => categoryIds.includes(c._id));
+                    return a.categories.some((c) => categoryIds.includes(c._id));
                   }
                   return false;
                 });
             }
-            
+
             if (!filtered || filtered.length < 6) {
               const otherArticles = cleanedArticles
-                .filter((a: any) => a._id !== fetchedArticle._id)
-                .filter((a: any) => !filtered?.some((f: any) => f._id === a._id));
-              
+                .filter((a) => a._id !== fetchedArticle._id)
+                .filter((a) => !filtered?.some((f) => f._id === a._id));
+
               filtered = [...(filtered || []), ...otherArticles].slice(0, 6);
             }
-            
+
             setRelatedArticles(filtered || []);
-            
+
             // NOUVEAU : Charger les derniers articles publiés
             const allArticlesSorted = cleanedArticles
-              .filter((a: any) => a._id !== fetchedArticle._id) // Exclure l'article actuel
-              .sort((a: any, b: any) => {
-                const dateA = new Date(a.publishedAt || a._createdAt).getTime();
-                const dateB = new Date(b.publishedAt || b._createdAt).getTime();
+              .filter((a) => a._id !== fetchedArticle._id) // Exclure l'article actuel
+              .sort((a, b) => {
+                const dateA = new Date(a.publishedAt || a._createdAt || 0).getTime();
+                const dateB = new Date(b.publishedAt || b._createdAt || 0).getTime();
                 return dateB - dateA; // Plus récent en premier
               })
               .slice(0, 6); // Prendre les 6 derniers

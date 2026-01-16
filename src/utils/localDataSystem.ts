@@ -1,16 +1,17 @@
 // localDataSystem.ts - Version corrigée et simplifiée
 import { useState, useEffect } from 'react';
+import type { PortableTextContent, SanityImage } from '../types/sanity';
 
 export interface Article {
   _id: string;
   title: string;
   slug: { current: string };
   excerpt: string;
-  body: any[];
+  body: PortableTextContent;
   publishedAt: string;
   author: {
     name: string;
-    image?: any;
+    image?: SanityImage;
     bio?: string;
   };
   categories: Array<{
@@ -21,7 +22,7 @@ export interface Article {
     title: string;
     slug: { current: string };
   }>;
-  mainImage?: any;
+  mainImage?: SanityImage;
   readingTime?: number;
   views?: number;
   likes?: number;

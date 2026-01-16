@@ -8,7 +8,7 @@ import { sanityClient } from './sanityClient';
  * Évite de recharger les mêmes données plusieurs fois
  */
 class SanityCache {
-  private cache: Map<string, { data: any; timestamp: number }>;
+  private cache: Map<string, { data: unknown; timestamp: number }>;
   private CACHE_DURATION: number;
 
   constructor() {
@@ -22,7 +22,7 @@ class SanityCache {
    * @param params - Les paramètres optionnels de la requête
    * @returns Les données ou null en cas d'erreur
    */
-  async fetch<T>(query: string, params?: any): Promise<T | null> {
+  async fetch<T>(query: string, params?: Record<string, unknown>): Promise<T | null> {
     // Créer une clé unique pour cette requête
     const key = JSON.stringify({ query, params });
     
@@ -106,6 +106,6 @@ class SanityCache {
 export const sanityCache = new SanityCache();
 
 // Exporter aussi une version simplifiée pour les composants
-export const fetchWithCache = <T>(query: string, params?: any): Promise<T | null> => {
+export const fetchWithCache = <T>(query: string, params?: Record<string, unknown>): Promise<T | null> => {
   return sanityCache.fetch<T>(query, params);
 };

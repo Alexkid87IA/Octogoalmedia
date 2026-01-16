@@ -1,25 +1,35 @@
 // src/utils/articleUtils.ts
 import { SanityArticle, VerticalColors, TableOfContentsHeading } from '../types/article.types';
+import type { PortableTextBlock, PortableTextSpan } from '../types/sanity';
+
+// Type pour les valeurs Portable Text
+interface PortableTextValue {
+  _type?: string;
+  children?: Array<{ text?: string }>;
+  text?: string;
+}
 
 // Fonction utilitaire pour nettoyer les champs Portable Text
-export const cleanPortableText = (value: any): string => {
+export const cleanPortableText = (value: unknown): string => {
   if (!value) return '';
   if (typeof value === 'string') return value;
 
+  const ptValue = value as PortableTextValue;
+
   // Si c'est un objet Portable Text unique
-  if (value._type === 'block' && value.children) {
-    return value.children
-      .map((child: any) => child.text || '')
+  if (ptValue._type === 'block' && ptValue.children) {
+    return ptValue.children
+      .map((child) => child.text || '')
       .join('');
   }
 
   // Si c'est un tableau de blocs Portable Text
   if (Array.isArray(value)) {
-    return value
+    return (value as PortableTextValue[])
       .map(block => {
         if (block._type === 'block' && block.children) {
           return block.children
-            .map((child: any) => child.text || '')
+            .map((child) => child.text || '')
             .join('');
         }
         return '';
@@ -28,7 +38,7 @@ export const cleanPortableText = (value: any): string => {
   }
 
   // Si c'est un objet avec une propriété text
-  if (value.text) return value.text;
+  if (ptValue.text) return ptValue.text;
 
   return '';
 };
@@ -66,8 +76,8 @@ export const generateTableOfContents = (article: SanityArticle | null): TableOfC
   let currentH2: TableOfContentsHeading | null = null;
 
   article.body
-    .filter((block: any) => block._type === 'block' && ['h2', 'h3'].includes(block.style))
-    .forEach((heading: any) => {
+    .filter((block): block is PortableTextBlock => block._type === 'block' && ['h2', 'h3'].includes(block.style || ''))
+    .forEach((heading) => {
       const text = heading.children?.[0]?.text || '';
       // Utiliser la même logique de génération d'ID que dans les composants
       const prefix = heading.style === 'h2' ? 'h2-' : 'h3-';

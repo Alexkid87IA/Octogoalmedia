@@ -3,10 +3,19 @@ import { Helmet } from 'react-helmet-async';
 import { useLocation } from 'react-router-dom';
 import { defaultSEO, routeSEO } from '../../config/seo.config';
 
+// Type pour les images Sanity ou URL string
+interface SanityImageAsset {
+  asset?: {
+    url?: string;
+  };
+}
+
+type ImageProp = string | SanityImageAsset | null | undefined;
+
 interface SEOProps {
   title?: string;
   description?: string;
-  image?: any; // Peut être string ou objet Sanity
+  image?: ImageProp;
   article?: boolean;
   publishedTime?: string;
   modifiedTime?: string;
@@ -30,7 +39,7 @@ export const SEO: React.FC<SEOProps> = ({
   const currentRoute = routeSEO[location.pathname] || defaultSEO;
 
   // Extraire l'URL de l'image si c'est un objet Sanity
-  const getImageUrl = (img: any): string => {
+  const getImageUrl = (img: ImageProp): string => {
     if (!img) return currentRoute.image;
     if (typeof img === 'string') return img;
     if (img.asset?.url) return img.asset.url;

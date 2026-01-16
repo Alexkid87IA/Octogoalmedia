@@ -52,11 +52,11 @@ export const EssentialArticlesSection = () => {
         const articles = await sanityClient.fetch(query);
         
         if (articles && articles.length > 0) {
-          const mappedArticles = articles.map((article: any) => ({
+          const mappedArticles = (articles as EssentialArticle[]).map((article) => ({
             ...article,
             category: article.categories
           }));
-          
+
           setEssentialArticles(mappedArticles);
         } else {
           // Fallback : récupérer les 5 articles les plus récents
@@ -71,14 +71,14 @@ export const EssentialArticlesSection = () => {
             },
             excerpt
           }`;
-          
+
           const fallbackArticles = await sanityClient.fetch(fallbackQuery);
-          
-          const mappedArticles = fallbackArticles.map((article: any) => ({
+
+          const mappedArticles = (fallbackArticles as EssentialArticle[]).map((article) => ({
             ...article,
             category: article.categories
           }));
-          
+
           setEssentialArticles(mappedArticles);
         }
       } catch (error) {

@@ -10,8 +10,11 @@ import { SanityImage } from '../../types/sanity';
 // Créer le builder d'URL pour Sanity
 const builder = imageUrlBuilder(sanityClient);
 
+// Type pour les sources d'image flexibles
+type ImageSource = SanityImage | string | { asset?: { _ref?: string } } | null | undefined;
+
 interface OptimizedImageProps {
-  source: SanityImage | string | any;
+  source: ImageSource;
   alt: string;
   width?: number;
   height?: number;
@@ -54,12 +57,12 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   /**
    * Détermine si la source est une URL directe ou une référence Sanity
    */
-  const isDirectUrl = (src: any): boolean => {
+  const isDirectUrl = (src: ImageSource): boolean => {
     if (typeof src === 'string') {
       return src.startsWith('http://') || src.startsWith('https://') || src.startsWith('/');
     }
     // Si c'est un objet avec asset._ref qui est une URL, c'est aussi une URL directe
-    if (src?.asset?._ref && typeof src.asset._ref === 'string') {
+    if (src && typeof src === 'object' && 'asset' in src && src.asset?._ref && typeof src.asset._ref === 'string') {
       return src.asset._ref.startsWith('http://') || src.asset._ref.startsWith('https://');
     }
     return false;

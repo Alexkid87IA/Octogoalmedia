@@ -39,9 +39,9 @@ export async function getArticleRoutes() {
       }
     `);
     
-    return articles
-      .filter((article: any) => article.slug)
-      .map((article: any) => `/article/${article.slug}`);
+    return (articles as Array<{ slug?: string }>)
+      .filter((article) => article.slug)
+      .map((article) => `/article/${article.slug}`);
       
   } catch (error) {
     console.error('Erreur récupération articles:', error);

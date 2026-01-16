@@ -2,9 +2,33 @@
 // Design éditorial mobile-first avec glassmorphism
 import React, { useState, useMemo, useCallback, useRef, memo } from "react";
 import { PortableText } from "@portabletext/react";
-import { Copy, Check, Lightbulb, Share2, Heart, ExternalLink } from "lucide-react";
+import { Lightbulb, Share2, Heart } from "lucide-react";
 import { SanityArticle, VerticalColors } from "../../../types/article.types";
 import { urlFor } from "../../../utils/sanityClient";
+import type {
+  PortableTextBlockProps,
+  PortableTextListProps,
+  PortableTextListItemProps,
+  PortableTextMarkProps,
+  ImageBlockProps,
+  CodeBlockProps,
+  EmbedBlockProps,
+  CustomBlockProps,
+  CalloutBlockValue,
+  StyledQuoteBlockValue,
+  StatsCardBlockValue,
+  PlayerComparisonBlockValue,
+  ImageGalleryBlockValue,
+  CtaButtonBlockValue,
+  SpoilerBlockValue,
+  AccordionBlockValue,
+  DataTableBlockValue,
+  TeamLineupBlockValue,
+  FootballQuizBlockValue,
+  MercatoRumorBlockValue,
+  QuickPollBlockValue,
+  TopListBlockValue,
+} from "../../../types/portableText.types";
 import InstagramEmbed from "../embeds/InstagramEmbed";
 import YouTubeEmbed from "../embeds/YouTubeEmbed";
 import TwitterEmbed from "../embeds/TwitterEmbed";
@@ -61,14 +85,14 @@ const ArticleContent: React.FC<ArticleContentProps> = memo(({ article, colors, i
   const portableTextComponents = useMemo(() => ({
     block: {
       // H1 - Titre principal (rare dans le body)
-      h1: ({ children }: any) => (
+      h1: ({ children }: PortableTextBlockProps) => (
         <h1 className="text-xl sm:text-2xl font-montserrat font-bold text-white mb-5 mt-10 sm:mt-12 leading-tight">
           {children}
         </h1>
       ),
 
       // H2 - Sections principales : grand, avec accent rose
-      h2: ({ children, value }: any) => {
+      h2: ({ children, value }: PortableTextBlockProps) => {
         const text = value?.children?.[0]?.text || '';
         const id = `h2-${text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}`;
         return (
@@ -86,7 +110,7 @@ const ArticleContent: React.FC<ArticleContentProps> = memo(({ article, colors, i
       },
 
       // H3 - Sous-sections : petit, juste bold
-      h3: ({ children, value }: any) => {
+      h3: ({ children, value }: PortableTextBlockProps) => {
         const text = value?.children?.[0]?.text || '';
         const id = `h3-${text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}`;
         return (
@@ -100,14 +124,14 @@ const ArticleContent: React.FC<ArticleContentProps> = memo(({ article, colors, i
       },
 
       // H4 - Très petit, gris, uppercase
-      h4: ({ children }: any) => (
+      h4: ({ children }: PortableTextBlockProps) => (
         <h4 className="text-xs sm:text-sm font-montserrat font-semibold text-gray-500 mt-5 sm:mt-6 mb-2 uppercase tracking-wider">
           {children}
         </h4>
       ),
 
       // Paragraphe - Typographie mobile-first optimisée pour la lecture
-      normal: ({ children }: any) => {
+      normal: ({ children }: PortableTextBlockProps) => {
         paragraphCountRef.current++;
         const showAd = paragraphCountRef.current === 5 || paragraphCountRef.current === 12;
 
@@ -122,7 +146,7 @@ const ArticleContent: React.FC<ArticleContentProps> = memo(({ article, colors, i
       },
 
       // Citation - Style glassmorphism élégant
-      blockquote: ({ children }: any) => (
+      blockquote: ({ children }: PortableTextBlockProps) => (
         <blockquote className="my-8 sm:my-12 md:my-16 relative p-5 sm:p-8 rounded-2xl bg-white/[0.03] backdrop-blur-xl border border-white/10">
           {/* Reflet glassmorphism */}
           <div className="absolute inset-0 bg-gradient-to-br from-white/[0.05] via-transparent to-transparent pointer-events-none rounded-2xl" />
@@ -145,22 +169,22 @@ const ArticleContent: React.FC<ArticleContentProps> = memo(({ article, colors, i
 
     // Listes
     list: {
-      bullet: ({ children }: any) => (
+      bullet: ({ children }: PortableTextListProps) => (
         <div className="my-6 sm:my-8 space-y-2.5 sm:space-y-3">{children}</div>
       ),
-      number: ({ children }: any) => (
+      number: ({ children }: PortableTextListProps) => (
         <div className="my-6 sm:my-8 space-y-2.5 sm:space-y-3">{children}</div>
       ),
     },
 
     listItem: {
-      bullet: ({ children }: any) => (
+      bullet: ({ children }: PortableTextListItemProps) => (
         <div className="flex items-start gap-3 sm:gap-4 text-gray-300">
           <span className="mt-[9px] sm:mt-[10px] w-1.5 h-1.5 sm:w-[6px] sm:h-[6px] rounded-full bg-gradient-to-r from-pink-500 to-blue-500 flex-shrink-0" />
           <span className="text-base sm:text-lg leading-[1.75] sm:leading-[1.8]">{children}</span>
         </div>
       ),
-      number: ({ children, index }: any) => (
+      number: ({ children, index }: PortableTextListItemProps) => (
         <div className="flex items-start gap-3 sm:gap-4 text-gray-300">
           <span className="text-base sm:text-lg font-medium text-gray-500 w-5 sm:w-6 flex-shrink-0">
             {(index || 0) + 1}.
@@ -172,18 +196,18 @@ const ArticleContent: React.FC<ArticleContentProps> = memo(({ article, colors, i
 
     // Styles inline
     marks: {
-      strong: ({ children }: any) => (
+      strong: ({ children }: PortableTextMarkProps) => (
         <strong className="font-semibold text-white">{children}</strong>
       ),
-      em: ({ children }: any) => (
+      em: ({ children }: PortableTextMarkProps) => (
         <em className="italic">{children}</em>
       ),
-      code: ({ children }: any) => (
+      code: ({ children }: PortableTextMarkProps) => (
         <code className="px-1.5 sm:px-2 py-0.5 bg-white/[0.08] backdrop-blur-sm rounded text-sm font-mono text-gray-300 border border-white/10">
           {children}
         </code>
       ),
-      link: ({ value, children }: any) => (
+      link: ({ value, children }: PortableTextMarkProps) => (
         <a
           href={value?.href}
           className="text-pink-400 hover:text-pink-300 underline underline-offset-4 decoration-pink-500/30 hover:decoration-pink-400 transition-colors"
@@ -197,7 +221,7 @@ const ArticleContent: React.FC<ArticleContentProps> = memo(({ article, colors, i
 
     // Types spéciaux
     types: {
-      image: ({ value }: any) => (
+      image: ({ value }: ImageBlockProps) => (
         <figure className="my-8 sm:my-12 -mx-4 sm:mx-0">
           <div className="relative overflow-hidden sm:rounded-2xl">
             <img
@@ -215,7 +239,7 @@ const ArticleContent: React.FC<ArticleContentProps> = memo(({ article, colors, i
         </figure>
       ),
 
-      code: ({ value }: any) => (
+      code: ({ value }: CodeBlockProps) => (
         <div className="relative rounded-xl sm:rounded-2xl border border-white/10 overflow-hidden my-8 sm:my-10 bg-white/[0.02] backdrop-blur-xl">
           {/* Reflet glassmorphism */}
           <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] via-transparent to-transparent pointer-events-none" />
@@ -237,31 +261,31 @@ const ArticleContent: React.FC<ArticleContentProps> = memo(({ article, colors, i
         </div>
       ),
 
-      instagram: ({ value }: any) => (
+      instagram: ({ value }: EmbedBlockProps) => (
         <InstagramEmbed url={value?.url} caption={value?.caption} />
       ),
-      youtube: ({ value }: any) => (
+      youtube: ({ value }: EmbedBlockProps) => (
         <YouTubeEmbed value={value} />
       ),
-      twitter: ({ value }: any) => (
+      twitter: ({ value }: EmbedBlockProps) => (
         <TwitterEmbed url={value?.url} caption={value?.caption} />
       ),
 
       // Blocs éditeur v2.2
-      callout: ({ value }: any) => <Callout value={value} />,
-      styledQuote: ({ value }: any) => <StyledQuote value={value} />,
-      statsCard: ({ value }: any) => <StatsCard value={value} />,
-      playerComparison: ({ value }: any) => <PlayerComparison value={value} />,
-      imageGallery: ({ value }: any) => <ImageGallery value={value} />,
-      ctaButton: ({ value }: any) => <CtaButton value={value} />,
-      spoiler: ({ value }: any) => <Spoiler value={value} />,
-      accordion: ({ value }: any) => <Accordion value={value} />,
-      dataTable: ({ value }: any) => <DataTable value={value} />,
-      teamLineup: ({ value }: any) => <TeamLineupBlock value={value} />,
-      footballQuiz: ({ value }: any) => <FootballQuizBlock value={value} />,
-      mercatoRumor: ({ value }: any) => <MercatoRumorBlock value={value} />,
-      quickPoll: ({ value }: any) => <QuickPollBlock value={value} />,
-      topList: ({ value }: any) => <TopListBlock value={value} />,
+      callout: ({ value }: CustomBlockProps<CalloutBlockValue>) => <Callout value={value} />,
+      styledQuote: ({ value }: CustomBlockProps<StyledQuoteBlockValue>) => <StyledQuote value={value} />,
+      statsCard: ({ value }: CustomBlockProps<StatsCardBlockValue>) => <StatsCard value={value} />,
+      playerComparison: ({ value }: CustomBlockProps<PlayerComparisonBlockValue>) => <PlayerComparison value={value} />,
+      imageGallery: ({ value }: CustomBlockProps<ImageGalleryBlockValue>) => <ImageGallery value={value} />,
+      ctaButton: ({ value }: CustomBlockProps<CtaButtonBlockValue>) => <CtaButton value={value} />,
+      spoiler: ({ value }: CustomBlockProps<SpoilerBlockValue>) => <Spoiler value={value} />,
+      accordion: ({ value }: CustomBlockProps<AccordionBlockValue>) => <Accordion value={value} />,
+      dataTable: ({ value }: CustomBlockProps<DataTableBlockValue>) => <DataTable value={value} />,
+      teamLineup: ({ value }: CustomBlockProps<TeamLineupBlockValue>) => <TeamLineupBlock value={value} />,
+      footballQuiz: ({ value }: CustomBlockProps<FootballQuizBlockValue>) => <FootballQuizBlock value={value} />,
+      mercatoRumor: ({ value }: CustomBlockProps<MercatoRumorBlockValue>) => <MercatoRumorBlock value={value} />,
+      quickPoll: ({ value }: CustomBlockProps<QuickPollBlockValue>) => <QuickPollBlock value={value} />,
+      topList: ({ value }: CustomBlockProps<TopListBlockValue>) => <TopListBlock value={value} />,
     },
   }), [colors.primary, colors.bgGradient, handleCopyCode, copied]);
 
