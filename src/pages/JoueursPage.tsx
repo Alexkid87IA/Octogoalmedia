@@ -3,7 +3,7 @@
 // Mélange données API-Football et contenus Sanity
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Trophy,
@@ -54,7 +54,13 @@ interface SanityArticle {
 // SECTION 1: HERO AVEC PODIUM
 // ===========================================
 
-const HeroSection = ({ topPlayers, isLoading }: { topPlayers: EuropeanPlayerStats[]; isLoading: boolean }) => {
+interface HeroSectionProps {
+  topPlayers: EuropeanPlayerStats[];
+  isLoading: boolean;
+  leagueInfo?: { id: number; name: string; flag: string } | null;
+}
+
+const HeroSection = ({ topPlayers, isLoading, leagueInfo }: HeroSectionProps) => {
   const [first, second, third] = topPlayers.slice(0, 3);
 
   return (
@@ -82,8 +88,17 @@ const HeroSection = ({ topPlayers, isLoading }: { topPlayers: EuropeanPlayerStat
           className="text-center mb-12"
         >
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-pink-500/20 to-blue-500/20 rounded-full border border-pink-500/30 mb-6">
-            <Users className="w-4 h-4 text-pink-400" />
-            <span className="text-sm font-medium text-pink-400">Le hub des joueurs</span>
+            {leagueInfo ? (
+              <>
+                <span className="text-lg">{leagueInfo.flag}</span>
+                <span className="text-sm font-medium text-pink-400">{leagueInfo.name}</span>
+              </>
+            ) : (
+              <>
+                <Users className="w-4 h-4 text-pink-400" />
+                <span className="text-sm font-medium text-pink-400">Le hub des joueurs</span>
+              </>
+            )}
           </div>
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-white mb-4">
             Les{' '}
@@ -92,7 +107,10 @@ const HeroSection = ({ topPlayers, isLoading }: { topPlayers: EuropeanPlayerStat
             </span>
           </h1>
           <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-            Stars, pépites, légendes : tout sur les joueurs qui font vibrer le football
+            {leagueInfo
+              ? `Classement des buteurs en ${leagueInfo.name}`
+              : 'Stars, pépites, légendes : tout sur les joueurs qui font vibrer le football'
+            }
           </p>
         </motion.div>
 
@@ -1380,16 +1398,76 @@ const PlayerSearchSection = () => {
 // PAGE PRINCIPALE
 // ===========================================
 
+// Helper pour convertir les données de ligue en format EuropeanPlayerStats
+function convertToEuropeanPlayerStats(players: any[], leagueInfo: { id: number; name: string; flag: string }): EuropeanPlayerStats[] {
+  return players.map((p) => ({
+    player: {
+      id: p.player?.id || 0,
+      name: p.player?.name || '',
+      firstName: p.player?.firstname,
+      lastName: p.player?.lastname,
+      nationality: p.player?.nationality,
+      photo: p.player?.photo,
+    },
+    team: {
+      id: p.team?.id,
+      name: p.team?.name || '',
+      crest: p.team?.logo,
+    },
+    league: {
+      id: leagueInfo.id,
+      name: leagueInfo.name,
+      country: '',
+      flag: leagueInfo.flag,
+    },
+    goals: p.goals || 0,
+    assists: p.assists || 0,
+    total: (p.goals || 0) + (p.assists || 0),
+    playedMatches: p.games?.appearences || 0,
+    rating: p.games?.rating ? parseFloat(p.games.rating) : undefined,
+  }));
+}
+
 export default function JoueursPage() {
+  const [searchParams] = useSearchParams();
+  const leagueParam = searchParams.get('league');
+
   const [heroPlayers, setHeroPlayers] = useState<EuropeanPlayerStats[]>([]);
   const [isHeroLoading, setIsHeroLoading] = useState(true);
+  const [selectedLeagueInfo, setSelectedLeagueInfo] = useState<{ id: number; name: string; flag: string } | null>(null);
 
-  // Charger les top buteurs pour le hero
+  // Charger les top buteurs pour le hero (par ligue si spécifiée, sinon Europe)
   useEffect(() => {
     const fetchHeroData = async () => {
+      setIsHeroLoading(true);
       try {
-        const data = await getTopScorersEurope();
-        setHeroPlayers(data);
+        if (leagueParam) {
+          // Trouver les infos de la ligue
+          const leagueId = parseInt(leagueParam);
+          const league = TOP_5_LEAGUES.find((l) => l.id === leagueId);
+
+          if (league) {
+            setSelectedLeagueInfo({ id: league.id, name: league.name, flag: league.flag });
+            // Charger les buteurs de cette ligue spécifique
+            const data = await getTopScorers(leagueParam);
+            const convertedData = convertToEuropeanPlayerStats(data || [], {
+              id: league.id,
+              name: league.name,
+              flag: league.flag,
+            });
+            setHeroPlayers(convertedData);
+          } else {
+            // Ligue non trouvée, fallback sur Europe
+            setSelectedLeagueInfo(null);
+            const data = await getTopScorersEurope();
+            setHeroPlayers(data);
+          }
+        } else {
+          // Pas de filtre, charger toute l'Europe
+          setSelectedLeagueInfo(null);
+          const data = await getTopScorersEurope();
+          setHeroPlayers(data);
+        }
       } catch (error) {
         console.error('Erreur chargement hero:', error);
       } finally {
@@ -1397,17 +1475,17 @@ export default function JoueursPage() {
       }
     };
     fetchHeroData();
-  }, []);
+  }, [leagueParam]);
 
   return (
     <div className="min-h-screen bg-black">
       {/* Hero avec podium */}
-      <HeroSection topPlayers={heroPlayers} isLoading={isHeroLoading} />
+      <HeroSection topPlayers={heroPlayers} isLoading={isHeroLoading} leagueInfo={selectedLeagueInfo} />
 
       {/* Section principale : Classements + Sidebar avec articles */}
-      <MainContentSection />
+      {!selectedLeagueInfo && <MainContentSection />}
 
-      {/* Par championnat */}
+      {/* Par championnat - Toujours afficher sauf si une ligue est déjà sélectionnée */}
       <LeagueRankingsSection />
 
       {/* Recherche */}
