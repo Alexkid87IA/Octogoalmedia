@@ -209,7 +209,7 @@ export const ClubSection = () => {
                   key={index}
                   className="relative group transition-transform hover:-translate-y-1"
                 >
-                  <div className="relative h-full p-6 bg-black/40 backdrop-blur-xl border border-pink-500/10 hover:border-pink-500/30 rounded-2xl transition-all">
+                  <div className="relative h-full p-6 bg-white/[0.03] backdrop-blur-2xl border border-white/10 hover:border-pink-500/40 rounded-2xl transition-all shadow-xl shadow-black/20 hover:shadow-pink-500/10">
                     <div className="mb-4">
                       <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-blue-500 rounded-xl flex items-center justify-center shadow-lg">
                         <Icon className="w-6 h-6 text-white" />

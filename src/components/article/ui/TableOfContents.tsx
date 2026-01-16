@@ -41,7 +41,7 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({
   // Version mobile
   if (variant === 'mobile') {
     return (
-      <div className="lg:hidden container mx-auto px-4 py-8">
+      <div className="lg:hidden container mx-auto px-4 py-3">
         <div className="bg-gradient-to-br from-gray-900/50 to-gray-800/30 backdrop-blur-md rounded-2xl border border-gray-700/50 overflow-hidden">
           {/* Header avec toggle */}
           <button

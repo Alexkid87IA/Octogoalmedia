@@ -1,14 +1,16 @@
 // src/components/article/sections/ArticleHero.tsx
-// Hero avec aspect-ratio pour montrer plus de l'image
+// Hero immersif mobile-first avec glassmorphism
 import React from "react";
 import { Link } from "react-router-dom";
-import { ChevronRight, Calendar, Clock } from "lucide-react";
+import { ChevronRight, Calendar, ArrowLeft, Share2 } from "lucide-react";
+import { motion } from "framer-motion";
 import { SanityArticle, VerticalColors } from "../../../types/article.types";
 import { urlFor } from "../../../utils/sanityClient";
 
 interface ArticleHeroProps {
   article: SanityArticle;
   colors: VerticalColors;
+  onShareClick?: () => void;
 }
 
 // Fonction pour calculer la position de l'image basée sur le hotspot
@@ -19,7 +21,7 @@ const getHotspotPosition = (hotspot: any) => {
   return `${x}% ${y}%`;
 };
 
-const ArticleHero: React.FC<ArticleHeroProps> = ({ article, colors }) => {
+const ArticleHero: React.FC<ArticleHeroProps> = ({ article, colors, onShareClick }) => {
   const hotspot = article.mainImage?.hotspot;
   const imagePosition = getHotspotPosition(hotspot);
 
@@ -27,8 +29,8 @@ const ArticleHero: React.FC<ArticleHeroProps> = ({ article, colors }) => {
   const getImageUrl = () => {
     if (!article.mainImage || !article.mainImage.asset) return null;
 
-    if (article.mainImage.asset.url) {
-      return article.mainImage.asset.url;
+    if ((article.mainImage.asset as any).url) {
+      return (article.mainImage.asset as any).url;
     }
 
     if (article.mainImage.asset._ref) {
@@ -43,15 +45,41 @@ const ArticleHero: React.FC<ArticleHeroProps> = ({ article, colors }) => {
   };
 
   const imageUrl = getImageUrl();
-  const readingTime = article.readingTime || "5 min";
 
   return (
     <section className="relative">
-      {/* Container avec aspect-ratio - hauteur généreuse pour voir les visages */}
-      <div className="relative w-full aspect-[4/3] sm:aspect-[4/3] md:aspect-[3/2] lg:aspect-[16/9]">
+      {/* Header sticky transparent - Mobile */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="fixed top-0 left-0 right-0 z-50 lg:hidden"
+      >
+        <div className="flex items-center justify-between px-4 py-3 bg-black/40 backdrop-blur-xl border-b border-white/5">
+          <Link
+            to="/"
+            className="flex items-center gap-2 text-white/80 hover:text-white transition-colors"
+          >
+            <ArrowLeft size={20} />
+            <span className="text-sm font-medium">Retour</span>
+          </Link>
+
+          <button
+            onClick={onShareClick}
+            className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-all"
+          >
+            <Share2 size={18} className="text-white" />
+          </button>
+        </div>
+      </motion.div>
+
+      {/* Container Hero - Plus grand sur mobile pour effet immersif */}
+      <div className="relative w-full min-h-[70vh] sm:min-h-[60vh] md:min-h-[65vh] lg:aspect-[21/9]">
         {/* Background Image */}
         {imageUrl ? (
-          <img
+          <motion.img
+            initial={{ scale: 1.1, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.8 }}
             src={imageUrl}
             alt={article.title}
             className="absolute inset-0 w-full h-full object-cover"
@@ -64,84 +92,93 @@ const ArticleHero: React.FC<ArticleHeroProps> = ({ article, colors }) => {
           <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-black to-gray-900" />
         )}
 
-        {/* Overlay gradient en bas pour le texte */}
-        <div
-          className="absolute inset-x-0 bottom-0 h-[60%]"
-          style={{
-            background: 'linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.7) 40%, transparent 100%)'
-          }}
-        />
+        {/* Overlay gradient - Plus prononcé en bas */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
 
-        {/* Léger assombrissement pour le header/navigation */}
-        <div
-          className="absolute inset-x-0 top-0 h-20"
-          style={{
-            background: 'linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 100%)'
-          }}
-        />
+        {/* Overlay latéral subtil */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-black/30" />
 
         {/* Ligne d'accent colorée en bas */}
         <div
-          className="absolute bottom-0 left-0 right-0 h-[3px]"
+          className="absolute bottom-0 left-0 right-0 h-1"
           style={{ background: colors.bgGradient }}
         />
 
-        {/* Contenu Hero - Positionné en bas */}
-        <div className="absolute inset-x-0 bottom-0 pb-6 md:pb-8">
-          <div className="container mx-auto px-4">
+        {/* Contenu Hero - Positionné en bas avec padding généreux */}
+        <div className="absolute inset-x-0 bottom-0 pb-8 md:pb-12 pt-20">
+          <div className="container mx-auto px-4 sm:px-6">
             <div className="max-w-4xl">
-              {/* Breadcrumb compact */}
-              <nav className="flex items-center gap-2 text-xs md:text-sm mb-3">
-                <Link
-                  to="/"
-                  className="text-gray-400 hover:text-white transition-colors"
+
+              {/* Badge catégorie - Glassmorphism */}
+              {article.categories && article.categories[0] && (
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="mb-4"
                 >
-                  Accueil
-                </Link>
+                  <Link
+                    to={`/rubrique/${article.categories[0].slug.current}`}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider transition-all hover:scale-105 bg-white/10 backdrop-blur-xl border border-white/20 text-white hover:bg-white/20"
+                  >
+                    {article.categories[0].title}
+                  </Link>
+                </motion.div>
+              )}
 
-                {article.categories && article.categories[0] && (
-                  <>
-                    <ChevronRight size={12} className="text-gray-600" />
-                    <Link
-                      to={`/rubrique/${article.categories[0].slug.current}`}
-                      className="px-2.5 py-1 rounded-full text-xs font-semibold transition-all hover:scale-105"
-                      style={{
-                        background: colors.primary,
-                        color: 'white'
-                      }}
-                    >
-                      {article.categories[0].title}
-                    </Link>
-
-                    {article.subcategories && article.subcategories[0] && (
-                      <>
-                        <ChevronRight size={12} className="text-gray-400" />
-                        <span className="text-gray-300 text-xs">
-                          {article.subcategories[0].title}
-                        </span>
-                      </>
-                    )}
-                  </>
-                )}
-              </nav>
-
-              {/* Titre principal */}
-              <h1
-                className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black text-white mb-3 leading-tight tracking-tight"
+              {/* Titre principal - Grande typo */}
+              <motion.h1
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, duration: 0.6 }}
+                className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-white mb-5 leading-[1.1] tracking-tight"
                 style={{
-                  textShadow: '0 2px 20px rgba(0,0,0,0.5)'
+                  textShadow: '0 4px 30px rgba(0,0,0,0.5)'
                 }}
               >
                 {article.title}
-              </h1>
+              </motion.h1>
 
-              {/* Meta informations - Ligne compacte */}
-              <div className="flex flex-wrap items-center gap-3 text-xs md:text-sm text-gray-400">
+              {/* Excerpt / Chapô - Si disponible */}
+              {article.excerpt && (
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.5 }}
+                  className="text-base sm:text-lg text-gray-300 mb-6 max-w-2xl leading-relaxed line-clamp-3"
+                >
+                  {article.excerpt}
+                </motion.p>
+              )}
+
+              {/* Meta informations - Card glassmorphism */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+                className="flex flex-wrap items-center gap-4"
+              >
+                {/* Auteur */}
+                {article.author && (
+                  <div className="flex items-center gap-3 px-4 py-2 rounded-full bg-white/10 backdrop-blur-xl border border-white/10">
+                    {article.author.image && (
+                      <img
+                        src={urlFor(article.author.image).width(40).height(40).url()}
+                        alt={article.author.name}
+                        className="w-8 h-8 rounded-full object-cover border border-white/20"
+                      />
+                    )}
+                    <span className="text-sm font-medium text-white">
+                      {article.author.name}
+                    </span>
+                  </div>
+                )}
+
                 {/* Date */}
                 {article.publishedAt && (
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 text-gray-300">
                     <Calendar size={14} />
-                    <span>
+                    <span className="text-sm">
                       {new Date(article.publishedAt).toLocaleDateString('fr-FR', {
                         day: 'numeric',
                         month: 'long',
@@ -150,16 +187,7 @@ const ArticleHero: React.FC<ArticleHeroProps> = ({ article, colors }) => {
                     </span>
                   </div>
                 )}
-
-                {/* Séparateur */}
-                <span className="text-gray-600">|</span>
-
-                {/* Temps de lecture */}
-                <div className="flex items-center gap-1.5">
-                  <Clock size={14} />
-                  <span>{readingTime} de lecture</span>
-                </div>
-              </div>
+              </motion.div>
             </div>
           </div>
         </div>

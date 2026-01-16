@@ -133,7 +133,7 @@ export const QuickStandingsSection = () => {
               <div className="flex items-center gap-3 mb-4">
                 <button
                   onClick={goToPrevious}
-                  className="p-2 bg-gray-800/50 hover:bg-gray-700 rounded-lg transition-colors"
+                  className="p-2 bg-white/[0.05] hover:bg-white/[0.1] backdrop-blur-sm rounded-xl border border-white/10 hover:border-white/20 transition-all"
                 >
                   <ChevronLeft className="w-5 h-5 text-white" />
                 </button>
@@ -149,10 +149,10 @@ export const QuickStandingsSection = () => {
                       key={league.key}
                       onClick={() => setCurrentLeagueIndex(index)}
                       className={`
-                        flex items-center gap-2 px-4 py-2 whitespace-nowrap transition-all border
+                        flex items-center gap-2 px-4 py-2 whitespace-nowrap transition-all border backdrop-blur-sm
                         ${index === currentLeagueIndex
-                          ? `bg-gradient-to-r ${league.color}/20 border-pink-500/50 text-white shadow-lg`
-                          : 'bg-gray-800/30 border-gray-700/50 text-gray-400 hover:bg-gray-700/30 hover:text-white hover:border-gray-600'
+                          ? `bg-gradient-to-r ${league.color}/20 border-pink-500/50 text-white shadow-lg shadow-pink-500/20`
+                          : 'bg-white/[0.03] border-white/10 text-gray-400 hover:bg-white/[0.08] hover:text-white hover:border-white/20'
                         }
                       `}
                       style={{ clipPath: octagonClipSubtle }}
@@ -165,7 +165,7 @@ export const QuickStandingsSection = () => {
 
                 <button
                   onClick={goToNext}
-                  className="p-2 bg-gray-800/50 hover:bg-gray-700 rounded-lg transition-colors"
+                  className="p-2 bg-white/[0.05] hover:bg-white/[0.1] backdrop-blur-sm rounded-xl border border-white/10 hover:border-white/20 transition-all"
                 >
                   <ChevronRight className="w-5 h-5 text-white" />
                 </button>
@@ -217,13 +217,15 @@ export const QuickStandingsSection = () => {
               style={{ clipPath: octagonClip }}
             />
 
-            {/* Card principale */}
+            {/* Card principale avec glassmorphism */}
             <div
-              className="relative bg-gray-900/80 backdrop-blur-xl border border-gray-800 overflow-hidden"
+              className="relative bg-white/[0.03] backdrop-blur-2xl border border-white/10 overflow-hidden shadow-2xl shadow-black/30"
               style={{ clipPath: octagonClipSubtle }}
             >
+              {/* Reflet glassmorphism */}
+              <div className="absolute inset-0 bg-gradient-to-br from-white/[0.05] via-transparent to-transparent pointer-events-none" />
               {/* Header du tableau */}
-              <div className={`px-4 py-3 border-b border-gray-800 bg-gradient-to-r ${currentLeague.color}/10`}>
+              <div className={`relative px-4 py-3 border-b border-white/10 bg-gradient-to-r ${currentLeague.color}/10`}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div
@@ -242,7 +244,7 @@ export const QuickStandingsSection = () => {
               </div>
 
               {/* Liste des équipes */}
-              <div className="divide-y divide-gray-800/50 min-h-[240px]">
+              <div className="relative divide-y divide-white/5 min-h-[240px]">
                 {isCurrentLoading ? (
                   <div className="flex items-center justify-center h-[240px]">
                     <div className="w-6 h-6 border-2 border-pink-500 border-t-transparent rounded-full animate-spin" />
@@ -338,7 +340,7 @@ export const QuickStandingsSection = () => {
               </div>
 
               {/* Footer */}
-              <div className="px-4 py-2 border-t border-gray-800 bg-black/30">
+              <div className="relative px-4 py-2 border-t border-white/10 bg-white/[0.02]">
                 <div className="flex items-center justify-between text-[10px] text-gray-500">
                   <span>Mise à jour en temps réel</span>
                   <Link to="/classements" className="text-pink-400 hover:text-pink-300 transition-colors">

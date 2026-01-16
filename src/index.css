@@ -268,6 +268,7 @@ html {
   border-radius: 32px 32px 0 0;  /* Coins plus arrondis (32px au lieu de 16px) */
 }
 
+
 /* Responsive - pleine largeur sur écrans < 1100px */
 @media (max-width: 1100px) {
   .site-skin {
@@ -281,6 +282,7 @@ html {
     box-shadow: none;
     border-radius: 0;
   }
+
 }
 
 /* Zone cliquable pour le skin (tracking pub) */

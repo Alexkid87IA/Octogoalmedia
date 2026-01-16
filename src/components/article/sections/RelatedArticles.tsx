@@ -1,10 +1,10 @@
 // src/components/article/sections/RelatedArticles.tsx
+// Section articles recommandés avec glassmorphism
 import React from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Calendar } from "lucide-react";
 import { SanityArticle, VerticalColors } from "../../../types/article.types";
-import { getVerticalColors } from "../../../utils/articleUtils";
 
 interface RelatedArticlesProps {
   articles: SanityArticle[];
@@ -16,12 +16,10 @@ const RelatedArticles: React.FC<RelatedArticlesProps> = ({ articles, colors }) =
 
   // Fonction pour obtenir l'URL de l'image depuis Sanity
   const getImageUrl = (mainImage: any) => {
-    // D'abord vérifier si on a directement l'URL
     if (mainImage?.asset?.url) {
       return mainImage.asset.url;
     }
-    
-    // Sinon, construire l'URL depuis la référence _ref
+
     if (mainImage?.asset?._ref) {
       const ref = mainImage.asset._ref;
       const cleanRef = ref
@@ -30,184 +28,124 @@ const RelatedArticles: React.FC<RelatedArticlesProps> = ({ articles, colors }) =
         .replace('-jpeg', '.jpeg')
         .replace('-png', '.png')
         .replace('-webp', '.webp');
-      
-      return `https://cdn.sanity.io/images/5rn8u6ed/production/${cleanRef}?w=400&h=250&fit=crop&auto=format`;
+
+      return `https://cdn.sanity.io/images/5rn8u6ed/production/${cleanRef}?w=400&h=300&fit=crop&auto=format`;
     }
-    
+
     return null;
   };
 
   return (
-    <section className="py-20 bg-gradient-to-b from-transparent via-gray-900/20 to-transparent">
-      <div className="container mx-auto px-4">
+    <section className="py-16 sm:py-20 bg-black relative overflow-hidden">
+      {/* Fond avec subtils dégradés */}
+      <div className="absolute inset-0 bg-gradient-to-b from-gray-900/30 via-transparent to-gray-900/30 pointer-events-none" />
+
+      <div className="container mx-auto px-4 relative z-10">
+        {/* Header avec glassmorphism */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-12"
+          className="text-center mb-10 sm:mb-14"
         >
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+          <div className="inline-flex items-center gap-2 px-4 py-2 mb-4 rounded-full bg-white/[0.05] backdrop-blur-xl border border-white/10">
+            <span className="w-2 h-2 rounded-full bg-gradient-to-r from-pink-500 to-blue-500 animate-pulse" />
+            <span className="text-sm text-gray-400 font-medium">Recommandés</span>
+          </div>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3">
             Continuez votre lecture
           </h2>
-          <p className="text-gray-400 max-w-2xl mx-auto">
+          <p className="text-gray-500 max-w-xl mx-auto text-sm sm:text-base">
             Découvrez d'autres articles qui pourraient vous intéresser
           </p>
         </motion.div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        {/* Grille d'articles avec glassmorphism */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {articles.slice(0, 6).map((related, index) => {
-            // Déterminer les couleurs pour chaque article selon SA catégorie
-            const getCardColors = () => {
-              const cardCategory = related.categories?.[0]?.slug?.current?.toLowerCase();
-              
-              switch(cardCategory) {
-                case 'story':
-                case 'recits':
-                  return {
-                    gradient: 'from-amber-500 to-orange-500',
-                    primary: '#f59e0b',
-                    textColor: '#fbbf24',
-                    borderColor: 'rgba(245, 158, 11, 0.3)'
-                  };
-                case 'business':
-                  return {
-                    gradient: 'from-blue-500 to-cyan-500',
-                    primary: '#3b82f6',
-                    textColor: '#60a5fa',
-                    borderColor: 'rgba(59, 130, 246, 0.3)'
-                  };
-                case 'mental':
-                case 'psycho':
-                  return {
-                    gradient: 'from-purple-500 to-violet-500',
-                    primary: '#a855f7',
-                    textColor: '#c084fc',
-                    borderColor: 'rgba(168, 85, 247, 0.3)'
-                  };
-                case 'society':
-                  return {
-                    gradient: 'from-emerald-500 to-teal-500',
-                    primary: '#10b981',
-                    textColor: '#34d399',
-                    borderColor: 'rgba(16, 185, 129, 0.3)'
-                  };
-                default:
-                  return {
-                    gradient: 'from-gray-500 to-gray-600',
-                    primary: '#6b7280',
-                    textColor: '#9ca3af',
-                    borderColor: 'rgba(107, 114, 128, 0.3)'
-                  };
-              }
-            };
-            
-            const cardColors = getCardColors();
             const imageUrl = getImageUrl(related.mainImage);
-            
+
             return (
-              <motion.article 
+              <motion.article
                 key={related._id}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
+                transition={{ delay: index * 0.08 }}
                 className="group"
               >
                 <Link to={`/article/${related.slug.current}`}>
-                  <div 
-                    className="relative overflow-hidden rounded-xl bg-white/5 border transition-all hover:transform hover:scale-105"
-                    style={{
-                      borderColor: cardColors.borderColor
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = cardColors.primary;
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = cardColors.borderColor;
-                    }}
-                  >
+                  <div className="relative overflow-hidden rounded-2xl bg-white/[0.03] backdrop-blur-xl border border-white/10 hover:border-pink-500/40 transition-all duration-300 hover:shadow-xl hover:shadow-pink-500/10">
+                    {/* Reflet glassmorphism */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/[0.05] via-transparent to-transparent pointer-events-none rounded-2xl" />
+
                     {/* Section Image */}
-                    <div className="relative h-48 overflow-hidden bg-gray-900">
+                    <div className="relative aspect-[16/10] overflow-hidden">
                       {imageUrl ? (
                         <>
-                          <img 
+                          <img
                             src={imageUrl}
                             alt={related.title || 'Article image'}
-                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                             loading="lazy"
                             onError={(e) => {
-                              // Si erreur, masquer l'image et afficher un fond coloré
                               const target = e.currentTarget as HTMLImageElement;
                               target.style.display = 'none';
                             }}
                           />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
                         </>
                       ) : (
-                        // Fallback gradient si pas d'image
-                        <div className={`w-full h-full bg-gradient-to-br ${cardColors.gradient} opacity-50`}>
-                          <div className="absolute inset-0 bg-black/40" />
+                        <div className="w-full h-full bg-gradient-to-br from-pink-500/20 to-blue-500/20">
+                          <div className="absolute inset-0 bg-black/60" />
                         </div>
                       )}
-                      
-                      {/* Badge de catégorie avec gradient */}
+
+                      {/* Badge de catégorie - Glassmorphism */}
                       {related.categories && related.categories[0] && (
-                        <div className="absolute top-4 left-4 z-10">
-                          <span 
-                            className={`inline-block px-3 py-1 rounded-full text-xs font-medium text-white bg-gradient-to-r ${cardColors.gradient} shadow-lg`}
-                          >
+                        <div className="absolute top-3 left-3 z-10">
+                          <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider text-white bg-white/10 backdrop-blur-xl border border-white/20 shadow-lg">
                             {related.categories[0].title}
                           </span>
                         </div>
                       )}
-                      
-                      {/* Temps de lecture si disponible */}
-                      {related.readingTime && (
-                        <div className="absolute top-4 right-4 z-10">
-                          <span className="inline-block px-2 py-1 rounded-full text-xs font-medium text-white bg-black/60 backdrop-blur">
-                            {related.readingTime} min
-                          </span>
-                        </div>
-                      )}
                     </div>
-                    
+
                     {/* Section Contenu */}
-                    <div className="p-6">
-                      <h3 className="text-lg font-semibold text-white mb-3 line-clamp-2 group-hover:text-opacity-90 transition-colors">
+                    <div className="p-4 sm:p-5">
+                      <h3 className="text-base sm:text-lg font-semibold text-white mb-2 line-clamp-2 group-hover:text-pink-400 transition-colors leading-tight">
                         {related.title}
                       </h3>
-                      
+
                       {related.excerpt && (
-                        <p className="text-sm text-gray-400 line-clamp-2 mb-4">
+                        <p className="text-sm text-gray-400 line-clamp-2 mb-3 leading-relaxed">
                           {related.excerpt}
                         </p>
                       )}
-                      
-                      {/* Auteur et date */}
-                      <div className="flex items-center justify-between text-xs text-gray-500">
+
+                      {/* Meta : Auteur et date */}
+                      <div className="flex items-center justify-between pt-3 border-t border-white/5">
                         {related.author?.name && (
-                          <span className="truncate max-w-[60%]">
+                          <span className="text-xs text-gray-500 truncate max-w-[55%]">
                             Par {related.author.name}
                           </span>
                         )}
                         {related.publishedAt && (
-                          <span>
-                            {new Date(related.publishedAt).toLocaleDateString('fr-FR', {
-                              day: 'numeric',
-                              month: 'short'
-                            })}
-                          </span>
+                          <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                            <Calendar size={12} />
+                            <span>
+                              {new Date(related.publishedAt).toLocaleDateString('fr-FR', {
+                                day: 'numeric',
+                                month: 'short'
+                              })}
+                            </span>
+                          </div>
                         )}
                       </div>
                     </div>
-                    
-                    {/* Ligne de progression colorée au survol */}
-                    <div 
-                      className="absolute bottom-0 left-0 right-0 h-0.5 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"
-                      style={{
-                        background: `linear-gradient(to right, ${cardColors.primary}, ${cardColors.textColor})`
-                      }}
-                    />
+
+                    {/* Ligne d'accent au survol */}
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-pink-500 to-blue-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
                   </div>
                 </Link>
               </motion.article>
@@ -215,15 +153,21 @@ const RelatedArticles: React.FC<RelatedArticlesProps> = ({ articles, colors }) =
           })}
         </div>
 
-        <div className="text-center mt-12">
-          <Link 
+        {/* CTA - Glassmorphism */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mt-10 sm:mt-14"
+        >
+          <Link
             to="/articles"
-            className={`inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r ${colors.gradient} hover:opacity-90 text-white rounded-lg font-medium transition-all transform hover:scale-105`}
+            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-pink-500 to-blue-500 hover:from-pink-600 hover:to-blue-600 text-white rounded-xl font-medium transition-all shadow-lg shadow-pink-500/20 hover:shadow-pink-500/30 hover:scale-105"
           >
             Voir tous les articles
-            <ArrowRight size={20} />
+            <ArrowRight size={18} />
           </Link>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

@@ -365,7 +365,9 @@ const PlayerComparator: React.FC = () => {
   };
 
   return (
-    <div className="bg-gray-900/70 backdrop-blur-xl rounded-2xl border border-white/10 overflow-hidden">
+    <div className="bg-white/[0.03] backdrop-blur-2xl rounded-2xl border border-white/10 overflow-hidden shadow-xl shadow-black/20">
+      {/* Reflet glassmorphism */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white/[0.05] via-transparent to-transparent pointer-events-none rounded-2xl" />
       {/* Header Clash Style */}
       <div className="px-4 py-3 border-b border-white/10 bg-gradient-to-r from-pink-900/30 via-purple-900/20 to-blue-900/30">
         <div className="flex items-center gap-2">
@@ -420,7 +422,7 @@ const PlayerComparator: React.FC = () => {
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    className="absolute z-50 left-0 right-0 mt-2 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl max-h-64 overflow-y-auto"
+                    className="absolute z-50 left-0 right-0 mt-2 bg-black/80 backdrop-blur-2xl border border-white/15 rounded-xl shadow-2xl max-h-64 overflow-y-auto"
                   >
                     {loading ? (
                       <div className="p-4 text-center text-gray-500 text-sm">Chargement...</div>
@@ -495,7 +497,7 @@ const PlayerComparator: React.FC = () => {
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    className="absolute z-50 left-0 right-0 mt-2 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl max-h-64 overflow-y-auto"
+                    className="absolute z-50 left-0 right-0 mt-2 bg-black/80 backdrop-blur-2xl border border-white/15 rounded-xl shadow-2xl max-h-64 overflow-y-auto"
                   >
                     {loading ? (
                       <div className="p-4 text-center text-gray-500 text-sm">Chargement...</div>

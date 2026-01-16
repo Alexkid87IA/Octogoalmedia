@@ -280,10 +280,10 @@ export const ResponsiveNavbar = () => {
                               {/* Dropdown glow */}
                               <div className="absolute -inset-1 bg-gradient-to-br from-pink-500/20 via-purple-500/20 to-blue-500/20 rounded-3xl blur-2xl opacity-60" />
 
-                              <div className="relative bg-black rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
-                                {/* Solid background + subtle gradient overlay */}
-                                <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-950 to-black" />
-                                <div className="absolute inset-0 bg-gradient-to-br from-pink-500/[0.05] via-transparent to-purple-500/[0.05]" />
+                              <div className="relative bg-[#0a0a0f]/95 backdrop-blur-2xl rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
+                                {/* Fond solide avec léger gradient */}
+                                <div className="absolute inset-0 bg-gradient-to-br from-gray-900/50 via-transparent to-transparent" />
+                                <div className="absolute inset-0 bg-gradient-to-br from-pink-500/[0.02] via-transparent to-blue-500/[0.02]" />
 
                                 {/* Header */}
                                 <div className="relative px-5 py-4 border-b border-white/10 flex items-center justify-between">

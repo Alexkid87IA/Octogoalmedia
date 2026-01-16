@@ -206,9 +206,12 @@ export const HeroSection = () => {
             >
               <Link to={`/article/${featuredArticle.slug?.current}`} className="group block">
                 <div
-                  className="relative overflow-hidden bg-gray-900 shadow-2xl shadow-black/50"
+                  className="relative overflow-hidden bg-white/[0.03] backdrop-blur-2xl border border-white/10 hover:border-pink-500/30 shadow-2xl shadow-black/50 transition-all duration-500"
                   style={{ clipPath: octagonClipCard }}
                 >
+                  {/* Reflet glassmorphism */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] via-transparent to-transparent pointer-events-none z-10" />
+
                   {/* Image 16:9 SANS overlay ni texte */}
                   <div className="relative aspect-[16/9] overflow-hidden">
                     <SafeImage
@@ -221,8 +224,8 @@ export const HeroSection = () => {
 
                   </div>
 
-                  {/* Zone texte EN DESSOUS de l'image - compact */}
-                  <div className="p-4 md:p-6 bg-gray-900/80">
+                  {/* Zone texte EN DESSOUS de l'image - glassmorphism */}
+                  <div className="relative p-4 md:p-6 bg-black/60 backdrop-blur-xl border-t border-white/10">
                     {/* Badge catégorie octogonal */}
                     {featuredArticle.categories?.[0] && (
                       <motion.span
@@ -298,10 +301,11 @@ export const HeroSection = () => {
               className="lg:col-span-4 self-stretch"
             >
               <div
-                className="h-full bg-gray-900/70 backdrop-blur-xl border border-gray-800/50 overflow-hidden flex flex-col rounded-xl"
+                className="h-full bg-white/[0.03] backdrop-blur-2xl border border-white/10 overflow-hidden flex flex-col rounded-2xl shadow-xl shadow-black/20"
               >
-                {/* Header compact */}
-                <div className="flex items-center justify-between px-4 py-3 sm:py-3 border-b border-gray-800/50 bg-black/30">
+                {/* Header compact avec reflet */}
+                <div className="relative flex items-center justify-between px-4 py-3 sm:py-3 border-b border-white/10 bg-white/[0.02]">
+                  <div className="absolute inset-0 bg-gradient-to-r from-pink-500/5 via-transparent to-blue-500/5 pointer-events-none" />
                   <div className="flex items-center gap-2.5 sm:gap-2">
                     <div className="w-9 h-9 sm:w-7 sm:h-7 rounded-lg bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center">
                       <Zap className="w-4 h-4 sm:w-3.5 sm:h-3.5 text-white" />
@@ -345,10 +349,10 @@ export const HeroSection = () => {
                         >
                           <Link
                             to={`/article/${article.slug?.current}`}
-                            className="flex items-center gap-3 sm:gap-2.5 p-2 sm:p-1.5 rounded-lg hover:bg-white/5 transition-colors group"
+                            className="flex items-center gap-3 sm:gap-2.5 p-2 sm:p-1.5 rounded-xl hover:bg-white/[0.08] backdrop-blur-sm border border-transparent hover:border-white/10 transition-all duration-200 group"
                           >
-                            {/* Miniature carrée */}
-                            <div className="w-14 h-14 sm:w-11 sm:h-11 rounded-md overflow-hidden flex-shrink-0 bg-gray-800">
+                            {/* Miniature carrée avec glassmorphism */}
+                            <div className="w-14 h-14 sm:w-11 sm:h-11 rounded-lg overflow-hidden flex-shrink-0 bg-white/[0.05] border border-white/10">
                               <SafeImage
                                 source={article.mainImage}
                                 alt=""
@@ -437,7 +441,7 @@ export const HeroSection = () => {
                   >
                     <Link to={`/article/${article.slug?.current}`} className="block h-full">
                       <div
-                        className="relative h-full bg-gray-900/50 backdrop-blur-sm border border-gray-800 overflow-hidden hover:border-pink-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-pink-500/10 hover:-translate-y-1"
+                        className="relative h-full bg-white/[0.03] backdrop-blur-xl border border-white/10 overflow-hidden hover:border-pink-500/40 hover:bg-white/[0.06] transition-all duration-300 hover:shadow-2xl hover:shadow-pink-500/20 hover:-translate-y-1 group-hover:scale-[1.01]"
                         style={{ clipPath: octagonClipCard }}
                       >
                         {/* Image */}
@@ -510,8 +514,10 @@ export const HeroSection = () => {
                   <div className="h-[280px] rounded-2xl bg-gray-900/50 animate-pulse" />
                 ) : poll ? (
                   <div
-                    className="relative rounded-2xl overflow-hidden border border-white/10 bg-gray-900/70 backdrop-blur-xl"
+                    className="relative rounded-2xl overflow-hidden border border-white/15 bg-white/[0.04] backdrop-blur-2xl shadow-xl shadow-black/30"
                   >
+                  {/* Reflet glassmorphism */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] via-transparent to-transparent pointer-events-none rounded-2xl" />
                   {/* Background gradients */}
                   <div className="absolute inset-0 pointer-events-none">
                     <div

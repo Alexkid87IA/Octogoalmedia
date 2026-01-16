@@ -145,42 +145,42 @@ export const RecentArticlesSection = ({ articles = [] }) => {
           <motion.button
             whileHover={{ rotate: 180 }}
             transition={{ duration: 0.3 }}
-            className="hidden sm:block p-2 rounded-lg hover:bg-white/5 transition-colors"
+            className="hidden sm:block p-2 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 backdrop-blur-sm transition-all"
             aria-label="Rafraîchir"
           >
             <RefreshCw className="w-5 h-5 text-gray-400" />
           </motion.button>
         </div>
 
-        {/* Tabs */}
+        {/* Tabs avec glassmorphism */}
         <div className="relative mb-6">
-          <div className="flex gap-6 border-b border-gray-800 overflow-x-auto no-scrollbar">
-            <button 
+          <div className="flex gap-2 p-1 bg-white/[0.02] backdrop-blur-sm rounded-xl border border-white/10 overflow-x-auto no-scrollbar">
+            <button
               onClick={() => setActiveTab('flash')}
-              className={`pb-3 font-medium transition-colors whitespace-nowrap text-sm sm:text-base ${
-                activeTab === 'flash' 
-                  ? 'text-pink-400 border-b-2 border-pink-400' 
-                  : 'text-gray-500 hover:text-gray-300'
+              className={`px-4 py-2 rounded-lg font-medium transition-all whitespace-nowrap text-sm ${
+                activeTab === 'flash'
+                  ? 'bg-gradient-to-r from-pink-500 to-blue-500 text-white shadow-lg shadow-pink-500/20'
+                  : 'text-gray-400 hover:text-white hover:bg-white/[0.05]'
               }`}
             >
               ⚡ Flash
             </button>
-            <button 
+            <button
               onClick={() => setActiveTab('plus-lus')}
-              className={`pb-3 font-medium transition-colors whitespace-nowrap text-sm sm:text-base ${
-                activeTab === 'plus-lus' 
-                  ? 'text-pink-400 border-b-2 border-pink-400' 
-                  : 'text-gray-500 hover:text-gray-300'
+              className={`px-4 py-2 rounded-lg font-medium transition-all whitespace-nowrap text-sm ${
+                activeTab === 'plus-lus'
+                  ? 'bg-gradient-to-r from-pink-500 to-blue-500 text-white shadow-lg shadow-pink-500/20'
+                  : 'text-gray-400 hover:text-white hover:bg-white/[0.05]'
               }`}
             >
               🔥 Les + lus
             </button>
-            <button 
+            <button
               onClick={() => setActiveTab('plus-commentes')}
-              className={`pb-3 font-medium transition-colors whitespace-nowrap text-sm sm:text-base ${
-                activeTab === 'plus-commentes' 
-                  ? 'text-pink-400 border-b-2 border-pink-400' 
-                  : 'text-gray-500 hover:text-gray-300'
+              className={`px-4 py-2 rounded-lg font-medium transition-all whitespace-nowrap text-sm ${
+                activeTab === 'plus-commentes'
+                  ? 'bg-gradient-to-r from-pink-500 to-blue-500 text-white shadow-lg shadow-pink-500/20'
+                  : 'text-gray-400 hover:text-white hover:bg-white/[0.05]'
               }`}
             >
               💬 Les + commentés
@@ -188,8 +188,10 @@ export const RecentArticlesSection = ({ articles = [] }) => {
           </div>
         </div>
 
-        {/* Articles List */}
-        <div className="relative">
+        {/* Articles List avec glassmorphism container */}
+        <div className="relative bg-white/[0.02] backdrop-blur-xl rounded-2xl border border-white/10 p-2 sm:p-4">
+          {/* Reflet glassmorphism */}
+          <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] via-transparent to-transparent pointer-events-none rounded-2xl" />
           <div className="hidden lg:block absolute left-8 top-0 bottom-0 w-0.5 bg-gradient-to-b from-pink-500/50 to-blue-500/50" />
           
           <div className="space-y-0">
@@ -206,9 +208,9 @@ export const RecentArticlesSection = ({ articles = [] }) => {
                   onMouseEnter={() => setHoveredIndex(index)}
                   onMouseLeave={() => setHoveredIndex(null)}
                   className={`
-                    group relative 
-                    ${index !== recentArticles.length - 1 ? 'border-b border-gray-900' : ''}
-                    hover:bg-white/[0.02] transition-all duration-200
+                    group relative
+                    ${index !== recentArticles.length - 1 ? 'border-b border-white/5' : ''}
+                    hover:bg-white/[0.04] backdrop-blur-sm rounded-xl mx-2 transition-all duration-300
                   `}
                   onClick={() => window.location.href = `/article/${article.slug?.current}`}
                   style={{ cursor: 'pointer' }}
@@ -232,7 +234,7 @@ export const RecentArticlesSection = ({ articles = [] }) => {
                     </div>
 
                     <div className="flex gap-3">
-                      <div className="flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden bg-gray-900">
+                      <div className="flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden bg-white/[0.05] border border-white/10">
                         {imageUrl ? (
                           <img
                             src={imageUrl}
@@ -244,8 +246,8 @@ export const RecentArticlesSection = ({ articles = [] }) => {
                             }}
                           />
                         ) : (
-                          <div className="w-full h-full bg-gray-800 flex items-center justify-center">
-                            <span className="text-gray-600 text-xs">⚽</span>
+                          <div className="w-full h-full bg-white/[0.03] flex items-center justify-center">
+                            <span className="text-gray-500 text-xs">⚽</span>
                           </div>
                         )}
                       </div>

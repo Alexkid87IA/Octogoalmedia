@@ -264,22 +264,22 @@ const ArticleSidebar: React.FC<ArticleSidebarProps> = ({
                   <Link
                     key={item._id}
                     to={`/article/${item.slug.current}`}
-                    className="group flex items-start gap-3 p-2 rounded-lg hover:bg-white/5 transition-all"
+                    className="group flex items-start gap-2.5 p-1.5 rounded-lg hover:bg-white/5 transition-all"
                   >
                     {imageUrl && (
-                      <div className="w-14 h-10 rounded-md overflow-hidden flex-shrink-0 bg-gray-800">
+                      <div className="w-12 h-9 rounded overflow-hidden flex-shrink-0 bg-gray-800">
                         <img src={imageUrl} alt="" className="w-full h-full object-cover" />
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
                       {/* Badge catégorie coloré */}
-                      <span className={`inline-block text-[9px] font-bold px-1.5 py-0.5 rounded mb-1 ${categoryColor}`}>
+                      <span className={`inline-block text-[8px] font-bold px-1 py-0.5 rounded mb-0.5 ${categoryColor}`}>
                         {categoryLabel}
                       </span>
-                      <h4 className="text-sm text-gray-300 group-hover:text-white transition-colors line-clamp-2 leading-snug">
+                      <h4 className="text-xs text-gray-300 group-hover:text-white transition-colors line-clamp-2 leading-tight">
                         {item.title}
                       </h4>
-                      <span className="text-xs text-gray-500">{getRelativeTime(item.publishedAt || '')}</span>
+                      <span className="text-[10px] text-gray-500">{getRelativeTime(item.publishedAt || '')}</span>
                     </div>
                   </Link>
                 );
@@ -439,8 +439,8 @@ const ArticleSidebar: React.FC<ArticleSidebarProps> = ({
         </div>
       )}
 
-      {/* Pub Skyscraper en fin de sidebar */}
-      <SidebarAd format="skyscraper" />
+      {/* Pub en fin de sidebar - Format réduit */}
+      <SidebarAd format="rectangle" />
 
     </div>
   );

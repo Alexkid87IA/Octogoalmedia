@@ -1,7 +1,7 @@
 // src/pages/ArticlePageNEW.tsx - Version refactorisée et modulaire pour test
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Share2 } from "lucide-react";
+import { ArrowLeft, Share2, Heart } from "lucide-react";
 
 // Composants existants
 import { SEO } from "../components/common/SEO";
@@ -52,6 +52,66 @@ const ArticlePageNEW: React.FC<{ isEmission?: boolean }> = ({ isEmission = false
   const [activeSection, setActiveSection] = useState('intro');
   const [showSharePopup, setShowSharePopup] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Refs pour sidebar sticky JS
+  const sidebarRef = useRef<HTMLDivElement>(null);
+  const sidebarContainerRef = useRef<HTMLDivElement>(null);
+  const [sidebarStyle, setSidebarStyle] = useState<React.CSSProperties>({});
+
+  // Sidebar sticky avec JavaScript (plus fiable que CSS sticky)
+  useEffect(() => {
+    const handleSidebarScroll = () => {
+      if (!sidebarRef.current || !sidebarContainerRef.current) return;
+
+      const container = sidebarContainerRef.current;
+      const sidebar = sidebarRef.current;
+      const containerRect = container.getBoundingClientRect();
+      const sidebarHeight = sidebar.offsetHeight;
+      const navbarOffset = 96; // Espace sous la navbar
+      const windowHeight = window.innerHeight;
+
+      // Position du container par rapport au viewport
+      const containerTop = containerRect.top;
+      const containerBottom = containerRect.bottom;
+
+      // Cas 1: Le container est en dessous du viewport -> sidebar en position normale
+      if (containerTop > navbarOffset) {
+        setSidebarStyle({
+          position: 'relative',
+          top: 0,
+        });
+      }
+      // Cas 2: On a scrollé et la sidebar doit être fixe
+      else if (containerTop <= navbarOffset && containerBottom > sidebarHeight + navbarOffset) {
+        setSidebarStyle({
+          position: 'fixed',
+          top: navbarOffset,
+          width: container.offsetWidth,
+        });
+      }
+      // Cas 3: On arrive à la fin du container -> sidebar en position absolute en bas
+      else if (containerBottom <= sidebarHeight + navbarOffset) {
+        setSidebarStyle({
+          position: 'absolute',
+          bottom: 0,
+          top: 'auto',
+          width: '100%',
+        });
+      }
+    };
+
+    // Écouter le scroll
+    window.addEventListener('scroll', handleSidebarScroll, { passive: true });
+    window.addEventListener('resize', handleSidebarScroll);
+
+    // Appeler une fois au chargement
+    handleSidebarScroll();
+
+    return () => {
+      window.removeEventListener('scroll', handleSidebarScroll);
+      window.removeEventListener('resize', handleSidebarScroll);
+    };
+  }, [article]);
 
   // Gestion du scroll
   useEffect(() => {
@@ -315,7 +375,7 @@ const ArticlePageNEW: React.FC<{ isEmission?: boolean }> = ({ isEmission = false
 
       <div className="min-h-screen bg-black text-white overflow-x-hidden">
         {/* Hero Section */}
-        <ArticleHero article={article} colors={colors} />
+        <ArticleHero article={article} colors={colors} onShareClick={handleShare} />
 
         {/* Table des matières mobile */}
         {headings && headings.length > 0 && (
@@ -331,7 +391,7 @@ const ArticlePageNEW: React.FC<{ isEmission?: boolean }> = ({ isEmission = false
         )}
 
         {/* Container principal avec layout 2 colonnes */}
-        <div className="container mx-auto px-4 py-16 max-w-7xl">
+        <div className="container mx-auto px-4 pt-4 pb-8 sm:pt-8 sm:pb-12 lg:py-16 max-w-7xl">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
             
             {/* Colonne principale qui contient le contenu et les éléments mobile */}
@@ -354,18 +414,26 @@ const ArticlePageNEW: React.FC<{ isEmission?: boolean }> = ({ isEmission = false
               />
             </div>
 
-            {/* Sidebar droite - Desktop uniquement */}
-            <div className="hidden lg:block lg:col-span-4">
-              <ArticleSidebar
-                article={article}
-                relatedArticles={relatedArticles}
-                latestArticles={latestArticles} // NOUVEAU
-                headings={headings}
-                activeSection={activeSection}
-                scrollProgress={scrollProgress}
-                colors={colors}
-                onShare={handleShare}
-              />
+            {/* Sidebar droite - Desktop uniquement, sticky via JS */}
+            <div
+              ref={sidebarContainerRef}
+              className="hidden lg:block lg:col-span-4 relative"
+            >
+              <div
+                ref={sidebarRef}
+                style={sidebarStyle}
+              >
+                <ArticleSidebar
+                  article={article}
+                  relatedArticles={relatedArticles}
+                  latestArticles={latestArticles}
+                  headings={headings}
+                  activeSection={activeSection}
+                  scrollProgress={scrollProgress}
+                  colors={colors}
+                  onShare={handleShare}
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -376,15 +444,53 @@ const ArticlePageNEW: React.FC<{ isEmission?: boolean }> = ({ isEmission = false
           colors={colors}
         />
 
-        {/* Barre d'actions mobile - Partage uniquement */}
-        <div className="fixed bottom-0 left-0 right-0 bg-black/90 backdrop-blur-lg border-t border-white/10 p-4 lg:hidden z-50">
-          <button
-            onClick={handleShare}
-            className="w-full flex items-center justify-center gap-3 py-3 px-4 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-colors"
-          >
-            <Share2 size={20} />
-            <span className="text-sm font-medium">Partager cet article</span>
-          </button>
+        {/* Barre d'actions flottante mobile - Glassmorphism */}
+        <div className="fixed bottom-4 left-4 right-4 lg:hidden z-50">
+          <div className="flex items-center justify-between gap-3 px-4 py-3 bg-black/70 backdrop-blur-2xl rounded-2xl border border-white/15 shadow-2xl">
+            {/* Like */}
+            <button
+              onClick={handleLike}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all ${
+                isLiked
+                  ? 'bg-pink-500/20 text-pink-400'
+                  : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
+              }`}
+            >
+              <Heart size={18} className={isLiked ? 'fill-current' : ''} />
+              <span className="text-sm font-medium">{localLikes > 0 ? localLikes : ''}</span>
+            </button>
+
+            {/* Share - Central et plus grand */}
+            <button
+              onClick={handleShare}
+              className="flex-1 flex items-center justify-center gap-2 py-3 px-6 bg-gradient-to-r from-pink-500 to-blue-500 rounded-xl text-white font-medium transition-all hover:shadow-lg hover:shadow-pink-500/30"
+            >
+              <Share2 size={18} />
+              <span className="text-sm">Partager</span>
+            </button>
+
+            {/* Bookmark */}
+            <button
+              onClick={handleBookmark}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all ${
+                isBookmarked
+                  ? 'bg-blue-500/20 text-blue-400'
+                  : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
+              }`}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill={isBookmarked ? "currentColor" : "none"}
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+              </svg>
+            </button>
+          </div>
         </div>
 
       </div>

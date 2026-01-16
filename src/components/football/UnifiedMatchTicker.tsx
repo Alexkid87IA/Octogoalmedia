@@ -207,10 +207,10 @@ export default function UnifiedMatchTicker() {
 
   if (loading) {
     return (
-      <div className="bg-black/90 backdrop-blur-sm border-b border-white/5">
+      <div className="relative bg-gradient-to-r from-black/90 via-black/85 to-black/90 backdrop-blur-2xl border-b border-white/5">
         <div className="flex gap-3 overflow-hidden py-3 px-4">
           {[...Array(8)].map((_, i) => (
-            <div key={i} className="flex-shrink-0 w-32 h-14 bg-white/5 rounded-lg animate-pulse" />
+            <div key={i} className="flex-shrink-0 w-32 h-14 bg-white/[0.06] backdrop-blur-xl rounded-2xl animate-pulse border border-white/10" />
           ))}
         </div>
       </div>
@@ -222,73 +222,69 @@ export default function UnifiedMatchTicker() {
   const totalMatches = liveMatches.length + upcomingMatches.length;
 
   return (
-    <div className="relative bg-black/90 backdrop-blur-sm border-b border-white/5">
+    <div className="relative bg-gradient-to-r from-black/90 via-black/85 to-black/90 backdrop-blur-2xl border-b border-white/5">
       <div className="flex items-center">
         {/* Bouton gauche */}
         <button
           onClick={() => scroll('left')}
           disabled={!canScrollLeft}
-          className="p-1 sm:p-2 hover:bg-white/5 transition-colors flex-shrink-0 disabled:opacity-30"
+          className="p-1 sm:p-2 hover:bg-white/10 transition-all duration-200 flex-shrink-0 disabled:opacity-30 rounded-lg"
         >
-          <ChevronLeft className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500" />
+          <ChevronLeft className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400" />
         </button>
 
-        {/* Carousel des matchs */}
-        <div
-          ref={containerRef}
-          onScroll={checkScrollState}
-          className="flex gap-2 overflow-x-auto py-2 flex-1 items-center"
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-        >
-          <style>{`div::-webkit-scrollbar { display: none; }`}</style>
+        {/* Carousel des matchs avec fade aux extrémités */}
+        <div className="relative flex-1 overflow-hidden">
+          {/* Fade gauche */}
+          <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-black/90 to-transparent z-10 pointer-events-none" />
 
-          {/* Matchs LIVE */}
-          {liveMatches.map((match, index) => (
-            <LiveMatchCard key={match.id} match={match} index={index} getTeamCode={getTeamCode} />
-          ))}
+          {/* Carousel */}
+          <div
+            ref={containerRef}
+            onScroll={checkScrollState}
+            className="flex gap-2 overflow-x-auto py-2 px-2 items-center"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            <style>{`div::-webkit-scrollbar { display: none; }`}</style>
 
-          {/* Matchs à venir avec cotes */}
-          {upcomingMatches.map((match, index) => (
-            <OddsMatchCard key={match.id} match={match} index={index} getTeamCode={getTeamCode} />
-          ))}
+            {/* Matchs LIVE */}
+            {liveMatches.map((match, index) => (
+              <LiveMatchCard key={match.id} match={match} index={index} getTeamCode={getTeamCode} />
+            ))}
+
+            {/* Matchs à venir avec cotes */}
+            {upcomingMatches.map((match, index) => (
+              <OddsMatchCard key={match.id} match={match} index={index} getTeamCode={getTeamCode} />
+            ))}
+          </div>
+
+          {/* Fade droite */}
+          <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-black/90 to-transparent z-10 pointer-events-none" />
         </div>
 
         {/* Bouton droite */}
         <button
           onClick={() => scroll('right')}
           disabled={!canScrollRight}
-          className="p-1 sm:p-2 hover:bg-white/5 transition-colors flex-shrink-0 disabled:opacity-30"
+          className="p-1 sm:p-2 hover:bg-white/10 transition-all duration-200 flex-shrink-0 disabled:opacity-30 rounded-lg"
         >
-          <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500" />
+          <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400" />
         </button>
 
-        {/* CTA */}
+        {/* CTA - Plus compact */}
         <Link
           to="/matchs"
-          className="flex items-center gap-1 sm:gap-2 px-1.5 sm:px-3 py-1.5 sm:py-2 mr-1 sm:mr-2 hover:bg-white/5 rounded transition-colors flex-shrink-0"
+          className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 bg-white/[0.06] hover:bg-white/[0.12] backdrop-blur-sm rounded-xl border border-white/10 hover:border-white/20 transition-all duration-200 flex-shrink-0 mr-2"
         >
-          <span className="flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 bg-pink-500/20 text-pink-400 text-[9px] sm:text-[10px] font-bold rounded">
+          <span className="flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 bg-pink-500/30 text-pink-400 text-[9px] sm:text-[10px] font-bold rounded-lg">
             {totalMatches}
           </span>
-          <span className="text-[11px] text-gray-400 hidden sm:block">
-            Voir tous les matchs
+          <span className="text-[10px] sm:text-[11px] text-gray-300 hidden sm:block whitespace-nowrap">
+            Tous les matchs
           </span>
-          <ChevronRight className="w-3 h-3 text-gray-500 sm:hidden" />
+          <ChevronRight className="w-3 h-3 text-gray-400" />
         </Link>
 
-        {/* Mention légale pour les cotes */}
-        {hasUpcomingMatches && (
-          <div className="relative group pr-3 flex-shrink-0 hidden sm:block">
-            <span className="text-[9px] text-gray-600 cursor-help border-b border-dotted border-gray-600">
-              (i)
-            </span>
-            <div className="absolute bottom-full right-0 mb-2 w-48 p-2 bg-gray-900 border border-white/10 rounded text-[9px] text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
-              Cotes à titre indicatif. Jouer comporte des risques : endettement, isolement, dépendance.
-              <br />
-              <span className="text-gray-500">Appelez le 09 74 75 13 13</span>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
@@ -311,7 +307,9 @@ function LiveMatchCard({
       transition={{ delay: index * 0.02 }}
     >
       <Link to={`/match/${match.id}`} className="block flex-shrink-0 group">
-        <div className="relative bg-white/[0.04] hover:bg-white/[0.08] rounded-lg px-3 py-2 transition-all duration-200 border border-red-500/30 hover:border-red-500/50 overflow-hidden w-[130px] sm:w-[160px]">
+        <div className="relative bg-white/[0.08] hover:bg-white/[0.12] backdrop-blur-xl rounded-2xl px-3 py-2 transition-all duration-300 border border-white/20 hover:border-red-400/50 shadow-lg shadow-black/20 hover:shadow-red-500/10 overflow-hidden w-[130px] sm:w-[160px] group-hover:scale-[1.02]">
+          {/* Reflet glassmorphism */}
+          <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent rounded-2xl pointer-events-none" />
           {/* Score centré en haut */}
           <div className="flex items-center justify-center gap-2 text-white font-bold text-base sm:text-lg mb-1">
             <span>{match.score.fullTime.home ?? 0}</span>
@@ -374,7 +372,9 @@ function OddsMatchCard({
       transition={{ delay: index * 0.02 }}
     >
       <Link to={`/match/${match.id}`} className="block flex-shrink-0 group">
-        <div className="relative bg-white/[0.04] hover:bg-white/[0.08] rounded-lg px-3 py-2 transition-all duration-200 border border-transparent hover:border-white/10 overflow-hidden w-[130px] sm:w-[160px]">
+        <div className="relative bg-white/[0.06] hover:bg-white/[0.10] backdrop-blur-xl rounded-2xl px-3 py-2 transition-all duration-300 border border-white/10 hover:border-white/25 shadow-lg shadow-black/20 hover:shadow-xl overflow-hidden w-[130px] sm:w-[160px] group-hover:scale-[1.02]">
+          {/* Reflet glassmorphism */}
+          <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] via-transparent to-transparent rounded-2xl pointer-events-none" />
           {/* Date */}
           <div className="text-[8px] sm:text-[10px] text-gray-400 text-center mb-1">{dateLabel}</div>
 
@@ -412,13 +412,13 @@ function OddsMatchCard({
   );
 }
 
-// Pilule de cote
+// Pilule de cote avec effet glassmorphism
 function OddsPill({ label, value, isMin }: { label: string; value: number; isMin: boolean }) {
   return (
-    <div className={`flex-1 text-center py-0.5 sm:py-1 rounded-sm transition-colors ${
+    <div className={`relative flex-1 text-center py-0.5 sm:py-1 rounded-lg transition-all duration-200 backdrop-blur-sm ${
       isMin
-        ? 'bg-green-500/20 text-green-400'
-        : 'bg-white/5 text-gray-400 hover:bg-white/10'
+        ? 'bg-green-500/25 text-green-400 border border-green-500/30 shadow-sm shadow-green-500/20'
+        : 'bg-white/[0.06] text-gray-400 hover:bg-white/[0.12] border border-white/10 hover:border-white/20'
     }`}>
       <span className="text-[7px] sm:text-[9px] text-gray-500 block">{label}</span>
       <span className="text-[9px] sm:text-xs font-bold">{formatOdds(value)}</span>

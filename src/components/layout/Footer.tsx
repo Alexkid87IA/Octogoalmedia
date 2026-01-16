@@ -53,10 +53,11 @@ export const Footer = () => {
   };
 
   return (
-    <footer className="relative bg-black border-t border-white/5">
-      {/* Background avec effet dégradé */}
+    <footer className="relative bg-black/80 backdrop-blur-2xl border-t border-white/10">
+      {/* Background avec effet glassmorphism */}
       <div className="absolute inset-0">
-        <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 to-black" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/70 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-br from-pink-500/5 via-transparent to-blue-500/5" />
         {/* Glow effect */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[400px]">
           <div className="absolute inset-0 bg-gradient-to-b from-pink-500/5 to-transparent blur-3xl" />
