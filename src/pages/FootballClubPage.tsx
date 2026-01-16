@@ -342,12 +342,12 @@ export default function FootballClubPage() {
                         animate={{ scale: 1 }}
                         transition={{ delay: 0.1 * i }}
                         className={`w-8 h-8 md:w-10 md:h-10 flex items-center justify-center font-bold text-sm rounded-lg ${
-                          result === 'W' ? 'bg-green-500 text-white' :
-                          result === 'L' ? 'bg-red-500 text-white' :
+                          result === 'win' ? 'bg-green-500 text-white' :
+                          result === 'loss' ? 'bg-red-500 text-white' :
                           'bg-gray-600 text-white'
                         }`}
                       >
-                        {result === 'W' ? 'V' : result === 'L' ? 'D' : 'N'}
+                        {result === 'win' ? 'V' : result === 'loss' ? 'D' : 'N'}
                       </motion.div>
                     ))}
                   </div>
