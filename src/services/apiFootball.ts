@@ -3,14 +3,19 @@
 // Migré depuis Football-Data.org
 
 import {
-  COMPETITIONS,
   LEAGUES,
   LEAGUE_INFO,
   getTopCompetitionIds,
-  getMatchTickerCompetitions,
-  getCompetition,
-  isTopCompetition,
 } from '../config/competitions';
+import { getCached, setCache, setCacheWithTimestamp } from './apiFootball.cache';
+import {
+  transformMatch,
+  transformStanding,
+  transformScorer,
+  transformEvent,
+  transformTeam,
+  parseStatValue,
+} from './apiFootball.transform';
 
 // Re-export pour compatibilité
 export { LEAGUES, LEAGUE_INFO };
@@ -25,11 +30,7 @@ const API_TIMEOUT = 5000;
 
 // Fonction fetch pour les appels API avec timeout
 async function apiFetch(endpoint: string): Promise<Response> {
-  // endpoint commence par "/" donc on le concatène directement
   const url = `${BASE_URL}${endpoint}`;
-  // console.log('[API] Fetching:', url);
-
-  // AbortController pour timeout
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
 
@@ -37,7 +38,6 @@ async function apiFetch(endpoint: string): Promise<Response> {
     const response = await fetch(url, { signal: controller.signal });
     clearTimeout(timeoutId);
 
-    // Log the response status
     if (!response.ok) {
       console.error('[API] HTTP Error:', response.status, response.statusText);
     }
@@ -51,38 +51,6 @@ async function apiFetch(endpoint: string): Promise<Response> {
     }
     throw error;
   }
-}
-
-// =============================================
-// SYSTÈME DE CACHE
-// =============================================
-
-interface CacheEntry<T = unknown> {
-  data: T;
-  timestamp: number;
-}
-
-const cache: Record<string, CacheEntry> = {};
-const CACHE_DURATION = 15 * 60 * 1000; // 15 minutes en millisecondes - augmenté pour éviter le rate limiting
-
-function getCached<T = unknown>(key: string): T | null {
-  const entry = cache[key];
-  if (!entry) return null;
-
-  const isExpired = Date.now() - entry.timestamp > CACHE_DURATION;
-  if (isExpired) {
-    delete cache[key];
-    return null;
-  }
-
-  return entry.data as T;
-}
-
-function setCache<T = unknown>(key: string, data: T): void {
-  cache[key] = {
-    data,
-    timestamp: Date.now(),
-  };
 }
 
 // =============================================
@@ -1350,87 +1318,6 @@ export async function getLiveMatches() {
     console.error('Erreur getLiveMatches:', error);
     return [];
   }
-}
-
-// =============================================
-// FONCTION DE TRANSFORMATION
-// =============================================
-
-/**
- * Transforme un match API-Football en format compatible avec l'ancien format
- */
-function transformMatch(fixture: any) {
-  const statusMapping: Record<string, string> = {
-    'TBD': 'SCHEDULED',
-    'NS': 'SCHEDULED',
-    'FT': 'FINISHED',
-    'AET': 'FINISHED',
-    'PEN': 'FINISHED',
-    '1H': 'IN_PLAY',
-    'HT': 'IN_PLAY',
-    '2H': 'IN_PLAY',
-    'ET': 'IN_PLAY',
-    'BT': 'IN_PLAY',
-    'P': 'IN_PLAY',
-    'SUSP': 'SUSPENDED',
-    'INT': 'INTERRUPTED',
-    'PST': 'POSTPONED',
-    'CANC': 'CANCELLED',
-    'ABD': 'ABANDONED',
-    'AWD': 'AWARDED',
-    'WO': 'WALKOVER',
-    'LIVE': 'IN_PLAY',
-  };
-
-  return {
-    id: fixture.fixture.id,
-    utcDate: fixture.fixture.date,
-    status: statusMapping[fixture.fixture.status.short] || fixture.fixture.status.short,
-    statusShort: fixture.fixture.status.short,
-    minute: fixture.fixture.status.elapsed,
-    matchday: extractMatchday(fixture.league.round),
-    round: fixture.league.round, // Tour complet pour les coupes (ex: "Round of 32", "Quarter-finals")
-    homeTeam: {
-      id: fixture.teams.home.id,
-      name: fixture.teams.home.name,
-      shortName: fixture.teams.home.name,
-      tla: fixture.teams.home.name.substring(0, 3).toUpperCase(),
-      crest: fixture.teams.home.logo,
-    },
-    awayTeam: {
-      id: fixture.teams.away.id,
-      name: fixture.teams.away.name,
-      shortName: fixture.teams.away.name,
-      tla: fixture.teams.away.name.substring(0, 3).toUpperCase(),
-      crest: fixture.teams.away.logo,
-    },
-    score: {
-      fullTime: {
-        home: fixture.goals.home,
-        away: fixture.goals.away,
-      },
-      halfTime: {
-        home: fixture.score.halftime.home,
-        away: fixture.score.halftime.away,
-      },
-    },
-    competition: {
-      id: fixture.league.id,
-      name: fixture.league.name,
-      emblem: fixture.league.logo,
-    },
-    venue: fixture.fixture.venue?.name,
-    referee: fixture.fixture.referee,
-  };
-}
-
-/**
- * Extrait le numéro de journée depuis le round
- */
-function extractMatchday(round: string): number {
-  if (!round) return 1;
-  const match = round.match(/\d+/);
-  return match ? parseInt(match[0]) : 1;
 }
 
 // =============================================
