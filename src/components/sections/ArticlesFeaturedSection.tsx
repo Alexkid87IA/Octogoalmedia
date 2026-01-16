@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import SafeImage from '../common/SafeImage';
 import ErrorBoundary from '../common/ErrorBoundary';
+import { SanityImage } from '../../types/sanity';
 
 interface ArticlesFeaturedSectionProps {
   title?: string;
@@ -12,7 +13,7 @@ interface ArticlesFeaturedSectionProps {
     slug?: {
       current: string;
     };
-    mainImage?: any;
+    mainImage?: SanityImage;
     excerpt?: string;
     publishedAt?: string;
     categories?: Array<{

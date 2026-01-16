@@ -170,7 +170,7 @@ const ArticlePageNEW: React.FC<{ isEmission?: boolean }> = ({ isEmission = false
             if (fetchedArticle.keyPoints && !Array.isArray(fetchedArticle.keyPoints)) {
               delete fetchedArticle.keyPoints;
             } else if (fetchedArticle.keyPoints && Array.isArray(fetchedArticle.keyPoints)) {
-              fetchedArticle.keyPoints = fetchedArticle.keyPoints.map((point: any) => 
+              fetchedArticle.keyPoints = fetchedArticle.keyPoints.map((point: string | Record<string, unknown>) =>
                 typeof point === 'string' ? point : cleanPortableText(point)
               ).filter(Boolean);
             }

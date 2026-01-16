@@ -147,7 +147,7 @@ const StatCard = ({
   subValue,
   gradient = 'from-pink-500 to-rose-600',
 }: {
-  icon: any;
+  icon: React.ElementType;
   label: string;
   value: string | number;
   subValue?: string;

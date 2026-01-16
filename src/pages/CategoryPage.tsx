@@ -41,11 +41,11 @@ const categoryConfig: Record<string, {
   title: string;
   subtitle: string;
   description: string;
-  icon: any;
+  icon: React.ElementType;
   color: string;
   subcategories: Array<{
     title: string;
-    icon: any;
+    icon: React.ElementType;
     links: Array<{ label: string; path: string; description?: string }>;
   }>;
 }> = {
@@ -136,7 +136,7 @@ const SubcategoryCard = ({
   links
 }: {
   title: string;
-  icon: any;
+  icon: React.ElementType;
   links: Array<{ label: string; path: string; description?: string }>;
 }) => (
   <motion.div

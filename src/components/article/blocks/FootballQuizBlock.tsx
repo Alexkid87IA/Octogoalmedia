@@ -5,6 +5,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Clock, CheckCircle, XCircle, Share2, Trophy, ChevronRight, RotateCcw } from 'lucide-react';
 import { urlFor } from '../../../utils/sanityClient';
+import { SanityImage } from '../../../types/sanity';
 
 interface FootballQuizProps {
   value: {
@@ -28,7 +29,7 @@ interface FootballQuizProps {
 interface Question {
   _key: string;
   question: string;
-  image?: any;
+  image?: SanityImage;
   imageUrl?: string;
   answers: Answer[];
   explanation?: string;

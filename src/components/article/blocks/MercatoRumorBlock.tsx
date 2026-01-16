@@ -5,11 +5,12 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ExternalLink, ChevronDown, ChevronUp, TrendingUp } from 'lucide-react';
 import { urlFor } from '../../../utils/sanityClient';
+import { SanityImage } from '../../../types/sanity';
 
 interface MercatoRumorProps {
   value: {
     playerName?: string;
-    playerPhoto?: any;
+    playerPhoto?: SanityImage;
     playerPhotoUrl?: string;
     currentClubName?: string;
     interestedClubs: InterestedClub[];

@@ -7,13 +7,14 @@ import { SEO } from '../components/common/SEO';
 import { Footer } from '../components/layout/Footer';
 import { getAllArticles } from '../utils/sanityAPI';
 import { urlFor } from '../utils/sanityClient';
+import { SanityImage } from '../types/sanity';
 
 interface SearchResult {
   _id: string;
   title: string;
   slug: { current: string };
   excerpt?: string;
-  mainImage?: any;
+  mainImage?: SanityImage;
   publishedAt?: string;
   categories?: { title: string; slug: { current: string } }[];
 }

@@ -4,11 +4,12 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Twitter, Facebook, Linkedin, Mail } from 'lucide-react';
 import SafeImage from '../common/SafeImage';
 import ErrorBoundary from '../common/ErrorBoundary';
+import { SanityImage } from '../../types/sanity';
 
 interface ArticleSidebarProps {
   author?: {
     name?: string;
-    image?: any;
+    image?: SanityImage;
     bio?: string;
     slug?: {
       current: string;
@@ -20,7 +21,7 @@ interface ArticleSidebarProps {
     slug?: {
       current: string;
     };
-    mainImage?: any;
+    mainImage?: SanityImage;
     publishedAt?: string;
     categories?: Array<{
       title: string;

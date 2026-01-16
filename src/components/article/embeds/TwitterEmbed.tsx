@@ -7,6 +7,17 @@ interface TwitterEmbedProps {
   caption?: string;
 }
 
+// Options pour le widget Twitter
+interface TwitterWidgetOptions {
+  theme?: 'light' | 'dark';
+  align?: 'left' | 'center' | 'right';
+  conversation?: 'none' | 'all';
+  cards?: 'hidden' | 'visible';
+  width?: number;
+  dnt?: boolean;
+  lang?: string;
+}
+
 // Déclaration pour Twitter widgets API
 declare global {
   interface Window {
@@ -16,7 +27,7 @@ declare global {
         createTweet: (
           tweetId: string,
           targetEl: HTMLElement,
-          options?: any
+          options?: TwitterWidgetOptions
         ) => Promise<HTMLElement>;
       };
     };

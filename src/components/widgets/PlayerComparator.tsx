@@ -6,6 +6,43 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X, Users, Trophy, Target, Footprints, Shield, Zap, ChevronDown, BarChart3, AlertTriangle, Flame, Crown, Swords } from 'lucide-react';
 import { getTopScorersEurope, getTopAssistsEurope, getPlayerInfo, TOP_5_LEAGUES } from '../../services/apiFootball';
 
+// Type for player statistics from API
+interface PlayerStatisticsItem {
+  games?: {
+    appearences?: number;
+    minutes?: number;
+    rating?: string;
+  };
+  goals?: {
+    total?: number;
+    assists?: number;
+  };
+  passes?: {
+    total?: number;
+    key?: number;
+  };
+  dribbles?: {
+    attempts?: number;
+    success?: number;
+  };
+  tackles?: {
+    total?: number;
+    interceptions?: number;
+  };
+  duels?: {
+    won?: number;
+    total?: number;
+  };
+  fouls?: {
+    drawn?: number;
+    committed?: number;
+  };
+  cards?: {
+    yellow?: number;
+    red?: number;
+  };
+}
+
 interface PlayerBasic {
   id: number;
   name: string;
@@ -195,7 +232,7 @@ const PlayerComparator: React.FC = () => {
         ]);
 
         // Fonction pour agréger les stats de toutes les compétitions
-        const aggregateStats = (statistics: any[]) => {
+        const aggregateStats = (statistics: PlayerStatisticsItem[]) => {
           const aggregated = {
             appearances: 0,
             goals: 0,
@@ -217,7 +254,7 @@ const PlayerComparator: React.FC = () => {
             ratingCount: 0,
           };
 
-          statistics.forEach((stat: any) => {
+          statistics.forEach((stat: PlayerStatisticsItem) => {
             aggregated.appearances += stat.games?.appearences || 0;
             aggregated.goals += stat.goals?.total || 0;
             aggregated.assists += stat.goals?.assists || 0;

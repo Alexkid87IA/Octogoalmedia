@@ -6,11 +6,12 @@ import { motion } from "framer-motion";
 import { Calendar, User, ChevronRight, PenTool } from "lucide-react";
 import { urlFor } from "../../../utils/sanityClient";
 import { VerticalColors } from "../../../types/article.types";
+import { SanityImage } from "../../../types/sanity";
 
 interface ArticleAuthorProps {
   author: {
     name: string;
-    image?: any;
+    image?: SanityImage;
     imageUrl?: string;
     bio?: string;
   };

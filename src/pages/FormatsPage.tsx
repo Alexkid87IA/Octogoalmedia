@@ -18,6 +18,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { sanityClient, urlFor } from '../utils/sanityClient';
+import { SanityImage } from '../types/sanity';
 
 // ===========================================
 // TYPES
@@ -27,7 +28,7 @@ interface SanityArticle {
   _id: string;
   title: string;
   slug: { current: string };
-  mainImage: any;
+  mainImage?: SanityImage;
   excerpt?: string;
   publishedAt: string;
   contentType?: string;

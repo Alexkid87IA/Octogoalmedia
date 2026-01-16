@@ -13,8 +13,16 @@ interface ArticleHeroProps {
   onShareClick?: () => void;
 }
 
+// Type pour le hotspot Sanity
+interface SanityHotspot {
+  x: number;
+  y: number;
+  height?: number;
+  width?: number;
+}
+
 // Fonction pour calculer la position de l'image basée sur le hotspot
-const getHotspotPosition = (hotspot: any) => {
+const getHotspotPosition = (hotspot: SanityHotspot | undefined) => {
   if (!hotspot) return 'center center';
   const x = Math.round(hotspot.x * 100);
   const y = Math.round(hotspot.y * 100);

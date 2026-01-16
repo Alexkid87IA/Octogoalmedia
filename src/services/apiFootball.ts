@@ -16,6 +16,76 @@ import {
   transformTeam,
   parseStatValue,
 } from './apiFootball.transform';
+import {
+  ApiStanding,
+  ApiTopScorer,
+  ApiFixtureResponse,
+  ApiEvent,
+  ApiStatistic,
+  ApiLineup,
+  ApiMatchPlayersResponse,
+  TransformedMatch,
+} from '../types/apiFootball.types';
+
+// =============================================
+// TYPES INTERNES
+// =============================================
+
+// Type pour les données brutes de l'API standings
+interface RawStandingTeam {
+  rank: number;
+  team: { id: number; name: string; logo: string };
+  all: { played: number; win: number; draw: number; lose: number; goals: { for: number; against: number } };
+  points: number;
+  goalsDiff: number;
+  form?: string;
+}
+
+// Type pour les groupes de standings
+type StandingsGroup = RawStandingTeam[];
+
+// Type pour les items de transfert
+interface TransferItem {
+  player: { id: number; name: string; photo?: string };
+  update?: string;
+  transfers: Array<{
+    date: string;
+    type: string;
+    teams: { in: { id: number; name: string; logo: string }; out: { id: number; name: string; logo: string } };
+  }>;
+}
+
+// Type pour les blessures
+interface InjuryItem {
+  player: { id: number; name: string; photo?: string; reason?: string; type?: string };
+  team: { id: number; name: string; logo: string };
+  fixture?: { date: string };
+  league?: { name: string };
+}
+
+// Type pour les statistiques joueur dans un match
+interface MatchPlayerData {
+  player: { id: number; name: string; photo?: string };
+  statistics: Array<{
+    games?: { minutes?: number; number?: number; position?: string; rating?: string };
+    goals?: { total?: number; assists?: number };
+    passes?: { total?: number; key?: number; accuracy?: string };
+    shots?: { total?: number; on?: number };
+    tackles?: { total?: number; interceptions?: number };
+    dribbles?: { attempts?: number; success?: number };
+    fouls?: { drawn?: number; committed?: number };
+    cards?: { yellow?: number; red?: number };
+  }>;
+}
+
+// Type pour match transformé basique
+interface BasicMatch {
+  utcDate: string;
+  status?: string;
+  homeTeam: { id: number; name?: string };
+  awayTeam: { id: number; name?: string };
+  score?: { fullTime?: { home: number | null; away: number | null } };
+}
 
 // Re-export pour compatibilité
 export { LEAGUES, LEAGUE_INFO };
@@ -134,7 +204,7 @@ export async function getStandings(leagueCode: string) {
     // console.log(`[API] getStandings(${normalizedCode}) - raw standings:`, standings.length);
 
     // Transformer pour compatibilité avec l'ancien format
-    const result = standings.map((team: any) => ({
+    const result = standings.map((team: RawStandingTeam) => ({
       position: team.rank,
       team: {
         id: team.team.id,
@@ -200,13 +270,13 @@ export async function getAllGroupStandings(leagueCode: string) {
       // console.log(`[API] getAllGroupStandings - found ${allGroups.length} groups for season ${season}`);
 
       // Transformer chaque groupe
-      const result = allGroups.map((group: any[], index: number) => {
+      const result = allGroups.map((group: StandingsGroup, index: number) => {
         // Essayer de déterminer le nom du groupe à partir du premier team
         const groupName = group[0]?.group || `Groupe ${String.fromCharCode(65 + index)}`;
 
         return {
           name: groupName,
-          teams: group.map((team: any) => ({
+          teams: group.map((team: RawStandingTeam) => ({
             position: team.rank,
             team: {
               id: team.team.id,
@@ -260,7 +330,11 @@ export async function getTeams(leagueCode: string) {
     const data = await response.json();
 
     // Transformer pour compatibilité
-    const result = (data.response || []).map((item: any) => ({
+    interface TeamResponseItem {
+      team: { id: number; name: string; code?: string; logo: string; founded?: number };
+      venue?: { name?: string };
+    }
+    const result = (data.response || []).map((item: TeamResponseItem) => ({
       id: item.team.id,
       name: item.team.name,
       shortName: item.team.name,
@@ -435,7 +509,7 @@ export async function getRecentResults(leagueIds?: number[], countPerLeague: num
     );
 
     const results = await Promise.all(promises);
-    const allMatches: any[] = [];
+    const allMatches: ApiFixtureResponse[] = [];
 
     results.forEach((data) => {
       if (data.response && Array.isArray(data.response)) {
@@ -495,7 +569,7 @@ export async function getTodayFixtures(leagueIds?: number[]) {
     const results = await Promise.all(promises);
 
     // Combiner tous les matchs
-    const allMatches: any[] = [];
+    const allMatches: ApiFixtureResponse[] = [];
     results.forEach((data, idx) => {
       // console.log(`[API] getTodayFixtures - league ${ids[idx]}:`, data.response?.length || 0, 'matches');
       if (data.response) {
@@ -547,7 +621,7 @@ export async function getUpcomingFixtures(leagueIds?: number[], days: number = 7
     );
 
     const results = await Promise.all(promises);
-    const allMatches: any[] = [];
+    const allMatches: ApiFixtureResponse[] = [];
 
     results.forEach((data) => {
       if (data.response) {
@@ -604,14 +678,14 @@ export async function getFixturesByDate(date: string, leagueIds?: number[]) {
     // console.log(`[API] getFixturesByDate(${date}) - received:`, allMatches.length, 'total fixtures');
 
     // Filtrer côté client pour garder uniquement les ligues qu'on veut
-    const filteredMatches = allMatches.filter((fixture: any) =>
+    const filteredMatches = allMatches.filter((fixture: ApiFixtureResponse) =>
       idsSet.has(fixture.league?.id)
     );
     // console.log(`[API] getFixturesByDate(${date}) - after filter:`, filteredMatches.length, 'matches');
 
     const result = filteredMatches
       .map(transformMatch)
-      .sort((a: any, b: any) => new Date(a.utcDate).getTime() - new Date(b.utcDate).getTime());
+      .sort((a: TransformedMatch, b: TransformedMatch) => new Date(a.utcDate).getTime() - new Date(b.utcDate).getTime());
 
     setCache(cacheKey, result);
     return result;
@@ -641,7 +715,7 @@ export async function getFixturesByDateRange(
     );
 
     const results = await Promise.all(promises);
-    const allMatches: any[] = [];
+    const allMatches: ApiFixtureResponse[] = [];
 
     results.forEach((data) => {
       if (data.response) {
@@ -680,7 +754,7 @@ export async function getTopScorers(leagueCode: string) {
     const data = await response.json();
 
     // Transformer pour compatibilité
-    const result = (data.response || []).map((item: any) => ({
+    const result = (data.response || []).map((item: ApiTopScorer) => ({
       player: {
         id: item.player.id,
         name: item.player.name,
@@ -726,7 +800,7 @@ export async function getTopAssists(leagueCode: string) {
     const data = await response.json();
 
     // Transformer pour compatibilité
-    const result = (data.response || []).map((item: any) => ({
+    const result = (data.response || []).map((item: ApiTopScorer) => ({
       player: {
         id: item.player.id,
         name: item.player.name,
@@ -959,9 +1033,9 @@ export async function getMatchesGroupedByMatchday(leagueCode: string) {
   try {
     const matches = await getAllMatches(leagueCode);
 
-    const grouped: Record<number, any[]> = {};
+    const grouped: Record<number, TransformedMatch[]> = {};
 
-    matches.forEach((match: any) => {
+    matches.forEach((match: TransformedMatch) => {
       const matchday = match.matchday;
       if (!grouped[matchday]) {
         grouped[matchday] = [];
@@ -1015,7 +1089,7 @@ export async function getTeamDetails(teamId: number) {
       clubColors: null, // Non disponible dans API-Football
       venue: team.venue?.name,
       coach: null, // Nécessite une requête séparée
-      squad: squad.map((player: any) => ({
+      squad: squad.map((player: { id: number; name: string; position?: string; photo?: string; number?: number }) => ({
         id: player.id,
         name: player.name,
         position: player.position,
@@ -1177,8 +1251,8 @@ export async function getTeamTopScorers(teamId: number, leagueId: number) {
 
     // Filtrer pour ne garder que les joueurs de l'équipe
     const teamScorers = allScorers.filter(
-      (p: any) => p.statistics?.[0]?.team?.id === teamId
-    ).map((p: any) => ({
+      (p: ApiTopScorer) => p.statistics?.[0]?.team?.id === teamId
+    ).map((p: ApiTopScorer) => ({
       id: p.player.id,
       name: p.player.name,
       photo: p.player.photo,
@@ -1201,7 +1275,8 @@ export async function getTeamTopScorers(teamId: number, leagueId: number) {
 export async function getTeamLeaguePosition(teamId: number, leagueId: number) {
   try {
     const standings = await getStandings(String(leagueId));
-    const teamStanding = standings.find((t: any) => t.team?.id === teamId);
+    interface StandingEntry { team?: { id: number }; position?: number }
+    const teamStanding = standings.find((t: StandingEntry) => t.team?.id === teamId);
     return teamStanding || null;
   } catch (error) {
     console.error('Erreur getTeamLeaguePosition:', error);
@@ -1263,7 +1338,7 @@ export async function getTeamNextMatches(teamId: number, limit: number = 5) {
 export async function getTeamLastResults(teamId: number, limit: number = 5) {
   try {
     const matches = await getTeamMatches(teamId, 'FINISHED');
-    const sorted = matches.sort((a: any, b: any) =>
+    const sorted = matches.sort((a: TransformedMatch, b: TransformedMatch) =>
       new Date(b.utcDate).getTime() - new Date(a.utcDate).getTime()
     );
     return sorted.slice(0, limit);
@@ -1402,7 +1477,7 @@ export async function getMatchEvents(fixtureId: number, isLive: boolean = false)
     // console.log(`[API] getMatchEvents - events count:`, data.response?.length || 0);
 
     // Transformer les événements
-    const events = (data.response || []).map((event: any) => ({
+    const events = (data.response || []).map((event: ApiEvent) => ({
       time: {
         elapsed: event.time.elapsed,
         extra: event.time.extra,
@@ -1514,13 +1589,13 @@ export async function getMatchStats(fixtureId: number, isLive: boolean = false) 
     const homeStats = data.response[0];
     const awayStats = data.response[1];
 
-    const parseStatValue = (stats: any[], type: string): number => {
-      const stat = stats.find((s: any) => s.type === type);
+    const parseStatValue = (stats: ApiStatistic[], type: string): number => {
+      const stat = stats.find((s: ApiStatistic) => s.type === type);
       if (!stat) return 0;
       if (typeof stat.value === 'string' && stat.value.includes('%')) {
         return parseInt(stat.value);
       }
-      return stat.value || 0;
+      return typeof stat.value === 'number' ? stat.value : 0;
     };
 
     const result = {
@@ -1613,7 +1688,17 @@ export async function getMatchLineups(fixtureId: number, isLive: boolean = false
       return null;
     }
 
-    const transformLineup = (teamData: any) => ({
+    interface LineupPlayer {
+      player: { id: number; name: string; number?: number; pos?: string; grid?: string };
+    }
+    interface LineupTeamData {
+      team: { id: number; name: string; logo?: string; colors?: unknown };
+      formation?: string;
+      coach?: { id: number; name: string; photo?: string };
+      startXI?: LineupPlayer[];
+      substitutes?: LineupPlayer[];
+    }
+    const transformLineup = (teamData: LineupTeamData) => ({
       team: {
         id: teamData.team.id,
         name: teamData.team.name,
@@ -1626,14 +1711,14 @@ export async function getMatchLineups(fixtureId: number, isLive: boolean = false
         name: teamData.coach.name,
         photo: teamData.coach.photo,
       } : null,
-      startXI: (teamData.startXI || []).map((p: any) => ({
+      startXI: (teamData.startXI || []).map((p: LineupPlayer) => ({
         id: p.player.id,
         name: p.player.name,
         number: p.player.number,
         pos: p.player.pos,
         grid: p.player.grid,
       })),
-      substitutes: (teamData.substitutes || []).map((p: any) => ({
+      substitutes: (teamData.substitutes || []).map((p: LineupPlayer) => ({
         id: p.player.id,
         name: p.player.name,
         number: p.player.number,
@@ -1717,13 +1802,13 @@ export async function getMatchPlayerStats(fixtureId: number, isLive: boolean = f
     }
 
     // Transformer: data.response contient un array avec les stats par équipe
-    const result = data.response.map((teamData: any) => ({
+    const result = data.response.map((teamData: ApiMatchPlayersResponse) => ({
       team: {
         id: teamData.team.id,
         name: teamData.team.name,
         logo: teamData.team.logo,
       },
-      players: (teamData.players || []).map((p: any) => ({
+      players: (teamData.players || []).map((p: MatchPlayerData) => ({
         id: p.player.id,
         name: p.player.name,
         photo: p.player.photo,
@@ -1869,15 +1954,14 @@ export async function getTeamInjuries(teamId: number) {
     }
 
     // Filtrer pour ne garder que les blessures actuelles (sans date de retour ou date future)
-    const now = new Date();
     const injuries = (data.response || [])
-      .filter((injury: any) => {
+      .filter((injury: InjuryItem) => {
         // Garder si pas de date de retour ou date de retour dans le futur
         if (!injury.player?.reason) return false;
         return true;
       })
       .slice(0, 10) // Limiter à 10 blessures
-      .map((injury: any) => ({
+      .map((injury: InjuryItem) => ({
         player: {
           id: injury.player?.id,
           name: injury.player?.name,
@@ -1950,7 +2034,19 @@ export async function getPlayerInfo(playerId: number) {
       photo: player.photo,
       injured: player.injured,
       // Stats par compétition
-      statistics: stats.map((stat: any) => ({
+      statistics: stats.map((stat: {
+        team?: { id: number; name: string; logo?: string };
+        league?: { id: number; name: string; country?: string; logo?: string; flag?: string; season?: number };
+        games?: { appearences?: number; lineups?: number; minutes?: number; position?: string; rating?: string; captain?: boolean };
+        goals?: { total?: number; assists?: number; conceded?: number; saves?: number };
+        passes?: { total?: number; key?: number; accuracy?: number | string | null };
+        tackles?: { total?: number; blocks?: number; interceptions?: number };
+        duels?: { total?: number; won?: number };
+        dribbles?: { attempts?: number; success?: number };
+        fouls?: { drawn?: number; committed?: number };
+        cards?: { yellow?: number; yellowred?: number; red?: number };
+        penalty?: { won?: number; scored?: number; missed?: number; saved?: number };
+      }) => ({
         team: {
           id: stat.team?.id,
           name: stat.team?.name,
@@ -2047,8 +2143,13 @@ export async function getPlayerTransfers(playerId: number) {
       return [];
     }
 
+    interface TransferEntry {
+      date: string;
+      type: string;
+      teams?: { in?: { id: number; name: string; logo: string }; out?: { id: number; name: string; logo: string } };
+    }
     const transfers = data.response[0]?.transfers || [];
-    const result = transfers.map((t: any) => ({
+    const result = transfers.map((t: TransferEntry) => ({
       date: t.date,
       type: t.type,
       teams: {
@@ -2089,7 +2190,13 @@ export async function getPlayerTrophies(playerId: number) {
 
     const data = await response.json();
 
-    const result = (data.response || []).map((t: any) => ({
+    interface TrophyEntry {
+      league: string;
+      country: string;
+      season: string;
+      place: string;
+    }
+    const result = (data.response || []).map((t: TrophyEntry) => ({
       league: t.league,
       country: t.country,
       season: t.season,
@@ -2136,7 +2243,7 @@ export function formatDateShort(dateString: string): string {
 /**
  * Détermine le résultat d'un match pour une équipe donnée
  */
-export function getMatchResult(match: any, teamId: number): 'win' | 'draw' | 'loss' | null {
+export function getMatchResult(match: BasicMatch, teamId: number): 'win' | 'draw' | 'loss' | null {
   if (match.status !== 'FINISHED') return null;
 
   const homeScore = match.score?.fullTime?.home;
@@ -2156,7 +2263,7 @@ export function getMatchResult(match: any, teamId: number): 'win' | 'draw' | 'lo
 /**
  * Calcule la forme récente d'une équipe (5 derniers matchs)
  */
-export function getTeamForm(matches: any[], teamId: number): string[] {
+export function getTeamForm(matches: BasicMatch[], teamId: number): string[] {
   return matches
     .filter(m => m.status === 'FINISHED')
     .slice(0, 5)
@@ -2179,14 +2286,14 @@ export function clearCache(): void {
 // Cache longue durée pour les classements (1 heure)
 const EUROPEAN_CACHE_DURATION = 60 * 60 * 1000; // 1 heure
 
-interface EuropeanCacheEntry {
-  data: any;
+interface EuropeanCacheEntry<T = unknown> {
+  data: T;
   timestamp: number;
 }
 
 const europeanCache: Record<string, EuropeanCacheEntry> = {};
 
-function getEuropeanCached(key: string): any | null {
+function getEuropeanCached<T = unknown>(key: string): T | null {
   const entry = europeanCache[key];
   if (!entry) return null;
 
@@ -2196,10 +2303,10 @@ function getEuropeanCached(key: string): any | null {
     return null;
   }
 
-  return entry.data;
+  return entry.data as T;
 }
 
-function setEuropeanCache(key: string, data: any): void {
+function setEuropeanCache<T = unknown>(key: string, data: T): void {
   europeanCache[key] = {
     data,
     timestamp: Date.now(),
@@ -2299,7 +2406,12 @@ export interface EuropeanPlayerStats {
  * Agrège les stats de TOUTES les compétitions d'un joueur
  * (comme Face à Face le fait)
  */
-function aggregateAllPlayerStats(statistics: any[]): { goals: number; assists: number; matches: number; rating: number | null } {
+interface AggregateStatItem {
+  goals?: { total?: number; assists?: number };
+  games?: { appearences?: number; rating?: string };
+}
+
+function aggregateAllPlayerStats(statistics: AggregateStatItem[]): { goals: number; assists: number; matches: number; rating: number | null } {
   let goals = 0;
   let assists = 0;
   let matches = 0;

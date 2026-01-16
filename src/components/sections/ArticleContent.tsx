@@ -1,5 +1,12 @@
 import React from 'react';
 import { urlFor } from '../../utils/imageUrlBuilder';
+import { SanityReference } from '../../types/sanity';
+
+interface MarkDef {
+  _key: string;
+  _type: string;
+  href?: string;
+}
 
 interface ContentBlock {
   _type: string;
@@ -10,19 +17,19 @@ interface ContentBlock {
     _type: string;
     marks?: string[];
   }>;
-  asset?: any;
+  asset?: SanityReference;
   alt?: string;
   caption?: string;
   listItem?: string;
   level?: number;
-  markDefs?: any[];
+  markDefs?: MarkDef[];
   code?: string;
   language?: string;
   filename?: string;
 }
 
 interface ArticleContentProps {
-  content?: ContentBlock[] | any;
+  content?: ContentBlock[];
   keyPoints?: string[];
 }
 

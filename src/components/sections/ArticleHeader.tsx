@@ -5,15 +5,16 @@ import ErrorBoundary from '../common/ErrorBoundary';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, ChevronDown } from 'lucide-react';
+import { SanityImage } from '../../types/sanity';
 
 interface ArticleHeaderProps {
   article: {
     title?: string;
-    mainImage?: any;
+    mainImage?: SanityImage;
     publishedAt?: string;
     author?: {
       name?: string;
-      image?: any;
+      image?: SanityImage;
     };
     categories?: Array<{
       _id: string;
@@ -25,7 +26,7 @@ interface ArticleHeaderProps {
     description?: string;
     readingTime?: string;
     category?: string;
-    image?: any;
+    image?: SanityImage;
   };
 }
 

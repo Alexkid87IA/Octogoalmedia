@@ -5,6 +5,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TrendingUp, TrendingDown, Minus, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
 import { urlFor } from '../../../utils/sanityClient';
+import { SanityImage } from '../../../types/sanity';
 
 interface TopListProps {
   value: {
@@ -28,7 +29,7 @@ interface TopListItem {
   title: string;
   subtitle?: string;
   description?: string;
-  image?: any;
+  image?: SanityImage;
   imageUrl?: string;
   stat?: string;
   trend?: 'up' | 'stable' | 'down' | 'new';

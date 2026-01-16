@@ -2,7 +2,11 @@ import { sanityClient, previewClient } from './sanityClient';
 import { SanityArticle, SanityDebate, SanityPodcast, SanityCaseStudy, SanitySuccessStory, SanityUniverse, SanityClubFeature, SanityClubPricing, SanityQuote, SanityVSPoll } from '../types/sanity';
 
 // Cache pour les requêtes fréquentes
-const cache: Record<string, { data: any; timestamp: number }> = {};
+interface CacheEntry<T = unknown> {
+  data: T;
+  timestamp: number;
+}
+const cache: Record<string, CacheEntry> = {};
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes en millisecondes
 
 /**

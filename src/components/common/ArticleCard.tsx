@@ -4,6 +4,7 @@ import { ArrowRight } from 'lucide-react';
 import { formatDate } from '../../utils/dateUtils';
 import SafeImage from './SafeImage';
 import ErrorBoundary from './ErrorBoundary';
+import { SanityImage } from '../../types/sanity';
 
 interface Category {
   _id: string;
@@ -20,7 +21,7 @@ interface ArticleCardProps {
     slug?: {
       current: string;
     };
-    mainImage?: any;
+    mainImage?: SanityImage;
     excerpt?: string;
     publishedAt?: string;
     categories?: Category[];

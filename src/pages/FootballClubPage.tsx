@@ -139,7 +139,7 @@ function calculateAge(dateOfBirth: string): number {
 
 // Stat Card Component - Design uniforme
 const StatCard = ({ icon: Icon, label, value, subValue, gradient }: {
-  icon: any; label: string; value: string | number; subValue?: string; gradient: string;
+  icon: React.ElementType; label: string; value: string | number; subValue?: string; gradient: string;
 }) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}

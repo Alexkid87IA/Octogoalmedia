@@ -33,6 +33,7 @@ import {
   EuropeanPlayerStats,
 } from '../services/apiFootball';
 import { sanityClient, urlFor } from '../utils/sanityClient';
+import { SanityImage } from '../types/sanity';
 
 // ===========================================
 // TYPES
@@ -44,7 +45,7 @@ interface SanityArticle {
   _id: string;
   title: string;
   slug: { current: string };
-  mainImage: any;
+  mainImage?: SanityImage;
   excerpt?: string;
   publishedAt: string;
   categories?: { title: string; slug: { current: string } }[];
@@ -1402,9 +1403,29 @@ const PlayerSearchSection = () => {
 // PAGE PRINCIPALE
 // ===========================================
 
+// Type pour les données brutes des joueurs
+interface RawPlayerData {
+  player?: {
+    id?: number;
+    name?: string;
+    firstName?: string;
+    lastName?: string;
+    nationality?: string;
+    photo?: string;
+  };
+  team?: {
+    id?: number;
+    name?: string;
+    crest?: string;
+  };
+  goals?: number;
+  assists?: number;
+  playedMatches?: number;
+}
+
 // Helper pour convertir les données de ligue en format EuropeanPlayerStats
 // Les données viennent de getTopScorers qui utilise: player.firstName, player.lastName, team.crest, playedMatches
-function convertToEuropeanPlayerStats(players: any[], leagueInfo: { id: number; name: string; flag: string }): EuropeanPlayerStats[] {
+function convertToEuropeanPlayerStats(players: RawPlayerData[], leagueInfo: { id: number; name: string; flag: string }): EuropeanPlayerStats[] {
   return players.map((p) => ({
     player: {
       id: p.player?.id || 0,

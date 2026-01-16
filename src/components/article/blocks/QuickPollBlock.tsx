@@ -5,6 +5,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Check, Users } from 'lucide-react';
 import { urlFor } from '../../../utils/sanityClient';
+import { SanityImage } from '../../../types/sanity';
 
 interface QuickPollProps {
   value: {
@@ -26,7 +27,7 @@ interface QuickPollProps {
 interface PollOption {
   _key: string;
   text: string;
-  image?: any;
+  image?: SanityImage;
   imageUrl?: string;
   color?: string;
 }

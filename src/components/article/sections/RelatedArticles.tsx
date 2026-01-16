@@ -15,7 +15,7 @@ const RelatedArticles: React.FC<RelatedArticlesProps> = ({ articles, colors }) =
   if (articles.length === 0) return null;
 
   // Fonction pour obtenir l'URL de l'image depuis Sanity
-  const getImageUrl = (mainImage: any) => {
+  const getImageUrl = (mainImage: SanityArticle['mainImage']) => {
     if (mainImage?.asset?.url) {
       return mainImage.asset.url;
     }

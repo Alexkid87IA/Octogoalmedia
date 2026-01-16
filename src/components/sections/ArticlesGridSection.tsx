@@ -2,11 +2,12 @@ import React from "react";
 import { motion } from "framer-motion";
 import { ArticleCard } from "../common/ArticleCard";
 import SafeImage from "../common/SafeImage";
+import { SanityImage } from "../../types/sanity";
 
 interface SanityArticle {
   slug: string;
   title: string;
-  mainImage?: any; 
+  mainImage?: SanityImage;
   tag?: string;
   summary?: string;
 }
