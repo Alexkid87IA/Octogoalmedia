@@ -1399,20 +1399,21 @@ const PlayerSearchSection = () => {
 // ===========================================
 
 // Helper pour convertir les données de ligue en format EuropeanPlayerStats
+// Les données viennent de getTopScorers qui utilise: player.firstName, player.lastName, team.crest, playedMatches
 function convertToEuropeanPlayerStats(players: any[], leagueInfo: { id: number; name: string; flag: string }): EuropeanPlayerStats[] {
   return players.map((p) => ({
     player: {
       id: p.player?.id || 0,
       name: p.player?.name || '',
-      firstName: p.player?.firstname,
-      lastName: p.player?.lastname,
+      firstName: p.player?.firstName,  // camelCase comme retourné par getTopScorers
+      lastName: p.player?.lastName,    // camelCase comme retourné par getTopScorers
       nationality: p.player?.nationality,
       photo: p.player?.photo,
     },
     team: {
       id: p.team?.id,
       name: p.team?.name || '',
-      crest: p.team?.logo,
+      crest: p.team?.crest,  // getTopScorers utilise "crest" pas "logo"
     },
     league: {
       id: leagueInfo.id,
@@ -1423,8 +1424,8 @@ function convertToEuropeanPlayerStats(players: any[], leagueInfo: { id: number; 
     goals: p.goals || 0,
     assists: p.assists || 0,
     total: (p.goals || 0) + (p.assists || 0),
-    playedMatches: p.games?.appearences || 0,
-    rating: p.games?.rating ? parseFloat(p.games.rating) : undefined,
+    playedMatches: p.playedMatches || 0,  // getTopScorers utilise "playedMatches" directement
+    rating: undefined,  // Non disponible dans getTopScorers
   }));
 }
 
