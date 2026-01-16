@@ -672,8 +672,12 @@ const MainContentSection = () => {
 // SECTION 3: PAR CHAMPIONNAT
 // ===========================================
 
-const LeagueRankingsSection = () => {
-  const [selectedLeague, setSelectedLeague] = useState(TOP_5_LEAGUES[0]);
+interface LeagueRankingsSectionProps {
+  selectedLeague: typeof TOP_5_LEAGUES[0];
+  onSelectLeague: (league: typeof TOP_5_LEAGUES[0]) => void;
+}
+
+const LeagueRankingsSection = ({ selectedLeague, onSelectLeague }: LeagueRankingsSectionProps) => {
   const [scorers, setScorers] = useState<any[]>([]);
   const [assists, setAssists] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -716,7 +720,7 @@ const LeagueRankingsSection = () => {
           {TOP_5_LEAGUES.map((league) => (
             <button
               key={league.id}
-              onClick={() => setSelectedLeague(league)}
+              onClick={() => onSelectLeague(league)}
               className={`
                 flex items-center gap-2 px-5 py-3 rounded-xl font-medium transition-all whitespace-nowrap
                 ${selectedLeague.id === league.id
@@ -1430,12 +1434,24 @@ function convertToEuropeanPlayerStats(players: any[], leagueInfo: { id: number; 
 }
 
 export default function JoueursPage() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const leagueParam = searchParams.get('league');
 
   const [heroPlayers, setHeroPlayers] = useState<EuropeanPlayerStats[]>([]);
   const [isHeroLoading, setIsHeroLoading] = useState(true);
   const [selectedLeagueInfo, setSelectedLeagueInfo] = useState<{ id: number; name: string; flag: string } | null>(null);
+
+  // Déterminer la ligue sélectionnée (pour les onglets en bas)
+  const selectedLeague = leagueParam
+    ? TOP_5_LEAGUES.find((l) => l.id === parseInt(leagueParam)) || TOP_5_LEAGUES[0]
+    : TOP_5_LEAGUES[0];
+
+  // Handler pour changer de ligue (met à jour l'URL ce qui met à jour le hero)
+  const handleLeagueSelect = (league: typeof TOP_5_LEAGUES[0]) => {
+    setSearchParams({ league: String(league.id) });
+    // Scroll vers le haut pour voir le nouveau podium
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   // Charger les top buteurs pour le hero (par ligue si spécifiée, sinon Europe)
   useEffect(() => {
@@ -1486,8 +1502,11 @@ export default function JoueursPage() {
       {/* Section principale : Classements + Sidebar avec articles */}
       {!selectedLeagueInfo && <MainContentSection />}
 
-      {/* Par championnat - Toujours afficher sauf si une ligue est déjà sélectionnée */}
-      <LeagueRankingsSection />
+      {/* Par championnat - Toujours afficher */}
+      <LeagueRankingsSection
+        selectedLeague={selectedLeague}
+        onSelectLeague={handleLeagueSelect}
+      />
 
       {/* Recherche */}
       <PlayerSearchSection />
