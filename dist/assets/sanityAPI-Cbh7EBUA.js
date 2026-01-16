@@ -1,4 +1,4 @@
-import{M as c,s as i}from"./index-DFCisg6y.js";const l={},u=5*60*1e3;async function a(e,t){const o=Date.now(),r=l[e];if(r&&o-r.timestamp<u)return console.log(`Utilisation du cache pour ${e}`),r.data;try{const s=await t();return l[e]={data:s,timestamp:o},s}catch(s){throw console.error(`Erreur lors de la récupération des données pour ${e}:`,s),s}}const g=async()=>a("allArticles",async()=>{try{const t=await i.fetch(`*[_type == "article"] | order(publishedAt desc) {
+import{M as c,s as i}from"./index-DyV59RQ-.js";const l={},u=5*60*1e3;async function a(e,t){const o=Date.now(),r=l[e];if(r&&o-r.timestamp<u)return console.log(`Utilisation du cache pour ${e}`),r.data;try{const s=await t();return l[e]={data:s,timestamp:o},s}catch(s){throw console.error(`Erreur lors de la récupération des données pour ${e}:`,s),s}}const g=async()=>a("allArticles",async()=>{try{const t=await i.fetch(`*[_type == "article"] | order(publishedAt desc) {
         _id,
         title,
         slug,
