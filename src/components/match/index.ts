@@ -10,6 +10,9 @@ export {
   MiniStandings,
   TopScorersSidebar,
   TeamFormSidebar,
+  MatchPreview,
+  OtherMatchesSidebar,
+  TopScorersWithToggle,
 } from './MatchComponents';
 
-export type { Scorer, TeamStanding } from './MatchComponents';
+export type { Scorer, TeamStanding, Match, MatchOdds } from './MatchComponents';
