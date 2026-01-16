@@ -241,7 +241,13 @@ export default function FootballClubPage() {
     );
   }
 
-  const formArray = teamStats?.form?.split('').slice(-10) || [];
+  // Calculer la forme récente à partir de TOUS les matchs (toutes compétitions)
+  // plutôt que d'utiliser teamStats.form qui est limité au championnat
+  const formArray = lastResults
+    .filter(m => m.status === 'FINISHED')
+    .slice(0, 10)
+    .map(match => getMatchResult(match, team.id))
+    .filter(r => r !== null) as string[];
 
   return (
     <div className="min-h-screen bg-black">
