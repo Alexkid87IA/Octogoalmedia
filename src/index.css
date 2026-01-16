@@ -265,7 +265,7 @@ html {
   background-color: #000;
   min-height: 100vh;
   box-shadow: 0 0 60px rgba(0, 0, 0, 0.9);
-  border-radius: 16px 16px 0 0;
+  border-radius: 32px 32px 0 0;  /* Coins plus arrondis (32px au lieu de 16px) */
 }
 
 /* Responsive - pleine largeur sur écrans < 1100px */
