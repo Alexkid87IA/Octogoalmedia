@@ -516,6 +516,18 @@ export default function ClubsPage() {
     localStorage.setItem('favoriteClubs', JSON.stringify(favorites));
   }, [favorites]);
 
+  // Keyboard shortcut for search (Cmd/Ctrl + K)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent('openClubSearch'));
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   // Create standings map for quick lookup
   const standingsMap = useMemo(() => {
     const map: Record<number, Standing> = {};
@@ -841,21 +853,6 @@ export default function ClubsPage() {
         )}
       </AnimatePresence>
 
-      {/* Keyboard shortcut for search */}
-      {typeof window !== 'undefined' && (
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              document.addEventListener('keydown', (e) => {
-                if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-                  e.preventDefault();
-                  window.dispatchEvent(new CustomEvent('openClubSearch'));
-                }
-              });
-            `
-          }}
-        />
-      )}
     </div>
   );
 }

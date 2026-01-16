@@ -10,7 +10,7 @@ const builder = imageUrlBuilder(sanityClient);
  * @param source - La source à vérifier
  * @returns true si c'est une image Sanity valide, false sinon
  */
-export function isValidSanityImage(source: any): boolean {
+export function isValidSanityImage(source: unknown): source is SanityImageSource | string {
   if (!source) return false;
   
   // Si c'est une chaîne et que c'est une URL, c'est valide
@@ -32,7 +32,7 @@ export function isValidSanityImage(source: any): boolean {
  * @param source Source de l'image
  * @returns Builder d'image ou undefined
  */
-export function getImageBuilder(source: any) {
+export function getImageBuilder(source: unknown) {
   if (!isValidSanityImage(source)) return undefined;
   
   try {
@@ -50,7 +50,7 @@ export function getImageBuilder(source: any) {
  * @param height Hauteur optionnelle
  * @returns URL de l'image ou URL de placeholder
  */
-export function urlFor(source: any, width?: number, height?: number): string | any {
+export function urlFor(source: unknown, width?: number, height?: number): string | ReturnType<typeof builder.image> {
   // Si la source n'est pas valide ou est null, retourner une image placeholder
   if (!source) {
     const size = width && height ? `${width}x${height}` : '800x450';

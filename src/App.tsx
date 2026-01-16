@@ -46,13 +46,6 @@ const PageLoader = () => (
   </div>
 );
 
-// Page de test simple
-const TestPage = () => (
-  <div className="min-h-screen bg-black text-white flex items-center justify-center">
-    <h1 className="text-4xl">Page de Test</h1>
-  </div>
-);
-
 // Composant principal avec gestion du skin
 const AppContent = () => {
   const location = useLocation();
@@ -165,9 +158,6 @@ const AppContent = () => {
 
                 {/* Route Recherche */}
                 <Route path="/recherche" element={<SearchPage />} />
-
-                {/* Route de test */}
-                <Route path="/test" element={<TestPage />} />
 
                 {/* Route 404 - DOIT ÊTRE EN DERNIER */}
                 <Route path="*" element={<NotFound />} />

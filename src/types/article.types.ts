@@ -1,5 +1,7 @@
 // src/types/article.types.ts
 
+import { PortableTextContent } from './sanity';
+
 // Type pour le hotspot d'image Sanity
 export interface SanityImageHotspot {
   x: number; // Valeur entre 0 et 1
@@ -32,8 +34,8 @@ export interface SanityArticle {
   title: string;
   slug: { current: string };
   excerpt?: string;
-  body?: any[];
-  content?: any[];
+  body?: PortableTextContent;
+  content?: PortableTextContent;
   mainImage?: SanityImage; // Utilise le nouveau type avec hotspot
   mainImageUrl?: string;   // URL directe de l'image (fallback)
   publishedAt?: string;

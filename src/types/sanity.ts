@@ -15,6 +15,31 @@ export interface SanitySlug {
   current: string;
 }
 
+// Type de base pour les blocs Portable Text
+export interface PortableTextSpan {
+  _type: 'span';
+  _key?: string;
+  text: string;
+  marks?: string[];
+}
+
+export interface PortableTextBlock {
+  _type: 'block';
+  _key?: string;
+  style?: 'normal' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'blockquote';
+  listItem?: 'bullet' | 'number';
+  level?: number;
+  markDefs?: Array<{
+    _key: string;
+    _type: string;
+    href?: string;
+  }>;
+  children: PortableTextSpan[];
+}
+
+// Type générique pour le contenu Portable Text (peut inclure des blocs personnalisés)
+export type PortableTextContent = Array<PortableTextBlock | Record<string, unknown>>;
+
 // Type de base pour les images Sanity
 export interface SanityImage {
   _type: "image";
@@ -79,8 +104,8 @@ export interface SanityArticle {
   slug: SanitySlug;
   mainImage?: SanityImage;
   excerpt?: string;
-  body?: any;                           // Corps de l'article en format Portable Text
-  content?: any;                        // Alternative à body
+  body?: PortableTextContent;           // Corps de l'article en format Portable Text
+  content?: PortableTextContent;        // Alternative à body
   publishedAt?: string;
   categories?: SanityCategory[];
   subcategories?: SanitySubcategory[];  // Sous-catégories
