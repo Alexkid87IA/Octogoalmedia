@@ -279,7 +279,7 @@ const FlashInfoSidebar = ({ articles }: { articles: SanityArticle[] }) => {
             >
               {imageUrl && (
                 <div className="w-12 h-8 rounded overflow-hidden flex-shrink-0 bg-gray-800">
-                  <img src={imageUrl} alt="" className="w-full h-full object-cover" />
+                  <img src={imageUrl} alt="" className="w-full h-full object-cover" loading="lazy" />
                 </div>
               )}
               <div className="flex-1 min-w-0">
@@ -358,7 +358,7 @@ const MiniStandings = ({ standings, homeTeamId, awayTeamId, competitionId }: {
                   </td>
                   <td className="py-2 px-2">
                     <Link to={`/classements/club/${team.team.id}`} className="flex items-center gap-2 hover:text-pink-400">
-                      <img src={team.team.crest} alt="" className="w-4 h-4 object-contain" />
+                      <img src={team.team.crest} alt="" className="w-4 h-4 object-contain" loading="lazy" />
                       <span className={`truncate max-w-[80px] ${isHighlighted ? 'text-white font-bold' : 'text-gray-300'}`}>
                         {team.team.name}
                       </span>
@@ -440,7 +440,7 @@ const TopScorersSidebar = ({ scorers, competitionId }: { scorers: Scorer[]; comp
               }`}>
                 {idx + 1}
               </span>
-              <img src={scorer.team.crest} alt="" className="w-4 h-4 object-contain" />
+              <img src={scorer.team.crest} alt="" className="w-4 h-4 object-contain" loading="lazy" />
               <span className="text-gray-300 text-sm flex-1 truncate">{scorer.player.name}</span>
               <span className={`font-bold text-sm ${showAssists ? 'text-blue-400' : 'text-pink-400'}`}>
                 {showAssists ? scorer.assists : scorer.goals}
@@ -471,7 +471,7 @@ const TeamFormSidebar = ({ homeForm, awayForm, homeTeam, awayTeam }: {
       <div className="p-4 space-y-4">
         {/* Home team form */}
         <div className="flex items-center gap-3">
-          <img src={homeTeam.crest} alt="" className="w-6 h-6 object-contain" />
+          <img src={homeTeam.crest} alt="" className="w-6 h-6 object-contain" loading="lazy" />
           <div className="flex gap-1">
             {homeForm.slice(0, 5).map((result, idx) => (
               <FormBadge key={idx} result={result} />
@@ -480,7 +480,7 @@ const TeamFormSidebar = ({ homeForm, awayForm, homeTeam, awayTeam }: {
         </div>
         {/* Away team form */}
         <div className="flex items-center gap-3">
-          <img src={awayTeam.crest} alt="" className="w-6 h-6 object-contain" />
+          <img src={awayTeam.crest} alt="" className="w-6 h-6 object-contain" loading="lazy" />
           <div className="flex gap-1">
             {awayForm.slice(0, 5).map((result, idx) => (
               <FormBadge key={idx} result={result} />
@@ -581,7 +581,7 @@ const MatchPreview = ({
         <div className="grid grid-cols-3 gap-4 mb-6">
           {/* Home */}
           <div className="text-center">
-            <img src={match.homeTeam.crest} alt="" className="w-16 h-16 mx-auto mb-2" />
+            <img src={match.homeTeam.crest} alt="" className="w-16 h-16 mx-auto mb-2" loading="lazy" />
             <p className="text-white font-bold text-sm mb-2">{match.homeTeam.shortName || match.homeTeam.name}</p>
             <div className="flex justify-center gap-1 mb-2">
               {homeForm.slice(0, 5).map((r, i) => (
@@ -605,7 +605,7 @@ const MatchPreview = ({
 
           {/* Away */}
           <div className="text-center">
-            <img src={match.awayTeam.crest} alt="" className="w-16 h-16 mx-auto mb-2" />
+            <img src={match.awayTeam.crest} alt="" className="w-16 h-16 mx-auto mb-2" loading="lazy" />
             <p className="text-white font-bold text-sm mb-2">{match.awayTeam.shortName || match.awayTeam.name}</p>
             <div className="flex justify-center gap-1 mb-2">
               {awayForm.slice(0, 5).map((r, i) => (
@@ -720,7 +720,7 @@ const MatchPreview = ({
                     className="flex items-center gap-3 p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
                   >
                     <span className="text-gray-500 text-xs w-20">{formatDateFR(m.utcDate)}</span>
-                    <img src={m.homeTeam.crest} alt="" className="w-5 h-5" />
+                    <img src={m.homeTeam.crest} alt="" className="w-5 h-5" loading="lazy" />
                     <span className="text-gray-300 text-sm flex-1 truncate">{m.homeTeam.name}</span>
                     <span className={`font-bold px-2 py-0.5 rounded ${
                       result === 'W' ? 'bg-green-500/20 text-green-400' :
@@ -730,7 +730,7 @@ const MatchPreview = ({
                       {homeGoals} - {awayGoals}
                     </span>
                     <span className="text-gray-300 text-sm flex-1 truncate text-right">{m.awayTeam.name}</span>
-                    <img src={m.awayTeam.crest} alt="" className="w-5 h-5" />
+                    <img src={m.awayTeam.crest} alt="" className="w-5 h-5" loading="lazy" />
                   </Link>
                 );
               })}
@@ -764,7 +764,7 @@ const MatchPreview = ({
                 ? 'bg-pink-500/20 border-pink-500/50'
                 : 'bg-white/5 border-white/10'
             }`}>
-              <img src={match.homeTeam.crest} alt="" className="w-12 h-12 mx-auto mb-2" />
+              <img src={match.homeTeam.crest} alt="" className="w-12 h-12 mx-auto mb-2" loading="lazy" />
               <p className={`font-bold ${prediction.winner === 'home' ? 'text-pink-400' : 'text-gray-500'}`}>
                 {match.homeTeam.shortName || match.homeTeam.name.substring(0, 10)}
               </p>
@@ -791,7 +791,7 @@ const MatchPreview = ({
                 ? 'bg-blue-500/20 border-blue-500/50'
                 : 'bg-white/5 border-white/10'
             }`}>
-              <img src={match.awayTeam.crest} alt="" className="w-12 h-12 mx-auto mb-2" />
+              <img src={match.awayTeam.crest} alt="" className="w-12 h-12 mx-auto mb-2" loading="lazy" />
               <p className={`font-bold ${prediction.winner === 'away' ? 'text-blue-400' : 'text-gray-500'}`}>
                 {match.awayTeam.shortName || match.awayTeam.name.substring(0, 10)}
               </p>
@@ -868,7 +868,7 @@ const OtherMatchesSidebar = ({ matches, currentMatchId, round, competitionId, ma
             to={`/match/${m.id}`}
             className="flex items-center gap-2 p-2 rounded-lg hover:bg-white/5 transition-colors text-xs"
           >
-            <img src={m.homeTeam.crest} alt="" className="w-4 h-4 object-contain" />
+            <img src={m.homeTeam.crest} alt="" className="w-4 h-4 object-contain" loading="lazy" />
             <span className="text-gray-400 flex-1 truncate">{m.homeTeam.shortName || m.homeTeam.name.substring(0, 3)}</span>
             <span className={`font-bold ${
               m.status === 'IN_PLAY' ? 'text-red-400' :
@@ -879,7 +879,7 @@ const OtherMatchesSidebar = ({ matches, currentMatchId, round, competitionId, ma
                 : 'vs'}
             </span>
             <span className="text-gray-400 flex-1 truncate text-right">{m.awayTeam.shortName || m.awayTeam.name.substring(0, 3)}</span>
-            <img src={m.awayTeam.crest} alt="" className="w-4 h-4 object-contain" />
+            <img src={m.awayTeam.crest} alt="" className="w-4 h-4 object-contain" loading="lazy" />
           </Link>
         ))}
 
@@ -1172,7 +1172,7 @@ export default function MatchDetailPage() {
             </Link>
             <div className="flex items-center gap-3">
               {match.competition?.emblem && (
-                <img src={match.competition.emblem} alt="" className="w-6 h-6 object-contain" />
+                <img src={match.competition.emblem} alt="" className="w-6 h-6 object-contain" loading="lazy" />
               )}
               <span className="text-gray-400 text-sm">{match.competition?.name}</span>
               <span className="text-gray-600">•</span>
@@ -1674,7 +1674,7 @@ export default function MatchDetailPage() {
                                   {topRated.map((p: any, idx: number) => (
                                     <div key={idx} className="flex items-center gap-2">
                                       <span className="text-gray-500 text-xs w-4">#{idx + 1}</span>
-                                      <img src={p.teamLogo} alt="" className="w-4 h-4" />
+                                      <img src={p.teamLogo} alt="" className="w-4 h-4" loading="lazy" />
                                       <span className="text-white text-sm flex-1 truncate">{p.name}</span>
                                       <span className="text-yellow-400 font-bold text-sm">{p.rating?.toFixed(1)}</span>
                                     </div>
@@ -1694,7 +1694,7 @@ export default function MatchDetailPage() {
                                   {topScorers.map((p: any, idx: number) => (
                                     <div key={idx} className="flex items-center gap-2">
                                       <span className="text-gray-500 text-xs w-4">#{idx + 1}</span>
-                                      <img src={p.teamLogo} alt="" className="w-4 h-4" />
+                                      <img src={p.teamLogo} alt="" className="w-4 h-4" loading="lazy" />
                                       <span className="text-white text-sm flex-1 truncate">{p.name}</span>
                                       <span className="text-green-400 font-bold text-sm">{p.goals}</span>
                                     </div>
@@ -1714,7 +1714,7 @@ export default function MatchDetailPage() {
                                   {topAssisters.map((p: any, idx: number) => (
                                     <div key={idx} className="flex items-center gap-2">
                                       <span className="text-gray-500 text-xs w-4">#{idx + 1}</span>
-                                      <img src={p.teamLogo} alt="" className="w-4 h-4" />
+                                      <img src={p.teamLogo} alt="" className="w-4 h-4" loading="lazy" />
                                       <span className="text-white text-sm flex-1 truncate">{p.name}</span>
                                       <span className="text-blue-400 font-bold text-sm">{p.assists}</span>
                                     </div>
@@ -1734,7 +1734,7 @@ export default function MatchDetailPage() {
                                   {topKeyPasses.map((p: any, idx: number) => (
                                     <div key={idx} className="flex items-center gap-2">
                                       <span className="text-gray-500 text-xs w-4">#{idx + 1}</span>
-                                      <img src={p.teamLogo} alt="" className="w-4 h-4" />
+                                      <img src={p.teamLogo} alt="" className="w-4 h-4" loading="lazy" />
                                       <span className="text-white text-sm flex-1 truncate">{p.name}</span>
                                       <span className="text-purple-400 font-bold text-sm">{p.keyPasses}</span>
                                     </div>
@@ -1754,7 +1754,7 @@ export default function MatchDetailPage() {
                                   {topDribblers.map((p: any, idx: number) => (
                                     <div key={idx} className="flex items-center gap-2">
                                       <span className="text-gray-500 text-xs w-4">#{idx + 1}</span>
-                                      <img src={p.teamLogo} alt="" className="w-4 h-4" />
+                                      <img src={p.teamLogo} alt="" className="w-4 h-4" loading="lazy" />
                                       <span className="text-white text-sm flex-1 truncate">{p.name}</span>
                                       <span className="text-pink-400 font-bold text-sm">{p.dribblesSuccess}</span>
                                     </div>
@@ -1789,12 +1789,12 @@ export default function MatchDetailPage() {
                       <div className="space-y-4">
                         <div className="flex justify-between items-center mb-6">
                           <div className="flex items-center gap-2">
-                            <img src={match.homeTeam.crest} alt="" className="w-8 h-8" />
+                            <img src={match.homeTeam.crest} alt="" className="w-8 h-8" loading="lazy" />
                             <span className="text-white font-bold text-sm hidden md:inline">{match.homeTeam.name}</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <span className="text-white font-bold text-sm hidden md:inline">{match.awayTeam.name}</span>
-                            <img src={match.awayTeam.crest} alt="" className="w-8 h-8" />
+                            <img src={match.awayTeam.crest} alt="" className="w-8 h-8" loading="lazy" />
                           </div>
                         </div>
                         <StatBar label="Possession" homeValue={stats.home?.possession || 0} awayValue={stats.away?.possession || 0} isPercentage />
@@ -1827,7 +1827,7 @@ export default function MatchDetailPage() {
                         {/* Home */}
                         <div className="p-4">
                           <div className="flex items-center gap-2 mb-4">
-                            <img src={match.homeTeam.crest} alt="" className="w-8 h-8" />
+                            <img src={match.homeTeam.crest} alt="" className="w-8 h-8" loading="lazy" />
                             <div>
                               <h4 className="text-white font-bold text-sm">{match.homeTeam.name}</h4>
                               <p className="text-pink-400 text-xs">{lineups.home?.formation}</p>
@@ -1858,7 +1858,7 @@ export default function MatchDetailPage() {
                         {/* Away */}
                         <div className="p-4">
                           <div className="flex items-center gap-2 mb-4">
-                            <img src={match.awayTeam.crest} alt="" className="w-8 h-8" />
+                            <img src={match.awayTeam.crest} alt="" className="w-8 h-8" loading="lazy" />
                             <div>
                               <h4 className="text-white font-bold text-sm">{match.awayTeam.name}</h4>
                               <p className="text-blue-400 text-xs">{lineups.away?.formation}</p>
@@ -1910,11 +1910,11 @@ export default function MatchDetailPage() {
                         {h2h.filter(m => m.id !== match.id).slice(0, 8).map((m) => (
                           <Link key={m.id} to={`/match/${m.id}`} className="flex items-center gap-3 p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
                             <span className="text-gray-500 text-xs w-20">{formatDateFR(m.utcDate)}</span>
-                            <img src={m.homeTeam.crest} alt="" className="w-5 h-5" />
+                            <img src={m.homeTeam.crest} alt="" className="w-5 h-5" loading="lazy" />
                             <span className="text-gray-300 text-sm flex-1 truncate">{m.homeTeam.name}</span>
                             <span className="text-white font-bold">{m.score.fullTime.home} - {m.score.fullTime.away}</span>
                             <span className="text-gray-300 text-sm flex-1 truncate text-right">{m.awayTeam.name}</span>
-                            <img src={m.awayTeam.crest} alt="" className="w-5 h-5" />
+                            <img src={m.awayTeam.crest} alt="" className="w-5 h-5" loading="lazy" />
                           </Link>
                         ))}
                       </div>

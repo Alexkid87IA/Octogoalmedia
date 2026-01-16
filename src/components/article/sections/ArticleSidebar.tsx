@@ -268,7 +268,7 @@ const ArticleSidebar: React.FC<ArticleSidebarProps> = ({
                   >
                     {imageUrl && (
                       <div className="w-12 h-9 rounded overflow-hidden flex-shrink-0 bg-gray-800">
-                        <img src={imageUrl} alt="" className="w-full h-full object-cover" />
+                        <img src={imageUrl} alt="" className="w-full h-full object-cover" loading="lazy" />
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
@@ -309,6 +309,7 @@ const ArticleSidebar: React.FC<ArticleSidebarProps> = ({
                 src={getArticleImage(featuredArticle, 600)!}
                 alt=""
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                loading="lazy"
               />
             ) : (
               <div className="w-full h-full bg-gradient-to-br from-pink-500/20 to-gray-900" />
@@ -351,6 +352,7 @@ const ArticleSidebar: React.FC<ArticleSidebarProps> = ({
                   src={getArticleImage(latestEmission, 600)!}
                   alt=""
                   className="w-full h-full object-cover"
+                  loading="lazy"
                 />
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-pink-500/20 to-gray-900" />
@@ -424,7 +426,7 @@ const ArticleSidebar: React.FC<ArticleSidebarProps> = ({
                 >
                   <div className="w-14 h-10 rounded-md overflow-hidden flex-shrink-0 bg-gray-800">
                     {imageUrl ? (
-                      <img src={imageUrl} alt="" className="w-full h-full object-cover" />
+                      <img src={imageUrl} alt="" className="w-full h-full object-cover" loading="lazy" />
                     ) : (
                       <div className="w-full h-full bg-gray-700" />
                     )}

@@ -70,12 +70,14 @@ export const EmissionCard: React.FC<EmissionCardProps> = ({ emission, index = 0,
               src={emission.thumbnail}
               alt={emission.title}
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              loading="lazy"
             />
           ) : youtubeId ? (
             <img
               src={`https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`}
               alt={emission.title}
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              loading="lazy"
             />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-pink-900/30 to-blue-900/30 flex items-center justify-center">

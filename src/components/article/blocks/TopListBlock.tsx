@@ -129,6 +129,7 @@ const TopListBlock: React.FC<TopListProps> = ({ value }) => {
                       alt={item.title}
                       className={`${actualRank === 1 ? 'w-20 h-20' : 'w-16 h-16'} rounded-full object-cover border-2 mb-2`}
                       style={{ borderColor: accent }}
+                      loading="lazy"
                     />
                   ) : (
                     <div
@@ -167,7 +168,7 @@ const TopListBlock: React.FC<TopListProps> = ({ value }) => {
                   >
                     <span className="w-8 text-center text-gray-500 font-bold">{item.rank}</span>
                     {imageUrl && (
-                      <img src={imageUrl} alt="Image" className="w-10 h-10 rounded-full object-cover" />
+                      <img src={imageUrl} alt="Image" className="w-10 h-10 rounded-full object-cover" loading="lazy" />
                     )}
                     <div className="flex-1">
                       <div className="text-white font-medium">{item.title}</div>
@@ -238,7 +239,7 @@ const TopListBlock: React.FC<TopListProps> = ({ value }) => {
                           className="flex-1 flex items-center gap-3"
                         >
                           {imageUrl && (
-                            <img src={imageUrl} alt="Image" className="w-12 h-12 rounded-lg object-cover" />
+                            <img src={imageUrl} alt="Image" className="w-12 h-12 rounded-lg object-cover" loading="lazy" />
                           )}
                           <div className="flex-1 text-left">
                             <div className="text-white font-bold">{item.title}</div>
@@ -327,6 +328,7 @@ const TopListBlock: React.FC<TopListProps> = ({ value }) => {
                     src={imageUrl}
                     alt={item.title}
                     className="w-16 h-16 mx-auto rounded-full object-cover mb-3"
+                    loading="lazy"
                   />
                 ) : (
                   <div className="w-16 h-16 mx-auto rounded-full bg-gray-700 flex items-center justify-center text-2xl mb-3">
@@ -387,7 +389,7 @@ const TopListBlock: React.FC<TopListProps> = ({ value }) => {
 
                 {/* Image */}
                 {imageUrl && (
-                  <img src={imageUrl} alt="Image" className="w-12 h-12 rounded-lg object-cover" />
+                  <img src={imageUrl} alt="Image" className="w-12 h-12 rounded-lg object-cover" loading="lazy" />
                 )}
 
                 {/* Content */}

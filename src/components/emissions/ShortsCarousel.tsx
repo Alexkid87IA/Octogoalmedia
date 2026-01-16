@@ -65,12 +65,14 @@ const ShortCard: React.FC<{ extrait: Extrait; index: number }> = ({ extrait, ind
             src={extrait.thumbnail}
             alt={extrait.title}
             className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            loading="lazy"
           />
         ) : videoId ? (
           <img
             src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`}
             alt={extrait.title}
             className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            loading="lazy"
           />
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-pink-900/50 to-blue-900/50" />

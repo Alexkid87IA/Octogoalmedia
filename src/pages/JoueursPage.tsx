@@ -153,7 +153,7 @@ const HeroSection = ({ topPlayers, isLoading, leagueInfo }: HeroSectionProps) =>
                 </p>
                 <div className="flex items-center justify-center gap-1 mt-1">
                   {second?.team.crest && (
-                    <img src={second.team.crest} alt="" className="w-4 h-4 object-contain" />
+                    <img src={second.team.crest} alt="" className="w-4 h-4 object-contain" loading="lazy" />
                   )}
                   <span className="text-gray-500 text-xs truncate max-w-[80px]">{second?.team.name}</span>
                 </div>
@@ -204,7 +204,7 @@ const HeroSection = ({ topPlayers, isLoading, leagueInfo }: HeroSectionProps) =>
                 </p>
                 <div className="flex items-center justify-center gap-1 mt-1">
                   {first?.team.crest && (
-                    <img src={first.team.crest} alt="" className="w-5 h-5 object-contain" />
+                    <img src={first.team.crest} alt="" className="w-5 h-5 object-contain" loading="lazy" />
                   )}
                   <span className="text-gray-400 text-sm">{first?.team.name}</span>
                 </div>
@@ -247,7 +247,7 @@ const HeroSection = ({ topPlayers, isLoading, leagueInfo }: HeroSectionProps) =>
                 </p>
                 <div className="flex items-center justify-center gap-1 mt-1">
                   {third?.team.crest && (
-                    <img src={third.team.crest} alt="" className="w-4 h-4 object-contain" />
+                    <img src={third.team.crest} alt="" className="w-4 h-4 object-contain" loading="lazy" />
                   )}
                   <span className="text-gray-500 text-xs truncate max-w-[80px]">{third?.team.name}</span>
                 </div>
@@ -956,7 +956,7 @@ const StarsSection = () => {
                 <div className="absolute inset-x-0 bottom-0 p-4">
                   <div className="flex items-center gap-1 mb-2">
                     {player.team.crest && (
-                      <img src={player.team.crest} alt="" className="w-4 h-4 object-contain" />
+                      <img src={player.team.crest} alt="" className="w-4 h-4 object-contain" loading="lazy" />
                     )}
                     <span className="text-xs text-gray-400">{player.league.flag}</span>
                   </div>
@@ -1377,7 +1377,7 @@ const PlayerSearchSection = () => {
                       <p className="text-white font-medium truncate">{item.player?.name}</p>
                       <div className="flex items-center gap-2 mt-0.5">
                         {item.statistics?.[0]?.team?.logo && (
-                          <img src={item.statistics[0].team.logo} alt="" className="w-4 h-4 object-contain" />
+                          <img src={item.statistics[0].team.logo} alt="" className="w-4 h-4 object-contain" loading="lazy" />
                         )}
                         <span className="text-gray-500 text-sm truncate">
                           {item.statistics?.[0]?.team?.name || 'Club inconnu'}

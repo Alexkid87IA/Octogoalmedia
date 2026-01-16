@@ -154,6 +154,7 @@ export default function UpcomingOddsTicker() {
             src="/images/winamax-logo.png"
             alt="Winamax"
             className="w-5 h-5 rounded object-contain"
+            loading="lazy"
           />
           <div className="hidden sm:flex flex-col">
             <span className="text-[10px] font-bold uppercase tracking-wide" style={{ color: '#ED1C24' }}>
@@ -241,7 +242,7 @@ function CompactMatchCard({ match }: { match: MatchWithOdds }) {
         <div className="flex items-center justify-between gap-1 mb-1.5">
           {/* Équipe domicile */}
           <div className="flex items-center gap-1 flex-1 min-w-0">
-            <img src={match.homeTeam.crest} alt={match.homeTeam.name} className="w-4 h-4 object-contain flex-shrink-0" />
+            <img src={match.homeTeam.crest} alt={match.homeTeam.name} className="w-4 h-4 object-contain flex-shrink-0" loading="lazy" />
             <span className="text-[9px] text-white truncate">{getShortName(match.homeTeam.name)}</span>
           </div>
 
@@ -251,6 +252,7 @@ function CompactMatchCard({ match }: { match: MatchWithOdds }) {
               src="/images/winamax-logo.png"
               alt="Winamax"
               className="w-3 h-3 object-contain opacity-70"
+              loading="lazy"
             />
             <span className="text-[7px] text-gray-600">vs</span>
           </div>
@@ -258,7 +260,7 @@ function CompactMatchCard({ match }: { match: MatchWithOdds }) {
           {/* Équipe extérieur */}
           <div className="flex items-center gap-1 flex-1 min-w-0 justify-end">
             <span className="text-[9px] text-white truncate">{getShortName(match.awayTeam.name)}</span>
-            <img src={match.awayTeam.crest} alt={match.awayTeam.name} className="w-4 h-4 object-contain flex-shrink-0" />
+            <img src={match.awayTeam.crest} alt={match.awayTeam.name} className="w-4 h-4 object-contain flex-shrink-0" loading="lazy" />
           </div>
         </div>
 

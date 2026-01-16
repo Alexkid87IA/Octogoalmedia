@@ -224,7 +224,7 @@ const CompetitionSection = ({
       >
         <div className="flex items-center gap-3">
           {competition.emblem ? (
-            <img src={competition.emblem} alt="" className="w-6 h-6 object-contain" />
+            <img src={competition.emblem} alt="" className="w-6 h-6 object-contain" loading="lazy" />
           ) : (
             <span className="text-xl">{compInfo?.flag || '⚽'}</span>
           )}

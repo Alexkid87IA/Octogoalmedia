@@ -389,7 +389,7 @@ const StandingsTable = ({ standings, competition, selectedComp }: {
                       to={`/classements/club/${team.team.id}`}
                       className="flex items-center gap-3 hover:text-pink-400 transition-colors"
                     >
-                      <img src={team.team.crest} alt="" className="w-7 h-7 object-contain" />
+                      <img src={team.team.crest} alt="" className="w-7 h-7 object-contain" loading="lazy" />
                       <span className="text-white font-medium truncate max-w-[150px] md:max-w-none">
                         {team.team.name}
                       </span>
@@ -484,7 +484,7 @@ const GroupTable = ({ group, leagueId }: { group: GroupStanding; leagueId: numbe
                       to={`/classements/club/${team.team.id}`}
                       className="flex items-center gap-2 hover:text-pink-400 transition-colors"
                     >
-                      <img src={team.team.crest} alt="" className="w-5 h-5 object-contain" />
+                      <img src={team.team.crest} alt="" className="w-5 h-5 object-contain" loading="lazy" />
                       <span className="text-white font-medium truncate max-w-[100px]">
                         {team.team.name}
                       </span>
@@ -624,7 +624,7 @@ const TopScorersList = ({ players, leagueId }: { players: Player[]; leagueId: nu
               {idx + 1}
             </span>
             {p.player.photo ? (
-              <img src={p.player.photo} alt="" className="w-9 h-9 rounded-full object-cover bg-gray-800" />
+              <img src={p.player.photo} alt="" className="w-9 h-9 rounded-full object-cover bg-gray-800" loading="lazy" />
             ) : (
               <div className="w-9 h-9 rounded-full bg-gray-800 flex items-center justify-center text-gray-500 text-sm font-bold">
                 {p.player.name.charAt(0)}
@@ -633,7 +633,7 @@ const TopScorersList = ({ players, leagueId }: { players: Player[]; leagueId: nu
             <div className="flex-1 min-w-0">
               <p className="text-white font-medium truncate">{p.player.name}</p>
               <div className="flex items-center gap-1">
-                <img src={p.team.crest} alt="" className="w-4 h-4 object-contain" />
+                <img src={p.team.crest} alt="" className="w-4 h-4 object-contain" loading="lazy" />
                 <span className="text-gray-500 text-xs truncate">{p.team.name}</span>
               </div>
             </div>
@@ -679,7 +679,7 @@ const TopAssistsList = ({ players, leagueId }: { players: Player[]; leagueId: nu
               {idx + 1}
             </span>
             {p.player.photo ? (
-              <img src={p.player.photo} alt="" className="w-9 h-9 rounded-full object-cover bg-gray-800" />
+              <img src={p.player.photo} alt="" className="w-9 h-9 rounded-full object-cover bg-gray-800" loading="lazy" />
             ) : (
               <div className="w-9 h-9 rounded-full bg-gray-800 flex items-center justify-center text-gray-500 text-sm font-bold">
                 {p.player.name.charAt(0)}
@@ -688,7 +688,7 @@ const TopAssistsList = ({ players, leagueId }: { players: Player[]; leagueId: nu
             <div className="flex-1 min-w-0">
               <p className="text-white font-medium truncate">{p.player.name}</p>
               <div className="flex items-center gap-1">
-                <img src={p.team.crest} alt="" className="w-4 h-4 object-contain" />
+                <img src={p.team.crest} alt="" className="w-4 h-4 object-contain" loading="lazy" />
                 <span className="text-gray-500 text-xs truncate">{p.team.name}</span>
               </div>
             </div>
@@ -832,7 +832,7 @@ const MatchdaySection = ({ leagueId, currentMatchday, totalMatchdays }: {
                           <span className="text-white text-sm truncate text-right max-w-[100px]">
                             {match.homeTeam.shortName || match.homeTeam.name}
                           </span>
-                          <img src={match.homeTeam.crest} alt="" className="w-6 h-6 object-contain flex-shrink-0" />
+                          <img src={match.homeTeam.crest} alt="" className="w-6 h-6 object-contain flex-shrink-0" loading="lazy" />
                         </div>
 
                         {/* Score */}
@@ -848,7 +848,7 @@ const MatchdaySection = ({ leagueId, currentMatchday, totalMatchdays }: {
 
                         {/* Équipe extérieur */}
                         <div className="flex-1 flex items-center gap-2">
-                          <img src={match.awayTeam.crest} alt="" className="w-6 h-6 object-contain flex-shrink-0" />
+                          <img src={match.awayTeam.crest} alt="" className="w-6 h-6 object-contain flex-shrink-0" loading="lazy" />
                           <span className="text-white text-sm truncate max-w-[100px]">
                             {match.awayTeam.shortName || match.awayTeam.name}
                           </span>

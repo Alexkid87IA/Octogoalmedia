@@ -1,4 +1,4 @@
-import{R as u,s}from"./index-C_c-scfV.js";const n={},l=5*60*1e3;async function a(e,t){const r=Date.now(),i=n[e];if(i&&r-i.timestamp<l)return i.data;try{const o=await t();return n[e]={data:o,timestamp:r},o}catch(o){throw console.error(`Erreur lors de la récupération des données pour ${e}:`,o),o}}const y=async()=>a("allArticles",async()=>{try{const t=await s.fetch(`*[_type == "article"] | order(publishedAt desc) {
+import{R as u,s}from"./index-DP5Uxzph.js";const n={},l=5*60*1e3;async function a(e,t){const r=Date.now(),i=n[e];if(i&&r-i.timestamp<l)return i.data;try{const o=await t();return n[e]={data:o,timestamp:r},o}catch(o){throw console.error(`Erreur lors de la récupération des données pour ${e}:`,o),o}}const y=async()=>a("allArticles",async()=>{try{const t=await s.fetch(`*[_type == "article"] | order(publishedAt desc) {
         _id,
         title,
         slug,

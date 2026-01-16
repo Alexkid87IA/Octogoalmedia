@@ -208,7 +208,7 @@ export default function ResultsTicker({
                   <div className="flex items-center gap-2">
                     {/* Équipe domicile */}
                     <div className="flex flex-col items-center w-9">
-                      <img src={match.homeTeam.crest} alt={match.homeTeam.name} className="w-5 h-5 object-contain" />
+                      <img src={match.homeTeam.crest} alt={match.homeTeam.name} className="w-5 h-5 object-contain" loading="lazy" />
                       <span className="text-[8px] text-gray-500 mt-0.5">{getTeamCode(match.homeTeam)}</span>
                     </div>
                     {/* Score */}
@@ -232,7 +232,7 @@ export default function ResultsTicker({
                     </div>
                     {/* Équipe extérieur */}
                     <div className="flex flex-col items-center w-9">
-                      <img src={match.awayTeam.crest} alt={match.awayTeam.name} className="w-5 h-5 object-contain" />
+                      <img src={match.awayTeam.crest} alt={match.awayTeam.name} className="w-5 h-5 object-contain" loading="lazy" />
                       <span className="text-[8px] text-gray-500 mt-0.5">{getTeamCode(match.awayTeam)}</span>
                     </div>
                   </div>

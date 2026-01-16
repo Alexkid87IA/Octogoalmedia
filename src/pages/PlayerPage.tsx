@@ -738,7 +738,7 @@ export default function PlayerPage() {
                     to={`/classements/club/${mainStats.team.id}`}
                     className="inline-flex items-center gap-3 text-lg text-gray-300 hover:text-white mb-6 transition-colors group"
                   >
-                    <img src={mainStats.team.logo} alt="" className="w-8 h-8 object-contain" />
+                    <img src={mainStats.team.logo} alt="" className="w-8 h-8 object-contain" loading="lazy" />
                     <span className="font-medium">{mainStats.team.name}</span>
                     <ChevronRight className="w-5 h-5 text-gray-600 group-hover:text-pink-400 group-hover:translate-x-1 transition-all" />
                   </Link>
@@ -1260,7 +1260,7 @@ export default function PlayerPage() {
                           <td className="py-4 px-4">
                             <div className="flex items-center gap-3">
                               {stat.league.logo && (
-                                <img src={stat.league.logo} alt="" className="w-6 h-6 object-contain" />
+                                <img src={stat.league.logo} alt="" className="w-6 h-6 object-contain" loading="lazy" />
                               )}
                               <div>
                                 <span className="text-white font-medium">{stat.league.name}</span>
@@ -1274,7 +1274,7 @@ export default function PlayerPage() {
                               className="flex items-center gap-2 hover:text-pink-400 transition-colors"
                             >
                               {stat.team.logo && (
-                                <img src={stat.team.logo} alt="" className="w-5 h-5 object-contain" />
+                                <img src={stat.team.logo} alt="" className="w-5 h-5 object-contain" loading="lazy" />
                               )}
                               <span className="text-gray-300">{stat.team.name}</span>
                             </Link>
@@ -1354,7 +1354,7 @@ export default function PlayerPage() {
                             <div className="flex items-center gap-4">
                               <div className="flex items-center gap-2 flex-1">
                                 {transfer.teams.out.logo && (
-                                  <img src={transfer.teams.out.logo} alt="" className="w-8 h-8 object-contain" />
+                                  <img src={transfer.teams.out.logo} alt="" className="w-8 h-8 object-contain" loading="lazy" />
                                 )}
                                 <span className="text-gray-400 truncate">{transfer.teams.out.name}</span>
                               </div>
@@ -1362,7 +1362,7 @@ export default function PlayerPage() {
                               <div className="flex items-center gap-2 flex-1 justify-end">
                                 <span className="text-white font-medium truncate">{transfer.teams.in.name}</span>
                                 {transfer.teams.in.logo && (
-                                  <img src={transfer.teams.in.logo} alt="" className="w-8 h-8 object-contain" />
+                                  <img src={transfer.teams.in.logo} alt="" className="w-8 h-8 object-contain" loading="lazy" />
                                 )}
                               </div>
                             </div>

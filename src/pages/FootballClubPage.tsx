@@ -286,7 +286,7 @@ export default function FootballClubPage() {
               <div className="w-32 h-32 md:w-44 md:h-44 bg-white/10 backdrop-blur-xl p-4 flex items-center justify-center"
                 style={{ clipPath: octagonClipSubtle }}
               >
-                <img src={team.crest} alt={team.name} className="max-w-full max-h-full object-contain" />
+                <img src={team.crest} alt={team.name} className="max-w-full max-h-full object-contain" loading="lazy" />
               </div>
               {standing && (
                 <div className="absolute -bottom-3 -right-3 w-12 h-12 bg-gradient-to-br from-pink-500 to-blue-500 flex items-center justify-center font-black text-white text-xl"
@@ -442,7 +442,7 @@ export default function FootballClubPage() {
                 {nextMatches[0] ? (
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                      <img src={team.crest} alt={team.name} className="w-16 h-16 object-contain" />
+                      <img src={team.crest} alt={team.name} className="w-16 h-16 object-contain" loading="lazy" />
                       <div className="text-center">
                         <p className="text-gray-500 text-sm">{formatDateFR(nextMatches[0].utcDate)}</p>
                         <p className="text-2xl font-bold text-white my-2">VS</p>
@@ -462,7 +462,7 @@ export default function FootballClubPage() {
                       </p>
                       {nextMatches[0].competition && (
                         <p className="text-gray-500 text-sm flex items-center gap-1 justify-end mt-1">
-                          {nextMatches[0].competition.emblem && <img src={nextMatches[0].competition.emblem} alt="" className="w-4 h-4" />}
+                          {nextMatches[0].competition.emblem && <img src={nextMatches[0].competition.emblem} alt="" className="w-4 h-4" loading="lazy" />}
                           {nextMatches[0].competition.name}
                         </p>
                       )}
@@ -529,7 +529,7 @@ export default function FootballClubPage() {
                         }`}
                       >
                         <Link to={`/classements/club/${opponent.id}`}>
-                          <img src={opponent.crest} alt={opponent.name} className="w-8 h-8 object-contain" />
+                          <img src={opponent.crest} alt={opponent.name} className="w-8 h-8 object-contain" loading="lazy" />
                         </Link>
                         <div className="flex-1">
                           <Link to={`/classements/club/${opponent.id}`} className="text-white text-sm font-medium hover:text-pink-400">
@@ -699,7 +699,7 @@ export default function FootballClubPage() {
                           </div>
                           <div className="flex items-center gap-3">
                             <Link to={`/classements/club/${opponent.id}`}>
-                              <img src={opponent.crest} alt={opponent.name} className="w-10 h-10 object-contain hover:scale-110 transition-transform" />
+                              <img src={opponent.crest} alt={opponent.name} className="w-10 h-10 object-contain hover:scale-110 transition-transform" loading="lazy" />
                             </Link>
                             <div className="flex-1">
                               <Link to={`/classements/club/${opponent.id}`} className="text-white font-medium hover:text-pink-400">
@@ -707,7 +707,7 @@ export default function FootballClubPage() {
                               </Link>
                               {match.competition && (
                                 <p className="text-gray-500 text-xs flex items-center gap-1 mt-0.5">
-                                  {match.competition.emblem && <img src={match.competition.emblem} alt="" className="w-3 h-3" />}
+                                  {match.competition.emblem && <img src={match.competition.emblem} alt="" className="w-3 h-3" loading="lazy" />}
                                   {match.competition.name}
                                 </p>
                               )}
@@ -749,7 +749,7 @@ export default function FootballClubPage() {
                         >
                           <div className="flex items-center gap-3">
                             <Link to={`/classements/club/${opponent.id}`}>
-                              <img src={opponent.crest} alt={opponent.name} className="w-10 h-10 object-contain hover:scale-110 transition-transform" />
+                              <img src={opponent.crest} alt={opponent.name} className="w-10 h-10 object-contain hover:scale-110 transition-transform" loading="lazy" />
                             </Link>
                             <div className="flex-1">
                               <Link to={`/classements/club/${opponent.id}`} className="text-white font-medium hover:text-pink-400">
@@ -757,7 +757,7 @@ export default function FootballClubPage() {
                               </Link>
                               {match.competition && (
                                 <p className="text-gray-500 text-xs flex items-center gap-1 mt-0.5">
-                                  {match.competition.emblem && <img src={match.competition.emblem} alt="" className="w-3 h-3" />}
+                                  {match.competition.emblem && <img src={match.competition.emblem} alt="" className="w-3 h-3" loading="lazy" />}
                                   {match.competition.name}
                                 </p>
                               )}
