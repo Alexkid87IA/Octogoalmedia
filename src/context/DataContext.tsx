@@ -140,6 +140,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   /**
    * Charge toutes les données depuis Sanity (avec cache)
+   * Utilise Promise.allSettled pour être résilient aux erreurs individuelles
    */
   const fetchAllData = async () => {
     console.log('🚀 Chargement des données...');
@@ -147,18 +148,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setError(null);
 
     try {
-      // Charger toutes les données en parallèle (plus rapide)
-      const [
-        featuredData,
-        recentData,
-        latestData,
-        universesData,
-        featuresData,
-        pricingData,
-        podcastsData,
-        casesData,
-        storiesData
-      ] = await Promise.all([
+      // Charger toutes les données en parallèle avec Promise.allSettled
+      // Cela permet de continuer même si certaines requêtes échouent
+      const results = await Promise.allSettled([
         sanityCache.fetch<SanityArticle[]>(QUERIES.FEATURED_ARTICLES),
         sanityCache.fetch<SanityArticle[]>(QUERIES.RECENT_ARTICLES),
         sanityCache.fetch<SanityArticle[]>(QUERIES.LATEST_ARTICLES),
@@ -169,32 +161,63 @@ export function DataProvider({ children }: { children: ReactNode }) {
         sanityCache.fetch<SanityCaseStudy[]>(QUERIES.CASE_STUDIES),
         sanityCache.fetch<SanitySuccessStory[]>(QUERIES.SUCCESS_STORIES)
       ]);
-      
+
+      // Extraire les données des résultats (null si échec)
+      const getData = <T,>(result: PromiseSettledResult<T | null>): T | null => {
+        if (result.status === 'fulfilled') return result.value;
+        console.warn('❌ Requête échouée:', result.reason);
+        return null;
+      };
+
+      const [
+        featuredData,
+        recentData,
+        latestData,
+        universesData,
+        featuresData,
+        pricingData,
+        podcastsData,
+        casesData,
+        storiesData
+      ] = results.map(getData);
+
       // Si pas d'articles trending, utiliser le fallback
-      let finalRecentData = recentData;
-      if (!recentData || recentData.length === 0) {
+      let finalRecentData = recentData as SanityArticle[] | null;
+      if (!recentData || (recentData as SanityArticle[]).length === 0) {
         console.log('Pas d\'articles trending, utilisation du fallback');
-        finalRecentData = await sanityCache.fetch<SanityArticle[]>(QUERIES.RECENT_ARTICLES_FALLBACK);
+        try {
+          finalRecentData = await sanityCache.fetch<SanityArticle[]>(QUERIES.RECENT_ARTICLES_FALLBACK);
+        } catch {
+          finalRecentData = [];
+        }
       }
 
-      // Mettre à jour les états avec les données reçues
-      setFeaturedArticles(featuredData || []);
-      setRecentArticles(finalRecentData || []);
-      setLatestArticles(latestData || []);
-      setUniverses(universesData || []);
-      setClubFeatures(featuresData || []);
-      setClubPricing(pricingData || []);
-      setPodcasts(podcastsData || []);
-      setCaseStudies(casesData || []);
-      setSuccessStories(storiesData || []);
-      
-      console.log('✅ Données chargées avec succès');
-      console.log(`Articles featured: ${featuredData?.length || 0}`);
-      console.log(`Articles trending: ${finalRecentData?.length || 0}`);
-      console.log(`Articles latest (Flash): ${latestData?.length || 0}`);
+      // Mettre à jour les états avec les données reçues (tableau vide si null)
+      setFeaturedArticles((featuredData as SanityArticle[]) || []);
+      setRecentArticles((finalRecentData as SanityArticle[]) || []);
+      setLatestArticles((latestData as SanityArticle[]) || []);
+      setUniverses((universesData as SanityUniverse[]) || []);
+      setClubFeatures((featuresData as SanityClubFeature[]) || []);
+      setClubPricing((pricingData as SanityClubPricing[]) || []);
+      setPodcasts((podcastsData as SanityPodcast[]) || []);
+      setCaseStudies((casesData as SanityCaseStudy[]) || []);
+      setSuccessStories((storiesData as SanitySuccessStory[]) || []);
+
+      // Compter les erreurs
+      const failedCount = results.filter(r => r.status === 'rejected').length;
+      if (failedCount > 0) {
+        console.warn(`⚠️ ${failedCount}/9 requêtes ont échoué mais l'app continue`);
+      } else {
+        console.log('✅ Toutes les données chargées avec succès');
+      }
+
+      console.log(`Articles featured: ${(featuredData as SanityArticle[])?.length || 0}`);
+      console.log(`Articles trending: ${(finalRecentData as SanityArticle[])?.length || 0}`);
+      console.log(`Articles latest (Flash): ${(latestData as SanityArticle[])?.length || 0}`);
     } catch (err) {
-      console.error('❌ Erreur lors du chargement des données:', err);
-      setError('Impossible de charger les données. Veuillez réessayer.');
+      console.error('❌ Erreur critique lors du chargement des données:', err);
+      // Ne pas bloquer l'app même en cas d'erreur critique
+      setError('Certaines données n\'ont pas pu être chargées.');
     } finally {
       setIsLoading(false);
     }

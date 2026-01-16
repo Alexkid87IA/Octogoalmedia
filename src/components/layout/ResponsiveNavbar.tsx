@@ -77,9 +77,19 @@ export const ResponsiveNavbar = () => {
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Check for live matches - filtré par statut réel et compétitions majeures
+  // Avec timeout pour éviter de bloquer l'app au démarrage
   const checkLiveMatches = useCallback(async () => {
     try {
-      const matches = await getLiveMatches();
+      // Timeout de 5 secondes pour ne pas bloquer l'app
+      const timeoutPromise = new Promise<null>((_, reject) =>
+        setTimeout(() => reject(new Error('Timeout')), 5000)
+      );
+
+      const matches = await Promise.race([
+        getLiveMatches(),
+        timeoutPromise
+      ]);
+
       // Filtrer uniquement les matchs réellement en cours dans les compétitions majeures
       const actualLiveMatches = (matches || []).filter((m: { status: string; competition?: { id: number } }) =>
         isActuallyLive(m.status) && MAJOR_COMPETITION_IDS.includes(m.competition?.id || 0)
@@ -87,6 +97,7 @@ export const ResponsiveNavbar = () => {
       setLiveCount(actualLiveMatches.length);
       setHasLiveMatches(actualLiveMatches.length > 0);
     } catch {
+      // Silencieusement ignorer les erreurs - l'app doit continuer
       setHasLiveMatches(false);
       setLiveCount(0);
     }
