@@ -137,10 +137,10 @@ export const getArticleBySlug = async (slug: string, preview = false): Promise<S
       // Log pour vérifier le client utilisé
       // console.log("🔍 Utilisation du previewClient");
       // console.log("📊 Configuration du previewClient:", {
-        dataset: previewClient.config().dataset,
-        perspective: previewClient.config().perspective,
-        hasToken: !!previewClient.config().token
-      });
+      //   dataset: previewClient.config().dataset,
+      //   perspective: previewClient.config().perspective,
+      //   hasToken: !!previewClient.config().token
+      // });
       
       // Requête modifiée pour chercher aussi les brouillons
       const query = `*[_type == "article" && slug.current == $slug][0] {
@@ -209,13 +209,13 @@ export const getArticleBySlug = async (slug: string, preview = false): Promise<S
       const result = await previewClient.fetch(query, { slug });
       
       // console.log("✅ Résultat de la requête preview:", {
-        found: !!result,
-        id: result?._id,
-        title: result?.title,
-        contentType: result?.contentType,
-        keyPoints: result?.keyPoints,
-        isPublished: result?._id && !result._id.startsWith('drafts.')
-      });
+      //   found: !!result,
+      //   id: result?._id,
+      //   title: result?.title,
+      //   contentType: result?.contentType,
+      //   keyPoints: result?.keyPoints,
+      //   isPublished: result?._id && !result._id.startsWith('drafts.')
+      // });
       
       // Si pas de résultat, essayer de chercher spécifiquement les brouillons
       if (!result) {
@@ -285,11 +285,11 @@ export const getArticleBySlug = async (slug: string, preview = false): Promise<S
         const draftResult = await previewClient.fetch(draftQuery, { slug });
         
         // console.log("📋 Résultat recherche brouillons:", {
-          found: !!draftResult,
-          id: draftResult?._id,
-          contentType: draftResult?.contentType,
-          keyPoints: draftResult?.keyPoints
-        });
+        //   found: !!draftResult,
+        //   id: draftResult?._id,
+        //   contentType: draftResult?.contentType,
+        //   keyPoints: draftResult?.keyPoints
+        // });
         
         return draftResult;
       }

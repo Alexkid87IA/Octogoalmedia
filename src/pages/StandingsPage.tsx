@@ -930,10 +930,10 @@ export default function StandingsPage() {
           ]);
 
           // console.log('[StandingsPage] Tournament data received:', {
-            groups: groupsData?.length || 0,
-            scorers: scorersData?.length || 0,
-            assists: assistsData?.length || 0,
-          });
+          //   groups: groupsData?.length || 0,
+          //   scorers: scorersData?.length || 0,
+          //   assists: assistsData?.length || 0,
+          // });
 
           setGroupStandings(groupsData || []);
           setStandings([]); // Vider les standings simples
@@ -949,11 +949,11 @@ export default function StandingsPage() {
           ]);
 
           // console.log('[StandingsPage] League data received:', {
-            standings: standingsData?.length || 0,
-            scorers: scorersData?.length || 0,
-            assists: assistsData?.length || 0,
-            round: roundData
-          });
+          //   standings: standingsData?.length || 0,
+          //   scorers: scorersData?.length || 0,
+          //   assists: assistsData?.length || 0,
+          //   round: roundData
+          // });
 
           setStandings(standingsData || []);
           setGroupStandings([]); // Vider les groupes
