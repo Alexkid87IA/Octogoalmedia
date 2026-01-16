@@ -41,7 +41,7 @@ export const ClubPage = () => {
   const handleWaitlist = (e: React.FormEvent) => {
     e.preventDefault();
     if (email) {
-      console.log('Email ajouté à la liste d\'attente:', email);
+      // console.log('Email ajouté à la liste d\'attente:', email);
       setIsSubscribed(true);
       setTimeout(() => {
         setEmail('');

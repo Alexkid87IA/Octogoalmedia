@@ -45,7 +45,7 @@ export default function BettingPage() {
             allMatches.push(...leagueMatches);
             await new Promise(resolve => setTimeout(resolve, 150));
           } catch (err) {
-            console.log(`[BettingPage] Skipping league ${id}`);
+            // console.log(`[BettingPage] Skipping league ${id}`);
           }
         }
 
@@ -277,7 +277,7 @@ function MatchOddsRow({ match }: { match: MatchWithOdds }) {
           {/* Équipes empilées */}
           <div className="space-y-2 mb-3">
             <div className="flex items-center gap-2">
-              <img src={match.homeTeam.crest} alt="" className="w-6 h-6 object-contain" />
+              <img src={match.homeTeam.crest} alt={match.homeTeam.name} className="w-6 h-6 object-contain" />
               <span className="text-sm text-white flex-1 truncate">{match.homeTeam.name}</span>
               {match.odds && (
                 <span className={`text-sm font-bold px-2 py-1 rounded ${match.odds.home === minOdds ? 'bg-green-500/20 text-green-400' : 'bg-white/5 text-white'}`}>
@@ -286,7 +286,7 @@ function MatchOddsRow({ match }: { match: MatchWithOdds }) {
               )}
             </div>
             <div className="flex items-center gap-2">
-              <img src={match.awayTeam.crest} alt="" className="w-6 h-6 object-contain" />
+              <img src={match.awayTeam.crest} alt={match.awayTeam.name} className="w-6 h-6 object-contain" />
               <span className="text-sm text-white flex-1 truncate">{match.awayTeam.name}</span>
               {match.odds && (
                 <span className={`text-sm font-bold px-2 py-1 rounded ${match.odds.away === minOdds ? 'bg-green-500/20 text-green-400' : 'bg-white/5 text-white'}`}>
@@ -323,7 +323,7 @@ function MatchOddsRow({ match }: { match: MatchWithOdds }) {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2 flex-1 min-w-0">
-                <img src={match.homeTeam.crest} alt="" className="w-6 h-6 object-contain flex-shrink-0" />
+                <img src={match.homeTeam.crest} alt={match.homeTeam.name} className="w-6 h-6 object-contain flex-shrink-0" />
                 <span className="text-sm text-white truncate">{match.homeTeam.name}</span>
               </div>
 
@@ -334,7 +334,7 @@ function MatchOddsRow({ match }: { match: MatchWithOdds }) {
 
               <div className="flex items-center gap-2 flex-1 min-w-0 justify-end">
                 <span className="text-sm text-white truncate text-right">{match.awayTeam.name}</span>
-                <img src={match.awayTeam.crest} alt="" className="w-6 h-6 object-contain flex-shrink-0" />
+                <img src={match.awayTeam.crest} alt={match.awayTeam.name} className="w-6 h-6 object-contain flex-shrink-0" />
               </div>
             </div>
           </div>

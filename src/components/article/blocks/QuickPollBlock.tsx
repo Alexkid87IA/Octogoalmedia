@@ -246,7 +246,7 @@ const QuickPollBlock: React.FC<QuickPollProps> = ({ value }) => {
                   style={{ borderColor: isSelected ? accent : 'transparent' }}
                 >
                   {imageUrl && (
-                    <img src={imageUrl} alt="" className="w-16 h-16 mx-auto mb-2 rounded-lg object-cover" />
+                    <img src={imageUrl} alt="Image" className="w-16 h-16 mx-auto mb-2 rounded-lg object-cover" />
                   )}
                   <div className="text-white font-medium text-sm">{option.text}</div>
                   {shouldShowResults() && (

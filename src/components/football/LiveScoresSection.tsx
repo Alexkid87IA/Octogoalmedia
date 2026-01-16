@@ -41,7 +41,7 @@ export default function LiveScoresSection() {
     
     script.onload = () => {
       setIsLoaded(true);
-      console.log('✅ Widget ScoreAxis chargé');
+      // console.log('✅ Widget ScoreAxis chargé');
     };
     
     script.onerror = () => {

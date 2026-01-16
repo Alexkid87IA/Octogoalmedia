@@ -51,7 +51,7 @@ export const QuickStandingsSection = () => {
 
       // Si déjà en cache, ne pas recharger
       if (standings[leagueKey]) {
-        console.log(`[QuickStandings] Cache hit for ${leagueKey}`);
+        // console.log(`[QuickStandings] Cache hit for ${leagueKey}`);
         setIsLoading(false);
         setHasError(false);
         return;
@@ -61,7 +61,7 @@ export const QuickStandingsSection = () => {
         setLoadingLeague(leagueKey);
         setHasError(false);
         const leagueId = LEAGUES[leagueKey];
-        console.log(`[QuickStandings] Fetching ${leagueKey} (ID: ${leagueId})...`);
+        // console.log(`[QuickStandings] Fetching ${leagueKey} (ID: ${leagueId})...`);
 
         if (!leagueId) {
           console.error(`[QuickStandings] No league ID for ${leagueKey}`);
@@ -70,17 +70,17 @@ export const QuickStandingsSection = () => {
         }
 
         const data = await getStandings(String(leagueId));
-        console.log(`[QuickStandings] Got ${data?.length || 0} teams for ${leagueKey}`);
+        // console.log(`[QuickStandings] Got ${data?.length || 0} teams for ${leagueKey}`);
 
         if (data && data.length > 0) {
           setStandings(prev => ({
             ...prev,
             [leagueKey]: data.slice(0, 5)
           }));
-          console.log(`[QuickStandings] Stored ${data.slice(0, 5).length} teams in state`);
+          // console.log(`[QuickStandings] Stored ${data.slice(0, 5).length} teams in state`);
           setHasError(false);
         } else {
-          console.warn(`[QuickStandings] No data received for ${leagueKey}`);
+          // console.warn(`[QuickStandings] No data received for ${leagueKey}`);
           setHasError(true);
         }
       } catch (error) {

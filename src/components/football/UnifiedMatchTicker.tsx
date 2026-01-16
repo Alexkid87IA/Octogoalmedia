@@ -106,7 +106,7 @@ export default function UnifiedMatchTicker() {
             allUpcoming.push(...fixtures);
             await new Promise(resolve => setTimeout(resolve, 100)); // Délai anti rate-limit
           } catch (err) {
-            console.log(`[UnifiedTicker] Skipping league ${leagueId}`);
+            // console.log(`[UnifiedTicker] Skipping league ${leagueId}`);
           }
         }
 
@@ -320,12 +320,12 @@ function LiveMatchCard({
           {/* Équipes en dessous */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1 flex-1 min-w-0">
-              <img src={match.homeTeam.crest} alt="" className="w-4 h-4 object-contain flex-shrink-0" />
+              <img src={match.homeTeam.crest} alt={match.homeTeam.name} className="w-4 h-4 object-contain flex-shrink-0" />
               <span className="text-[9px] text-white font-medium truncate">{getTeamCode(match.homeTeam)}</span>
             </div>
             <div className="flex items-center gap-1 flex-1 min-w-0 justify-end">
               <span className="text-[9px] text-white font-medium truncate">{getTeamCode(match.awayTeam)}</span>
-              <img src={match.awayTeam.crest} alt="" className="w-4 h-4 object-contain flex-shrink-0" />
+              <img src={match.awayTeam.crest} alt={match.awayTeam.name} className="w-4 h-4 object-contain flex-shrink-0" />
             </div>
           </div>
 
@@ -382,7 +382,7 @@ function OddsMatchCard({
           <div className="flex items-center justify-center gap-1 sm:gap-2 mb-1.5 sm:mb-2">
             {/* Équipe domicile */}
             <div className="flex items-center gap-1">
-              <img src={match.homeTeam.crest} alt="" className="w-4 h-4 sm:w-6 sm:h-6 object-contain" />
+              <img src={match.homeTeam.crest} alt={match.homeTeam.name} className="w-4 h-4 sm:w-6 sm:h-6 object-contain" />
               <span className="text-[9px] sm:text-[11px] text-white font-semibold">{getTeamCode(match.homeTeam)}</span>
             </div>
 
@@ -392,7 +392,7 @@ function OddsMatchCard({
             {/* Équipe extérieur */}
             <div className="flex items-center gap-1">
               <span className="text-[9px] sm:text-[11px] text-white font-semibold">{getTeamCode(match.awayTeam)}</span>
-              <img src={match.awayTeam.crest} alt="" className="w-4 h-4 sm:w-6 sm:h-6 object-contain" />
+              <img src={match.awayTeam.crest} alt={match.awayTeam.name} className="w-4 h-4 sm:w-6 sm:h-6 object-contain" />
             </div>
           </div>
 

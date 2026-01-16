@@ -61,7 +61,7 @@ export default function UpcomingOddsTicker() {
             allMatches.push(...matches);
             await new Promise(resolve => setTimeout(resolve, 100));
           } catch (err) {
-            console.log(`[UpcomingOddsTicker] Skipping league ${id}:`, err);
+            // console.log(`[UpcomingOddsTicker] Skipping league ${id}:`, err);
           }
         }
 
@@ -241,7 +241,7 @@ function CompactMatchCard({ match }: { match: MatchWithOdds }) {
         <div className="flex items-center justify-between gap-1 mb-1.5">
           {/* Équipe domicile */}
           <div className="flex items-center gap-1 flex-1 min-w-0">
-            <img src={match.homeTeam.crest} alt="" className="w-4 h-4 object-contain flex-shrink-0" />
+            <img src={match.homeTeam.crest} alt={match.homeTeam.name} className="w-4 h-4 object-contain flex-shrink-0" />
             <span className="text-[9px] text-white truncate">{getShortName(match.homeTeam.name)}</span>
           </div>
 
@@ -258,7 +258,7 @@ function CompactMatchCard({ match }: { match: MatchWithOdds }) {
           {/* Équipe extérieur */}
           <div className="flex items-center gap-1 flex-1 min-w-0 justify-end">
             <span className="text-[9px] text-white truncate">{getShortName(match.awayTeam.name)}</span>
-            <img src={match.awayTeam.crest} alt="" className="w-4 h-4 object-contain flex-shrink-0" />
+            <img src={match.awayTeam.crest} alt={match.awayTeam.name} className="w-4 h-4 object-contain flex-shrink-0" />
           </div>
         </div>
 

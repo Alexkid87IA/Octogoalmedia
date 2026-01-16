@@ -17,7 +17,7 @@ async function getWithCache<T>(cacheKey: string, fetchFunction: () => Promise<T>
   
   // Si les données sont en cache et pas expirées, les retourner
   if (cachedItem && now - cachedItem.timestamp < CACHE_DURATION) {
-    console.log(`Utilisation du cache pour ${cacheKey}`);
+    // console.log(`Utilisation du cache pour ${cacheKey}`);
     return cachedItem.data as T;
   }
   
@@ -39,10 +39,10 @@ async function getWithCache<T>(cacheKey: string, fetchFunction: () => Promise<T>
 export function clearCache(cacheKey?: string): void {
   if (cacheKey) {
     delete cache[cacheKey];
-    console.log(`Cache vidé pour ${cacheKey}`);
+    // console.log(`Cache vidé pour ${cacheKey}`);
   } else {
     Object.keys(cache).forEach(key => delete cache[key]);
-    console.log('Cache entièrement vidé');
+    // console.log('Cache entièrement vidé');
   }
 }
 
@@ -108,14 +108,14 @@ export const getAllArticles = async (): Promise<SanityArticle[]> => {
       }`;
       
       const articles = await sanityClient.fetch(query);
-      console.log(`Articles récupérés: ${articles?.length || 0}`);
+      // console.log(`Articles récupérés: ${articles?.length || 0}`);
       
       // Log pour debug : afficher les types de contenu présents
       if (articles && articles.length > 0) {
         const contentTypes = [...new Set(articles.map(a => a.contentType))];
-        console.log('Types de contenu disponibles:', contentTypes);
+        // console.log('Types de contenu disponibles:', contentTypes);
         // Debug pour voir la structure de l'image
-        console.log('Premier article mainImage:', articles[0].mainImage);
+        // console.log('Premier article mainImage:', articles[0].mainImage);
       }
       
       return articles || [];
@@ -129,14 +129,14 @@ export const getAllArticles = async (): Promise<SanityArticle[]> => {
 // Récupérer un article par son slug (modifié pour supporter le preview)
 export const getArticleBySlug = async (slug: string, preview = false): Promise<SanityArticle | null> => {
   // Logs de débogage détaillés
-  console.log("🔍 getArticleBySlug appelé avec:", { slug, preview });
+  // console.log("🔍 getArticleBySlug appelé avec:", { slug, preview });
   
   // Si preview, utiliser le client preview sans cache
   if (preview) {
     try {
       // Log pour vérifier le client utilisé
-      console.log("🔍 Utilisation du previewClient");
-      console.log("📊 Configuration du previewClient:", {
+      // console.log("🔍 Utilisation du previewClient");
+      // console.log("📊 Configuration du previewClient:", {
         dataset: previewClient.config().dataset,
         perspective: previewClient.config().perspective,
         hasToken: !!previewClient.config().token
@@ -203,12 +203,12 @@ export const getArticleBySlug = async (slug: string, preview = false): Promise<S
         }
       }`;
       
-      console.log("🔍 Exécution de la requête preview pour slug:", slug);
-      console.log("🔎 Requête GROQ:", query);
+      // console.log("🔍 Exécution de la requête preview pour slug:", slug);
+      // console.log("🔎 Requête GROQ:", query);
       
       const result = await previewClient.fetch(query, { slug });
       
-      console.log("✅ Résultat de la requête preview:", {
+      // console.log("✅ Résultat de la requête preview:", {
         found: !!result,
         id: result?._id,
         title: result?.title,
@@ -219,7 +219,7 @@ export const getArticleBySlug = async (slug: string, preview = false): Promise<S
       
       // Si pas de résultat, essayer de chercher spécifiquement les brouillons
       if (!result) {
-        console.log("⚠️ Aucun article trouvé, recherche des brouillons...");
+        // console.log("⚠️ Aucun article trouvé, recherche des brouillons...");
         
         const draftQuery = `*[_type == "article" && (_id match "drafts.*") && slug.current == $slug][0] {
           _id,
@@ -281,10 +281,10 @@ export const getArticleBySlug = async (slug: string, preview = false): Promise<S
           }
         }`;
         
-        console.log("🔎 Requête spécifique brouillons:", draftQuery);
+        // console.log("🔎 Requête spécifique brouillons:", draftQuery);
         const draftResult = await previewClient.fetch(draftQuery, { slug });
         
-        console.log("📋 Résultat recherche brouillons:", {
+        // console.log("📋 Résultat recherche brouillons:", {
           found: !!draftResult,
           id: draftResult?._id,
           contentType: draftResult?.contentType,
@@ -303,7 +303,7 @@ export const getArticleBySlug = async (slug: string, preview = false): Promise<S
   }
   
   // Mode normal avec cache
-  console.log("📚 Utilisation du mode normal (avec cache)");
+  // console.log("📚 Utilisation du mode normal (avec cache)");
   return getWithCache(`article_${slug}`, async () => {
     try {
       const query = `*[_type == "article" && slug.current == $slug][0] {
@@ -365,8 +365,8 @@ export const getArticleBySlug = async (slug: string, preview = false): Promise<S
       }`;
       
       const result = await sanityClient.fetch(query, { slug });
-      console.log("📋 Article récupéré avec contentType:", result?.contentType);
-      console.log("🎯 Hotspot data:", result?.mainImage?.hotspot);
+      // console.log("📋 Article récupéré avec contentType:", result?.contentType);
+      // console.log("🎯 Hotspot data:", result?.mainImage?.hotspot);
       return result;
     } catch (error) {
       console.error(`Erreur lors de la récupération de l'article ${slug}:`, error);
@@ -384,7 +384,7 @@ export const getArticlesByCategory = async (categorySlug: string): Promise<Sanit
       const categoryId = await sanityClient.fetch(categoryQuery, { categorySlug });
       
       if (!categoryId) {
-        console.log(`Catégorie non trouvée pour le slug: ${categorySlug}`);
+        // console.log(`Catégorie non trouvée pour le slug: ${categorySlug}`);
         return [];
       }
       
@@ -432,7 +432,7 @@ export const getArticlesByCategory = async (categorySlug: string): Promise<Sanit
       }`;
       
       const articles = await sanityClient.fetch(query, { categoryId });
-      console.log(`Articles trouvés pour ${categorySlug}: ${articles.length}`);
+      // console.log(`Articles trouvés pour ${categorySlug}: ${articles.length}`);
       
       return articles;
     } catch (error) {
@@ -489,7 +489,7 @@ export const getFlashContent = async (limit = 5): Promise<any[]> => {
       }`;
       
       const results = await sanityClient.fetch(query, { limit });
-      console.log(`Flash récupérés: ${results?.length || 0}`);
+      // console.log(`Flash récupérés: ${results?.length || 0}`);
       return results || [];
     } catch (error) {
       console.error("Erreur lors de la récupération des Flash:", error);
@@ -718,7 +718,7 @@ export const getContentItems = async (contentType: string, limit = 5): Promise<a
       const sanityContentType = typeMapping[contentType];
       
       if (!sanityContentType) {
-        console.log(`Type de contenu non mappé: ${contentType}`);
+        // console.log(`Type de contenu non mappé: ${contentType}`);
         return [];
       }
       
@@ -760,7 +760,7 @@ export const getContentItems = async (contentType: string, limit = 5): Promise<a
       }`;
       
       const results = await sanityClient.fetch(query, { sanityContentType, limit });
-      console.log(`Articles trouvés pour ${contentType} (${sanityContentType}): ${results?.length || 0}`);
+      // console.log(`Articles trouvés pour ${contentType} (${sanityContentType}): ${results?.length || 0}`);
       
       return results || [];
     } catch (error) {
@@ -781,7 +781,7 @@ export const getArticlesBySubcategory = async (subcategorySlug: string): Promise
       const subcategoryId = await sanityClient.fetch(subcategoryQuery, { subcategorySlug });
       
       if (!subcategoryId) {
-        console.log(`Sous-catégorie non trouvée pour le slug: ${subcategorySlug}`);
+        // console.log(`Sous-catégorie non trouvée pour le slug: ${subcategorySlug}`);
         return [];
       }
       
@@ -829,7 +829,7 @@ export const getArticlesBySubcategory = async (subcategorySlug: string): Promise
       }`;
       
       const articles = await sanityClient.fetch(query, { subcategoryId });
-      console.log(`Articles trouvés pour ${subcategorySlug}: ${articles.length}`);
+      // console.log(`Articles trouvés pour ${subcategorySlug}: ${articles.length}`);
       
       return articles;
     } catch (error) {
@@ -913,7 +913,7 @@ export const getAllEmissions = async (): Promise<any[]> => {
       }`;
       
       const emissions = await sanityClient.fetch(query);
-      console.log(`Émissions récupérées: ${emissions?.length || 0}`);
+      // console.log(`Émissions récupérées: ${emissions?.length || 0}`);
       
       return emissions || [];
     } catch (error) {
@@ -995,7 +995,7 @@ export const getEmissionsByCategory = async (category: string): Promise<any[]> =
       }`;
       
       const emissions = await sanityClient.fetch(query, { category });
-      console.log(`Émissions trouvées pour la catégorie ${category}: ${emissions?.length || 0}`);
+      // console.log(`Émissions trouvées pour la catégorie ${category}: ${emissions?.length || 0}`);
       
       if (!emissions || !Array.isArray(emissions)) {
         return [];
@@ -1041,7 +1041,7 @@ export const getAnalyses = async (limit = 5): Promise<any[]> => {
       }`;
       
       const results = await sanityClient.fetch(query, { limit });
-      console.log(`Analyses récupérées: ${results?.length || 0}`);
+      // console.log(`Analyses récupérées: ${results?.length || 0}`);
       return results || [];
     } catch (error) {
       console.error("Erreur lors de la récupération des analyses:", error);
@@ -1082,7 +1082,7 @@ export const getPortraits = async (limit = 5): Promise<any[]> => {
       }`;
       
       const results = await sanityClient.fetch(query, { limit });
-      console.log(`Portraits récupérés: ${results?.length || 0}`);
+      // console.log(`Portraits récupérés: ${results?.length || 0}`);
       return results || [];
     } catch (error) {
       console.error("Erreur lors de la récupération des portraits:", error);
@@ -1115,7 +1115,7 @@ export const getMemes = async (limit = 10): Promise<any[]> => {
       }`;
       
       const results = await sanityClient.fetch(query, { limit });
-      console.log(`Mèmes récupérés: ${results?.length || 0}`);
+      // console.log(`Mèmes récupérés: ${results?.length || 0}`);
       return results || [];
     } catch (error) {
       console.error("Erreur lors de la récupération des mèmes:", error);
@@ -1154,7 +1154,7 @@ export const getTops = async (limit = 5): Promise<any[]> => {
       }`;
       
       const results = await sanityClient.fetch(query, { limit });
-      console.log(`Tops/Listes récupérés: ${results?.length || 0}`);
+      // console.log(`Tops/Listes récupérés: ${results?.length || 0}`);
       return results || [];
     } catch (error) {
       console.error("Erreur lors de la récupération des tops:", error);
@@ -1200,7 +1200,7 @@ export const getActus = async (limit = 10): Promise<any[]> => {
       }`;
 
       const results = await sanityClient.fetch(query, { limit });
-      console.log(`Actus récupérées: ${results?.length || 0}`);
+      // console.log(`Actus récupérées: ${results?.length || 0}`);
       return results || [];
     } catch (error) {
       console.error("Erreur lors de la récupération des actus:", error);
@@ -1229,7 +1229,7 @@ export const getOctogoalEmissions = async (limit = 50): Promise<any[]> => {
       }`;
 
       const results = await sanityClient.fetch(query, { limit });
-      console.log(`Émissions Octogoal récupérées: ${results?.length || 0}`);
+      // console.log(`Émissions Octogoal récupérées: ${results?.length || 0}`);
       return results || [];
     } catch (error) {
       console.error("Erreur lors de la récupération des émissions Octogoal:", error);
@@ -1256,7 +1256,7 @@ export const getLatestOctogoalEmission = async (): Promise<any | null> => {
       }`;
 
       const result = await sanityClient.fetch(query);
-      console.log(`Dernière émission Octogoal:`, result?.title || 'Aucune');
+      // console.log(`Dernière émission Octogoal:`, result?.title || 'Aucune');
       return result;
     } catch (error) {
       console.error("Erreur lors de la récupération de la dernière émission:", error);
@@ -1284,7 +1284,7 @@ export const getOctogoalExtraits = async (limit = 20): Promise<any[]> => {
       }`;
 
       const results = await sanityClient.fetch(query, { limit });
-      console.log(`Extraits Octogoal récupérés: ${results?.length || 0}`);
+      // console.log(`Extraits Octogoal récupérés: ${results?.length || 0}`);
       return results || [];
     } catch (error) {
       console.error("Erreur lors de la récupération des extraits:", error);

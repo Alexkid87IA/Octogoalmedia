@@ -16,7 +16,7 @@ export const ClubSection = () => {
 
   const handleSubscribe = () => {
     if (email && email.includes('@')) {
-      console.log('Email inscrit à la newsletter:', email);
+      // console.log('Email inscrit à la newsletter:', email);
       setIsSubscribed(true);
       setTimeout(() => {
         setEmail('');

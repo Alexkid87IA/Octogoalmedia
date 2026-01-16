@@ -919,7 +919,7 @@ export default function StandingsPage() {
     async function fetchData() {
       setLoading(true);
       try {
-        console.log('[StandingsPage] Fetching data for league:', selectedLeague, 'isInternationalTournament:', isInternationalTournament);
+        // console.log('[StandingsPage] Fetching data for league:', selectedLeague, 'isInternationalTournament:', isInternationalTournament);
 
         // Pour les tournois internationaux, récupérer tous les groupes
         if (isInternationalTournament) {
@@ -929,7 +929,7 @@ export default function StandingsPage() {
             getTopAssists(String(selectedLeague)),
           ]);
 
-          console.log('[StandingsPage] Tournament data received:', {
+          // console.log('[StandingsPage] Tournament data received:', {
             groups: groupsData?.length || 0,
             scorers: scorersData?.length || 0,
             assists: assistsData?.length || 0,
@@ -948,7 +948,7 @@ export default function StandingsPage() {
             getCurrentRound(String(selectedLeague)),
           ]);
 
-          console.log('[StandingsPage] League data received:', {
+          // console.log('[StandingsPage] League data received:', {
             standings: standingsData?.length || 0,
             scorers: scorersData?.length || 0,
             assists: assistsData?.length || 0,

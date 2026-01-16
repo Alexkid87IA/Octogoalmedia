@@ -33,14 +33,14 @@ class SanityCache {
       
       // Si le cache est encore valide (moins de 5 minutes)
       if (age < this.CACHE_DURATION) {
-        console.log('📦 Données récupérées depuis le cache');
+        // console.log('📦 Données récupérées depuis le cache');
         return cached.data;
       }
     }
 
     try {
       // Récupérer les données depuis Sanity
-      console.log('🔄 Chargement des données depuis Sanity...');
+      // console.log('🔄 Chargement des données depuis Sanity...');
       const data = await sanityClient.fetch<T>(query, params);
       
       // Mettre en cache pour les prochaines fois
@@ -55,7 +55,7 @@ class SanityCache {
       
       // Si on a une version en cache (même expirée), on la retourne
       if (this.cache.has(key)) {
-        console.log('⚠️ Utilisation du cache expiré suite à une erreur');
+        // console.log('⚠️ Utilisation du cache expiré suite à une erreur');
         return this.cache.get(key)!.data;
       }
       
@@ -68,7 +68,7 @@ class SanityCache {
    */
   clear(): void {
     this.cache.clear();
-    console.log('🗑️ Cache vidé');
+    // console.log('🗑️ Cache vidé');
   }
 
   /**
@@ -80,7 +80,7 @@ class SanityCache {
         this.cache.delete(key);
       }
     }
-    console.log(`🗑️ Cache invalidé pour: ${pattern}`);
+    // console.log(`🗑️ Cache invalidé pour: ${pattern}`);
   }
 
   /**
@@ -94,10 +94,10 @@ class SanityCache {
    * Affiche les statistiques du cache (pour debug)
    */
   getStats(): void {
-    console.log(`📊 Cache stats: ${this.cache.size} entrées`);
+    // console.log(`📊 Cache stats: ${this.cache.size} entrées`);
     for (const [key, value] of this.cache.entries()) {
       const age = Math.floor((Date.now() - value.timestamp) / 1000);
-      console.log(`  - ${key.substring(0, 50)}... (âge: ${age}s)`);
+      // console.log(`  - ${key.substring(0, 50)}... (âge: ${age}s)`);
     }
   }
 }

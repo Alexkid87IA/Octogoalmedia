@@ -100,12 +100,12 @@ export const GlobalContextProvider = ({ children }: { children: ReactNode }) => 
       if (result && result.length > 0) {
         setArticles(result);
         setArticlesDataSource('cms');
-        console.log('Articles chargés depuis Sanity CMS');
+        // console.log('Articles chargés depuis Sanity CMS');
       } else {
         // Si aucun article n'est trouvé, on garde les articles actuels
         // ou on pourrait définir des articles mockés ici
         setArticlesDataSource('mock');
-        console.log('Aucun article trouvé dans Sanity');
+        // console.log('Aucun article trouvé dans Sanity');
       }
     } catch (error) {
       console.error('Erreur lors du chargement des articles:', error);
@@ -127,11 +127,11 @@ export const GlobalContextProvider = ({ children }: { children: ReactNode }) => 
       if (result && result.length > 0) {
         setUniverses(result);
         setUniversesDataSource('cms');
-        console.log('Univers chargés depuis Sanity CMS');
+        // console.log('Univers chargés depuis Sanity CMS');
       } else {
         // Si aucun univers n'est trouvé, on garde les univers actuels
         setUniversesDataSource('mock');
-        console.log('Aucun univers trouvé dans Sanity');
+        // console.log('Aucun univers trouvé dans Sanity');
       }
     } catch (error) {
       console.error('Erreur lors du chargement des univers:', error);
@@ -156,18 +156,18 @@ export const GlobalContextProvider = ({ children }: { children: ReactNode }) => 
       if (featuresResult && featuresResult.length > 0) {
         setClubFeatures(featuresResult);
         setClubDataSource('cms');
-        console.log('Fonctionnalités du club chargées depuis Sanity CMS');
+        // console.log('Fonctionnalités du club chargées depuis Sanity CMS');
       } else {
         setClubDataSource('mock');
-        console.log('Aucune fonctionnalité du club trouvée dans Sanity');
+        // console.log('Aucune fonctionnalité du club trouvée dans Sanity');
       }
       
       if (pricingResult && pricingResult.length > 0) {
         setClubPricing(pricingResult);
-        console.log('Tarifs du club chargés depuis Sanity CMS');
+        // console.log('Tarifs du club chargés depuis Sanity CMS');
       } else {
         setClubDataSource('mock');
-        console.log('Aucun tarif du club trouvé dans Sanity');
+        // console.log('Aucun tarif du club trouvé dans Sanity');
       }
     } catch (error) {
       console.error('Erreur lors du chargement des données du club:', error);

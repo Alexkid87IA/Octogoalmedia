@@ -143,7 +143,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
    * Utilise Promise.allSettled pour être résilient aux erreurs individuelles
    */
   const fetchAllData = async () => {
-    console.log('🚀 Chargement des données...');
+    // console.log('🚀 Chargement des données...');
     setIsLoading(true);
     setError(null);
 
@@ -165,7 +165,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       // Extraire les données des résultats (null si échec)
       const getData = <T,>(result: PromiseSettledResult<T | null>): T | null => {
         if (result.status === 'fulfilled') return result.value;
-        console.warn('❌ Requête échouée:', result.reason);
+        // console.warn('❌ Requête échouée:', result.reason);
         return null;
       };
 
@@ -184,7 +184,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       // Si pas d'articles trending, utiliser le fallback
       let finalRecentData = recentData as SanityArticle[] | null;
       if (!recentData || (recentData as SanityArticle[]).length === 0) {
-        console.log('Pas d\'articles trending, utilisation du fallback');
+        // console.log('Pas d\'articles trending, utilisation du fallback');
         try {
           finalRecentData = await sanityCache.fetch<SanityArticle[]>(QUERIES.RECENT_ARTICLES_FALLBACK);
         } catch {
@@ -206,14 +206,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
       // Compter les erreurs
       const failedCount = results.filter(r => r.status === 'rejected').length;
       if (failedCount > 0) {
-        console.warn(`⚠️ ${failedCount}/9 requêtes ont échoué mais l'app continue`);
+        // console.warn(`⚠️ ${failedCount}/9 requêtes ont échoué mais l'app continue`);
       } else {
-        console.log('✅ Toutes les données chargées avec succès');
+        // console.log('✅ Toutes les données chargées avec succès');
       }
 
-      console.log(`Articles featured: ${(featuredData as SanityArticle[])?.length || 0}`);
-      console.log(`Articles trending: ${(finalRecentData as SanityArticle[])?.length || 0}`);
-      console.log(`Articles latest (Flash): ${(latestData as SanityArticle[])?.length || 0}`);
+      // console.log(`Articles featured: ${(featuredData as SanityArticle[])?.length || 0}`);
+      // console.log(`Articles trending: ${(finalRecentData as SanityArticle[])?.length || 0}`);
+      // console.log(`Articles latest (Flash): ${(latestData as SanityArticle[])?.length || 0}`);
     } catch (err) {
       console.error('❌ Erreur critique lors du chargement des données:', err);
       // Ne pas bloquer l'app même en cas d'erreur critique

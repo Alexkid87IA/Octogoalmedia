@@ -167,7 +167,7 @@ const TopListBlock: React.FC<TopListProps> = ({ value }) => {
                   >
                     <span className="w-8 text-center text-gray-500 font-bold">{item.rank}</span>
                     {imageUrl && (
-                      <img src={imageUrl} alt="" className="w-10 h-10 rounded-full object-cover" />
+                      <img src={imageUrl} alt="Image" className="w-10 h-10 rounded-full object-cover" />
                     )}
                     <div className="flex-1">
                       <div className="text-white font-medium">{item.title}</div>
@@ -238,7 +238,7 @@ const TopListBlock: React.FC<TopListProps> = ({ value }) => {
                           className="flex-1 flex items-center gap-3"
                         >
                           {imageUrl && (
-                            <img src={imageUrl} alt="" className="w-12 h-12 rounded-lg object-cover" />
+                            <img src={imageUrl} alt="Image" className="w-12 h-12 rounded-lg object-cover" />
                           )}
                           <div className="flex-1 text-left">
                             <div className="text-white font-bold">{item.title}</div>
@@ -387,7 +387,7 @@ const TopListBlock: React.FC<TopListProps> = ({ value }) => {
 
                 {/* Image */}
                 {imageUrl && (
-                  <img src={imageUrl} alt="" className="w-12 h-12 rounded-lg object-cover" />
+                  <img src={imageUrl} alt="Image" className="w-12 h-12 rounded-lg object-cover" />
                 )}
 
                 {/* Content */}

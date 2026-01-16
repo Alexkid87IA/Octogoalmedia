@@ -27,7 +27,7 @@ const API_TIMEOUT = 5000;
 async function apiFetch(endpoint: string): Promise<Response> {
   // endpoint commence par "/" donc on le concatène directement
   const url = `${BASE_URL}${endpoint}`;
-  console.log('[API] Fetching:', url);
+  // console.log('[API] Fetching:', url);
 
   // AbortController pour timeout
   const controller = new AbortController();
@@ -122,7 +122,7 @@ function getCurrentSeason(): number {
 }
 
 const CURRENT_SEASON = getCurrentSeason();
-console.log('[API] Current season configured:', CURRENT_SEASON);
+// console.log('[API] Current season configured:', CURRENT_SEASON);
 
 // =============================================
 // FONCTIONS API AVEC CACHE
@@ -137,12 +137,12 @@ export async function getStandings(leagueCode: string) {
   const cacheKey = `standings_${normalizedCode}`;
   const cached = getCached(cacheKey);
   if (cached) {
-    console.log(`[API] getStandings(${normalizedCode}) - from cache:`, cached.length);
+    // console.log(`[API] getStandings(${normalizedCode}) - from cache:`, cached.length);
     return cached;
   }
 
   try {
-    console.log(`[API] getStandings(${normalizedCode}) - fetching for season ${CURRENT_SEASON}...`);
+    // console.log(`[API] getStandings(${normalizedCode}) - fetching for season ${CURRENT_SEASON}...`);
     const response = await apiFetch(
       `/standings?league=${normalizedCode}&season=${CURRENT_SEASON}`
     );
@@ -153,7 +153,7 @@ export async function getStandings(leagueCode: string) {
     }
 
     const data = await response.json();
-    console.log(`[API] getStandings(${normalizedCode}) - API response received, results:`, data.results || 0);
+    // console.log(`[API] getStandings(${normalizedCode}) - API response received, results:`, data.results || 0);
 
     // Vérifier les erreurs API
     if (data.errors && Object.keys(data.errors).length > 0) {
@@ -163,7 +163,7 @@ export async function getStandings(leagueCode: string) {
 
     // API-Football structure: { response: [{ league: { standings: [[...teams]] } }] }
     const standings = data.response?.[0]?.league?.standings?.[0] || [];
-    console.log(`[API] getStandings(${normalizedCode}) - raw standings:`, standings.length);
+    // console.log(`[API] getStandings(${normalizedCode}) - raw standings:`, standings.length);
 
     // Transformer pour compatibilité avec l'ancien format
     const result = standings.map((team: any) => ({
@@ -186,7 +186,7 @@ export async function getStandings(leagueCode: string) {
       form: team.form,
     }));
 
-    console.log(`[API] getStandings(${normalizedCode}) - transformed:`, result.length, 'teams');
+    // console.log(`[API] getStandings(${normalizedCode}) - transformed:`, result.length, 'teams');
     setCache(cacheKey, result);
     return result;
   } catch (error) {
@@ -215,7 +215,7 @@ export async function getAllGroupStandings(leagueCode: string) {
     if (cached && cached.length > 0) return cached;
 
     try {
-      console.log(`[API] getAllGroupStandings - trying season ${season} for league ${normalizedCode}`);
+      // console.log(`[API] getAllGroupStandings - trying season ${season} for league ${normalizedCode}`);
       const response = await apiFetch(
         `/standings?league=${normalizedCode}&season=${season}`
       );
@@ -229,7 +229,7 @@ export async function getAllGroupStandings(leagueCode: string) {
 
       if (allGroups.length === 0) continue;
 
-      console.log(`[API] getAllGroupStandings - found ${allGroups.length} groups for season ${season}`);
+      // console.log(`[API] getAllGroupStandings - found ${allGroups.length} groups for season ${season}`);
 
       // Transformer chaque groupe
       const result = allGroups.map((group: any[], index: number) => {
@@ -269,7 +269,7 @@ export async function getAllGroupStandings(leagueCode: string) {
     }
   }
 
-  console.warn(`[API] getAllGroupStandings - no standings found for any season`);
+  // console.warn(`[API] getAllGroupStandings - no standings found for any season`);
   return [];
 }
 
@@ -357,13 +357,13 @@ export async function getNextFixtures(leagueCode: string, count: number = 10) {
   const cacheKey = `fixtures_${normalizedCode}_${count}`;
   const cached = getCached(cacheKey);
   if (cached) {
-    console.log(`[API] getNextFixtures(${normalizedCode}) - from cache:`, cached.length);
+    // console.log(`[API] getNextFixtures(${normalizedCode}) - from cache:`, cached.length);
     return cached;
   }
 
   try {
     const url = `/fixtures?league=${normalizedCode}&season=${CURRENT_SEASON}&next=${count}`;
-    console.log(`[API] getNextFixtures - fetching:`, url);
+    // console.log(`[API] getNextFixtures - fetching:`, url);
 
     const response = await apiFetch(url);
 
@@ -381,7 +381,7 @@ export async function getNextFixtures(leagueCode: string, count: number = 10) {
     }
 
     const matches = data.response || [];
-    console.log(`[API] getNextFixtures(${normalizedCode}) - got:`, matches.length, 'matches');
+    // console.log(`[API] getNextFixtures(${normalizedCode}) - got:`, matches.length, 'matches');
 
     // Transformer pour compatibilité
     const result = matches.map(transformMatch);
@@ -402,13 +402,13 @@ export async function getLastResults(leagueCode: string, count: number = 10) {
   const cacheKey = `results_${normalizedCode}_${count}`;
   const cached = getCached(cacheKey);
   if (cached) {
-    console.log(`[API] getLastResults(${normalizedCode}) - from cache:`, cached.length);
+    // console.log(`[API] getLastResults(${normalizedCode}) - from cache:`, cached.length);
     return cached;
   }
 
   try {
     const url = `/fixtures?league=${normalizedCode}&season=${CURRENT_SEASON}&last=${count}`;
-    console.log(`[API] getLastResults - fetching:`, url);
+    // console.log(`[API] getLastResults - fetching:`, url);
 
     const response = await apiFetch(url);
 
@@ -425,7 +425,7 @@ export async function getLastResults(leagueCode: string, count: number = 10) {
       return [];
     }
 
-    console.log(`[API] getLastResults(${normalizedCode}) - got:`, data.response?.length || 0, 'matches');
+    // console.log(`[API] getLastResults(${normalizedCode}) - got:`, data.response?.length || 0, 'matches');
 
     const result = (data.response || []).map(transformMatch);
 
@@ -446,12 +446,12 @@ export async function getRecentResults(leagueIds?: number[], countPerLeague: num
   const cacheKey = `recent_results_${ids.join('-')}_${countPerLeague}`;
   const cached = getCached(cacheKey);
   if (cached) {
-    console.log('[API] getRecentResults - from cache:', cached.length);
+    // console.log('[API] getRecentResults - from cache:', cached.length);
     return cached;
   }
 
   try {
-    console.log('[API] getRecentResults - fetching for leagues:', ids.length);
+    // console.log('[API] getRecentResults - fetching for leagues:', ids.length);
 
     const promises = ids.map(leagueId =>
       apiFetch(`/fixtures?league=${leagueId}&season=${CURRENT_SEASON}&last=${countPerLeague}`)
@@ -481,7 +481,7 @@ export async function getRecentResults(leagueIds?: number[], countPerLeague: num
       .filter(m => m.status === 'FINISHED')
       .sort((a, b) => new Date(b.utcDate).getTime() - new Date(a.utcDate).getTime());
 
-    console.log('[API] getRecentResults - total finished:', finishedMatches.length);
+    // console.log('[API] getRecentResults - total finished:', finishedMatches.length);
 
     setCache(cacheKey, finishedMatches);
     return finishedMatches;
@@ -499,13 +499,13 @@ export async function getTodayFixtures(leagueIds?: number[]) {
   const cacheKey = `today_fixtures_${ids.join('-')}`;
   const cached = getCached(cacheKey);
   if (cached) {
-    console.log('[API] getTodayFixtures - from cache:', cached.length);
+    // console.log('[API] getTodayFixtures - from cache:', cached.length);
     return cached;
   }
 
   try {
     const today = new Date().toISOString().split('T')[0];
-    console.log('[API] getTodayFixtures - fetching for date:', today, 'leagues:', ids);
+    // console.log('[API] getTodayFixtures - fetching for date:', today, 'leagues:', ids);
 
     // API-Football n'accepte qu'une seule ligue par requête
     // On fait des requêtes parallèles pour toutes les ligues
@@ -529,13 +529,13 @@ export async function getTodayFixtures(leagueIds?: number[]) {
     // Combiner tous les matchs
     const allMatches: any[] = [];
     results.forEach((data, idx) => {
-      console.log(`[API] getTodayFixtures - league ${ids[idx]}:`, data.response?.length || 0, 'matches');
+      // console.log(`[API] getTodayFixtures - league ${ids[idx]}:`, data.response?.length || 0, 'matches');
       if (data.response) {
         allMatches.push(...data.response);
       }
     });
 
-    console.log('[API] getTodayFixtures - total raw matches:', allMatches.length);
+    // console.log('[API] getTodayFixtures - total raw matches:', allMatches.length);
 
     // Trier par date
     const result = allMatches
@@ -558,7 +558,7 @@ export async function getUpcomingFixtures(leagueIds?: number[], days: number = 7
   const cacheKey = `upcoming_fixtures_${ids.join('-')}_${days}`;
   const cached = getCached(cacheKey);
   if (cached) {
-    console.log('[API] getUpcomingFixtures - from cache:', cached.length);
+    // console.log('[API] getUpcomingFixtures - from cache:', cached.length);
     return cached;
   }
 
@@ -570,7 +570,7 @@ export async function getUpcomingFixtures(leagueIds?: number[], days: number = 7
     const fromDate = today.toISOString().split('T')[0];
     const toDate = endDate.toISOString().split('T')[0];
 
-    console.log('[API] getUpcomingFixtures - fetching from', fromDate, 'to', toDate);
+    // console.log('[API] getUpcomingFixtures - fetching from', fromDate, 'to', toDate);
 
     const promises = ids.map(leagueId =>
       apiFetch(`/fixtures?league=${leagueId}&season=${CURRENT_SEASON}&from=${fromDate}&to=${toDate}`)
@@ -610,12 +610,12 @@ export async function getFixturesByDate(date: string, leagueIds?: number[]) {
   const cacheKey = `fixtures_date_${date}_${ids.join('-')}`;
   const cached = getCached(cacheKey);
   if (cached) {
-    console.log(`[API] getFixturesByDate(${date}) - from cache:`, cached.length);
+    // console.log(`[API] getFixturesByDate(${date}) - from cache:`, cached.length);
     return cached;
   }
 
   try {
-    console.log(`[API] getFixturesByDate - fetching ALL fixtures for date:`, date);
+    // console.log(`[API] getFixturesByDate - fetching ALL fixtures for date:`, date);
 
     // UNE SEULE requête pour tous les matchs du jour
     const response = await apiFetch(`/fixtures?date=${date}&season=${CURRENT_SEASON}`);
@@ -633,13 +633,13 @@ export async function getFixturesByDate(date: string, leagueIds?: number[]) {
     }
 
     const allMatches = data.response || [];
-    console.log(`[API] getFixturesByDate(${date}) - received:`, allMatches.length, 'total fixtures');
+    // console.log(`[API] getFixturesByDate(${date}) - received:`, allMatches.length, 'total fixtures');
 
     // Filtrer côté client pour garder uniquement les ligues qu'on veut
     const filteredMatches = allMatches.filter((fixture: any) =>
       idsSet.has(fixture.league?.id)
     );
-    console.log(`[API] getFixturesByDate(${date}) - after filter:`, filteredMatches.length, 'matches');
+    // console.log(`[API] getFixturesByDate(${date}) - after filter:`, filteredMatches.length, 'matches');
 
     const result = filteredMatches
       .map(transformMatch)
@@ -809,7 +809,7 @@ export async function getAllRounds(leagueCode: string, customSeason?: number) {
     if (cached && cached.length > 0) return cached;
 
     try {
-      console.log(`[API] getAllRounds - trying season ${season} for league ${normalizedCode}`);
+      // console.log(`[API] getAllRounds - trying season ${season} for league ${normalizedCode}`);
       const response = await apiFetch(
         `/fixtures/rounds?league=${normalizedCode}&season=${season}`
       );
@@ -820,7 +820,7 @@ export async function getAllRounds(leagueCode: string, customSeason?: number) {
       const result = data.response || [];
 
       if (result.length > 0) {
-        console.log(`[API] getAllRounds - found ${result.length} rounds for season ${season}`);
+        // console.log(`[API] getAllRounds - found ${result.length} rounds for season ${season}`);
         setCache(cacheKey, result);
         // Stocker aussi la saison qui fonctionne pour cette ligue
         setCache(`working_season_${normalizedCode}`, season);
@@ -831,7 +831,7 @@ export async function getAllRounds(leagueCode: string, customSeason?: number) {
     }
   }
 
-  console.warn(`[API] getAllRounds - no rounds found for any season`);
+  // console.warn(`[API] getAllRounds - no rounds found for any season`);
   return [];
 }
 
@@ -934,7 +934,7 @@ export async function getMatchesByRound(leagueCode: string, round: string) {
   if (cached) return cached;
 
   try {
-    console.log(`[API] getMatchesByRound - fetching round "${round}" for league ${normalizedCode} (season ${workingSeason})`);
+    // console.log(`[API] getMatchesByRound - fetching round "${round}" for league ${normalizedCode} (season ${workingSeason})`);
     const response = await apiFetch(
       `/fixtures?league=${normalizedCode}&season=${workingSeason}&round=${encodeURIComponent(round)}`
     );
@@ -944,7 +944,7 @@ export async function getMatchesByRound(leagueCode: string, round: string) {
     const data = await response.json();
     const result = (data.response || []).map(transformMatch);
 
-    console.log(`[API] getMatchesByRound - found ${result.length} matches`);
+    // console.log(`[API] getMatchesByRound - found ${result.length} matches`);
     setCache(cacheKey, result);
     return result;
   } catch (error) {
@@ -1317,12 +1317,12 @@ export async function getLiveMatches() {
   // Cache plus court pour les matchs en direct (30 secondes)
   const cached = getCached(cacheKey);
   if (cached) {
-    console.log('[API] getLiveMatches - from cache:', cached.length);
+    // console.log('[API] getLiveMatches - from cache:', cached.length);
     return cached;
   }
 
   try {
-    console.log('[API] getLiveMatches - fetching /fixtures?live=all');
+    // console.log('[API] getLiveMatches - fetching /fixtures?live=all');
     const response = await apiFetch(`/fixtures?live=all`);
 
     if (!response.ok) {
@@ -1338,7 +1338,7 @@ export async function getLiveMatches() {
       return [];
     }
 
-    console.log('[API] getLiveMatches - raw response:', data.results, 'matches');
+    // console.log('[API] getLiveMatches - raw response:', data.results, 'matches');
 
     const result = (data.response || []).map(transformMatch);
 
@@ -1448,12 +1448,12 @@ export async function getMatchDetails(fixtureId: number) {
   // Vérifier si le cache contient un match en cours - si oui, ignorer le cache
   const liveStatuses = ['IN_PLAY', 'PAUSED', 'HALFTIME', '1H', '2H', 'HT', 'ET', 'BT', 'P', 'LIVE'];
   if (cached && !liveStatuses.includes(cached.status)) {
-    console.log(`[API] getMatchDetails(${fixtureId}) - from cache (status: ${cached.status})`);
+    // console.log(`[API] getMatchDetails(${fixtureId}) - from cache (status: ${cached.status})`);
     return cached;
   }
 
   try {
-    console.log(`[API] getMatchDetails - fetching fixture ${fixtureId}`);
+    // console.log(`[API] getMatchDetails - fetching fixture ${fixtureId}`);
     const response = await apiFetch(`/fixtures?id=${fixtureId}`);
 
     if (!response.ok) {
@@ -1476,9 +1476,9 @@ export async function getMatchDetails(fixtureId: number) {
     // Ne mettre en cache que les matchs terminés ou programmés (pas les matchs en cours)
     if (!liveStatuses.includes(result.status)) {
       setCache(cacheKey, result);
-      console.log(`[API] getMatchDetails(${fixtureId}) - cached (status: ${result.status})`);
+      // console.log(`[API] getMatchDetails(${fixtureId}) - cached (status: ${result.status})`);
     } else {
-      console.log(`[API] getMatchDetails(${fixtureId}) - NOT cached (live match, status: ${result.status})`);
+      // console.log(`[API] getMatchDetails(${fixtureId}) - NOT cached (live match, status: ${result.status})`);
     }
 
     return result;
@@ -1497,12 +1497,12 @@ export async function getMatchEvents(fixtureId: number, isLive: boolean = false)
   const cached = getCached(cacheKey);
   // Ne pas utiliser le cache pour les matchs en cours
   if (cached && !isLive) {
-    console.log(`[API] getMatchEvents(${fixtureId}) - from cache:`, cached.length, 'events');
+    // console.log(`[API] getMatchEvents(${fixtureId}) - from cache:`, cached.length, 'events');
     return cached;
   }
 
   try {
-    console.log(`[API] getMatchEvents - fetching events for fixture ${fixtureId}`);
+    // console.log(`[API] getMatchEvents - fetching events for fixture ${fixtureId}`);
     const response = await apiFetch(`/fixtures/events?fixture=${fixtureId}`);
 
     if (!response.ok) {
@@ -1511,8 +1511,8 @@ export async function getMatchEvents(fixtureId: number, isLive: boolean = false)
     }
 
     const data = await response.json();
-    console.log(`[API] getMatchEvents - RAW response:`, JSON.stringify(data, null, 2).substring(0, 500));
-    console.log(`[API] getMatchEvents - events count:`, data.response?.length || 0);
+    // console.log(`[API] getMatchEvents - RAW response:`, JSON.stringify(data, null, 2).substring(0, 500));
+    // console.log(`[API] getMatchEvents - events count:`, data.response?.length || 0);
 
     // Transformer les événements
     const events = (data.response || []).map((event: any) => ({
@@ -1558,12 +1558,12 @@ export async function getMatchStats(fixtureId: number, isLive: boolean = false) 
   const cached = getCached(cacheKey);
   // Ne pas utiliser le cache pour les matchs en cours
   if (cached && !isLive) {
-    console.log(`[API] getMatchStats(${fixtureId}) - from cache`);
+    // console.log(`[API] getMatchStats(${fixtureId}) - from cache`);
     return cached;
   }
 
   try {
-    console.log(`[API] getMatchStats - fetching stats for fixture ${fixtureId}`);
+    // console.log(`[API] getMatchStats - fetching stats for fixture ${fixtureId}`);
     const response = await apiFetch(`/fixtures/statistics?fixture=${fixtureId}`);
 
     if (!response.ok) {
@@ -1572,8 +1572,8 @@ export async function getMatchStats(fixtureId: number, isLive: boolean = false) 
     }
 
     const data = await response.json();
-    console.log(`[API] getMatchStats - RAW response teams:`, data.response?.length || 0);
-    console.log(`[API] getMatchStats - RAW response:`, JSON.stringify(data, null, 2).substring(0, 1000));
+    // console.log(`[API] getMatchStats - RAW response teams:`, data.response?.length || 0);
+    // console.log(`[API] getMatchStats - RAW response:`, JSON.stringify(data, null, 2).substring(0, 1000));
 
     // Vérifier les erreurs API
     if (data.errors && Object.keys(data.errors).length > 0) {
@@ -1582,13 +1582,13 @@ export async function getMatchStats(fixtureId: number, isLive: boolean = false) 
     }
 
     if (!data.response || data.response.length === 0) {
-      console.log(`[API] getMatchStats - Empty response (no stats available yet)`);
+      // console.log(`[API] getMatchStats - Empty response (no stats available yet)`);
       return null;
     }
 
     // Certains matchs peuvent avoir qu'une seule équipe dans la réponse
     if (data.response.length < 2) {
-      console.log(`[API] getMatchStats - Only ${data.response.length} team(s) in response`);
+      // console.log(`[API] getMatchStats - Only ${data.response.length} team(s) in response`);
       // Essayons de retourner ce qu'on a
       const homeStats = data.response[0];
       const result = {
@@ -1693,12 +1693,12 @@ export async function getMatchLineups(fixtureId: number, isLive: boolean = false
   const cached = getCached(cacheKey);
   // Ne pas utiliser le cache pour les matchs en cours (compos peuvent être corrigées)
   if (cached && !isLive) {
-    console.log(`[API] getMatchLineups(${fixtureId}) - from cache`);
+    // console.log(`[API] getMatchLineups(${fixtureId}) - from cache`);
     return cached;
   }
 
   try {
-    console.log(`[API] getMatchLineups - fetching lineups for fixture ${fixtureId}`);
+    // console.log(`[API] getMatchLineups - fetching lineups for fixture ${fixtureId}`);
     const response = await apiFetch(`/fixtures/lineups?fixture=${fixtureId}`);
 
     if (!response.ok) {
@@ -1707,8 +1707,8 @@ export async function getMatchLineups(fixtureId: number, isLive: boolean = false
     }
 
     const data = await response.json();
-    console.log(`[API] getMatchLineups - RAW response teams:`, data.response?.length || 0);
-    console.log(`[API] getMatchLineups - RAW response:`, JSON.stringify(data, null, 2).substring(0, 1000));
+    // console.log(`[API] getMatchLineups - RAW response teams:`, data.response?.length || 0);
+    // console.log(`[API] getMatchLineups - RAW response:`, JSON.stringify(data, null, 2).substring(0, 1000));
 
     // Vérifier les erreurs API
     if (data.errors && Object.keys(data.errors).length > 0) {
@@ -1717,12 +1717,12 @@ export async function getMatchLineups(fixtureId: number, isLive: boolean = false
     }
 
     if (!data.response || data.response.length === 0) {
-      console.log(`[API] getMatchLineups - Empty response (lineups not available yet)`);
+      // console.log(`[API] getMatchLineups - Empty response (lineups not available yet)`);
       return null;
     }
 
     if (data.response.length < 2) {
-      console.log(`[API] getMatchLineups - Only ${data.response.length} team(s) in response`);
+      // console.log(`[API] getMatchLineups - Only ${data.response.length} team(s) in response`);
       return null;
     }
 
@@ -1779,7 +1779,7 @@ export async function getHeadToHead(team1Id: number, team2Id: number, last: numb
   if (cached) return cached;
 
   try {
-    console.log(`[API] getHeadToHead - fetching H2H between ${team1Id} and ${team2Id}`);
+    // console.log(`[API] getHeadToHead - fetching H2H between ${team1Id} and ${team2Id}`);
     const response = await apiFetch(`/fixtures/headtohead?h2h=${team1Id}-${team2Id}&last=${last}`);
 
     if (!response.ok) return [];
@@ -1804,12 +1804,12 @@ export async function getMatchPlayerStats(fixtureId: number, isLive: boolean = f
   const cacheKey = `match_players_${fixtureId}`;
   const cached = getCached(cacheKey);
   if (cached && !isLive) {
-    console.log(`[API] getMatchPlayerStats(${fixtureId}) - from cache`);
+    // console.log(`[API] getMatchPlayerStats(${fixtureId}) - from cache`);
     return cached;
   }
 
   try {
-    console.log(`[API] getMatchPlayerStats - fetching player stats for fixture ${fixtureId}`);
+    // console.log(`[API] getMatchPlayerStats - fetching player stats for fixture ${fixtureId}`);
     const response = await apiFetch(`/fixtures/players?fixture=${fixtureId}`);
 
     if (!response.ok) {
@@ -1825,7 +1825,7 @@ export async function getMatchPlayerStats(fixtureId: number, isLive: boolean = f
     }
 
     if (!data.response || data.response.length === 0) {
-      console.log(`[API] getMatchPlayerStats - Empty response`);
+      // console.log(`[API] getMatchPlayerStats - Empty response`);
       return null;
     }
 
@@ -1891,7 +1891,7 @@ export async function getMatchPredictions(fixtureId: number) {
   if (cached) return cached;
 
   try {
-    console.log(`[API] getMatchPredictions - fetching predictions for fixture ${fixtureId}`);
+    // console.log(`[API] getMatchPredictions - fetching predictions for fixture ${fixtureId}`);
     const response = await apiFetch(`/predictions?fixture=${fixtureId}`);
 
     if (!response.ok) {
@@ -1966,7 +1966,7 @@ export async function getTeamInjuries(teamId: number) {
   if (cached) return cached;
 
   try {
-    console.log(`[API] getTeamInjuries - fetching injuries for team ${teamId}`);
+    // console.log(`[API] getTeamInjuries - fetching injuries for team ${teamId}`);
     const response = await apiFetch(`/injuries?team=${teamId}&season=${CURRENT_SEASON}`);
 
     if (!response.ok) {
@@ -2026,7 +2026,7 @@ export async function getPlayerInfo(playerId: number) {
   if (cached) return cached;
 
   try {
-    console.log(`[API] getPlayerInfo - fetching player ${playerId}`);
+    // console.log(`[API] getPlayerInfo - fetching player ${playerId}`);
     const response = await apiFetch(`/players?id=${playerId}&season=${CURRENT_SEASON}`);
 
     if (!response.ok) {
@@ -2035,7 +2035,7 @@ export async function getPlayerInfo(playerId: number) {
     }
 
     const data = await response.json();
-    console.log(`[API] getPlayerInfo - response:`, data.response?.length || 0);
+    // console.log(`[API] getPlayerInfo - response:`, data.response?.length || 0);
 
     if (!data.response || data.response.length === 0) {
       return null;
@@ -2149,7 +2149,7 @@ export async function getPlayerTransfers(playerId: number) {
   if (cached) return cached;
 
   try {
-    console.log(`[API] getPlayerTransfers - fetching transfers for player ${playerId}`);
+    // console.log(`[API] getPlayerTransfers - fetching transfers for player ${playerId}`);
     const response = await apiFetch(`/transfers?player=${playerId}`);
 
     if (!response.ok) return [];
@@ -2195,7 +2195,7 @@ export async function getPlayerTrophies(playerId: number) {
   if (cached) return cached;
 
   try {
-    console.log(`[API] getPlayerTrophies - fetching trophies for player ${playerId}`);
+    // console.log(`[API] getPlayerTrophies - fetching trophies for player ${playerId}`);
     const response = await apiFetch(`/trophies?player=${playerId}`);
 
     if (!response.ok) return [];
@@ -2282,7 +2282,7 @@ export function getTeamForm(matches: any[], teamId: number): string[] {
  */
 export function clearCache(): void {
   Object.keys(cache).forEach(key => delete cache[key]);
-  console.log('Cache vidé');
+  // console.log('Cache vidé');
 }
 
 // =============================================
@@ -2322,7 +2322,7 @@ function setEuropeanCache(key: string, data: any): void {
 // Fonction pour vider le cache européen (utile pour debug)
 export function clearEuropeanCache(): void {
   Object.keys(europeanCache).forEach(key => delete europeanCache[key]);
-  console.log('[API] European cache cleared');
+  // console.log('[API] European cache cleared');
 }
 
 // Délai entre requêtes pour éviter le rate limiting
@@ -2340,7 +2340,7 @@ async function fetchWithRetry(
 
       // Si rate limited (429), attendre et réessayer
       if (response.status === 429) {
-        console.warn(`[API] Rate limited, attempt ${attempt}/${retries}, waiting ${delayMs * attempt}ms...`);
+        // console.warn(`[API] Rate limited, attempt ${attempt}/${retries}, waiting ${delayMs * attempt}ms...`);
         if (attempt < retries) {
           await delay(delayMs * attempt);
           continue;
@@ -2447,12 +2447,12 @@ export async function getTopScorersEurope(season?: number): Promise<EuropeanPlay
   const cacheKey = `europe_scorers_all_real_${targetSeason}`;
   const cached = getEuropeanCached(cacheKey);
   if (cached) {
-    console.log('[API] getTopScorersEurope (TOUTES compétitions) - from cache:', cached.length);
+    // console.log('[API] getTopScorersEurope (TOUTES compétitions) - from cache:', cached.length);
     return cached;
   }
 
   try {
-    console.log('[API] getTopScorersEurope - fetching with REAL totals (all competitions)');
+    // console.log('[API] getTopScorersEurope - fetching with REAL totals (all competitions)');
 
     // Étape 1: Récupérer les candidats depuis les championnats principaux
     const candidateIds = new Set<number>();
@@ -2460,7 +2460,7 @@ export async function getTopScorersEurope(season?: number): Promise<EuropeanPlay
 
     for (const league of TOP_5_LEAGUES) {
       try {
-        console.log(`[API] Fetching scorers candidates from ${league.name}...`);
+        // console.log(`[API] Fetching scorers candidates from ${league.name}...`);
         const response = await fetchWithRetry(
           `/players/topscorers?league=${league.id}&season=${targetSeason}`
         );
@@ -2486,7 +2486,7 @@ export async function getTopScorersEurope(season?: number): Promise<EuropeanPlay
       }
     }
 
-    console.log(`[API] Found ${candidateIds.size} candidate players, fetching full stats...`);
+    // console.log(`[API] Found ${candidateIds.size} candidate players, fetching full stats...`);
 
     // Étape 2: Pour chaque joueur, récupérer ses stats COMPLÈTES via getPlayerInfo
     const playersWithRealStats: EuropeanPlayerStats[] = [];
@@ -2529,7 +2529,7 @@ export async function getTopScorersEurope(season?: number): Promise<EuropeanPlay
 
         processed++;
         if (processed % 10 === 0) {
-          console.log(`[API] Processed ${processed}/${candidateIds.size} players...`);
+          // console.log(`[API] Processed ${processed}/${candidateIds.size} players...`);
         }
 
         // Petit délai entre les requêtes
@@ -2543,13 +2543,13 @@ export async function getTopScorersEurope(season?: number): Promise<EuropeanPlay
     playersWithRealStats.sort((a, b) => b.goals - a.goals);
 
     // Log top 5 pour debug
-    console.log('[API] Top 5 buteurs (TOUTES compétitions confondues):');
+    // console.log('[API] Top 5 buteurs (TOUTES compétitions confondues):');
     playersWithRealStats.slice(0, 5).forEach((p, i) => {
-      console.log(`  ${i + 1}. ${p.player.name} (${p.team.name}) - ${p.goals} buts, ${p.assists} assists`);
+      // console.log(`  ${i + 1}. ${p.player.name} (${p.team.name}) - ${p.goals} buts, ${p.assists} assists`);
     });
 
     const topScorers = playersWithRealStats.slice(0, 50);
-    console.log('[API] getTopScorersEurope (REAL totals) - final:', topScorers.length);
+    // console.log('[API] getTopScorersEurope (REAL totals) - final:', topScorers.length);
     setEuropeanCache(cacheKey, topScorers);
     return topScorers;
   } catch (error) {
@@ -2567,12 +2567,12 @@ export async function getTopAssistsEurope(season?: number): Promise<EuropeanPlay
   const cacheKey = `europe_assists_all_real_${targetSeason}`;
   const cached = getEuropeanCached(cacheKey);
   if (cached) {
-    console.log('[API] getTopAssistsEurope (TOUTES compétitions) - from cache:', cached.length);
+    // console.log('[API] getTopAssistsEurope (TOUTES compétitions) - from cache:', cached.length);
     return cached;
   }
 
   try {
-    console.log('[API] getTopAssistsEurope - fetching with REAL totals (all competitions)');
+    // console.log('[API] getTopAssistsEurope - fetching with REAL totals (all competitions)');
 
     // Étape 1: Récupérer les candidats depuis les championnats principaux
     const candidateIds = new Set<number>();
@@ -2580,7 +2580,7 @@ export async function getTopAssistsEurope(season?: number): Promise<EuropeanPlay
 
     for (const league of TOP_5_LEAGUES) {
       try {
-        console.log(`[API] Fetching assists candidates from ${league.name}...`);
+        // console.log(`[API] Fetching assists candidates from ${league.name}...`);
         const response = await fetchWithRetry(
           `/players/topassists?league=${league.id}&season=${targetSeason}`
         );
@@ -2606,7 +2606,7 @@ export async function getTopAssistsEurope(season?: number): Promise<EuropeanPlay
       }
     }
 
-    console.log(`[API] Found ${candidateIds.size} assist candidates, fetching full stats...`);
+    // console.log(`[API] Found ${candidateIds.size} assist candidates, fetching full stats...`);
 
     // Étape 2: Pour chaque joueur, récupérer ses stats COMPLÈTES
     const playersWithRealStats: EuropeanPlayerStats[] = [];
@@ -2649,7 +2649,7 @@ export async function getTopAssistsEurope(season?: number): Promise<EuropeanPlay
 
         processed++;
         if (processed % 10 === 0) {
-          console.log(`[API] Processed ${processed}/${candidateIds.size} assist players...`);
+          // console.log(`[API] Processed ${processed}/${candidateIds.size} assist players...`);
         }
 
         await delay(100);
@@ -2662,13 +2662,13 @@ export async function getTopAssistsEurope(season?: number): Promise<EuropeanPlay
     playersWithRealStats.sort((a, b) => b.assists - a.assists);
 
     // Log top 5 pour debug
-    console.log('[API] Top 5 passeurs (TOUTES compétitions confondues):');
+    // console.log('[API] Top 5 passeurs (TOUTES compétitions confondues):');
     playersWithRealStats.slice(0, 5).forEach((p, i) => {
-      console.log(`  ${i + 1}. ${p.player.name} (${p.team.name}) - ${p.assists} assists, ${p.goals} buts`);
+      // console.log(`  ${i + 1}. ${p.player.name} (${p.team.name}) - ${p.assists} assists, ${p.goals} buts`);
     });
 
     const topAssists = playersWithRealStats.slice(0, 50);
-    console.log('[API] getTopAssistsEurope (REAL totals) - final:', topAssists.length);
+    // console.log('[API] getTopAssistsEurope (REAL totals) - final:', topAssists.length);
     setEuropeanCache(cacheKey, topAssists);
     return topAssists;
   } catch (error) {
@@ -2686,12 +2686,12 @@ export async function getTopContributorsEurope(season?: number): Promise<Europea
   const cacheKey = `europe_contributors_${targetSeason}`;
   const cached = getEuropeanCached(cacheKey);
   if (cached) {
-    console.log('[API] getTopContributorsEurope - from cache:', cached.length);
+    // console.log('[API] getTopContributorsEurope - from cache:', cached.length);
     return cached;
   }
 
   try {
-    console.log('[API] getTopContributorsEurope - fetching for season:', targetSeason);
+    // console.log('[API] getTopContributorsEurope - fetching for season:', targetSeason);
 
     // Récupérer à la fois buteurs et passeurs
     const [scorers, assists] = await Promise.all([
@@ -2728,7 +2728,7 @@ export async function getTopContributorsEurope(season?: number): Promise<Europea
 
     const topContributors = allContributors.slice(0, 50);
 
-    console.log('[API] getTopContributorsEurope - total unique players:', topContributors.length);
+    // console.log('[API] getTopContributorsEurope - total unique players:', topContributors.length);
     setEuropeanCache(cacheKey, topContributors);
     return topContributors;
   } catch (error) {
@@ -2747,12 +2747,12 @@ export async function getTopRatingsEurope(season?: number): Promise<EuropeanPlay
   const cacheKey = `europe_ratings_all_real_${targetSeason}`;
   const cached = getEuropeanCached(cacheKey);
   if (cached) {
-    console.log('[API] getTopRatingsEurope (TOUTES compétitions) - from cache:', cached.length);
+    // console.log('[API] getTopRatingsEurope (TOUTES compétitions) - from cache:', cached.length);
     return cached;
   }
 
   try {
-    console.log('[API] getTopRatingsEurope - fetching with REAL ratings (all competitions)');
+    // console.log('[API] getTopRatingsEurope - fetching with REAL ratings (all competitions)');
 
     // Étape 1: Récupérer les candidats depuis les championnats principaux (buteurs + passeurs)
     const candidateIds = new Set<number>();
@@ -2760,7 +2760,7 @@ export async function getTopRatingsEurope(season?: number): Promise<EuropeanPlay
 
     for (const league of TOP_5_LEAGUES) {
       try {
-        console.log(`[API] Fetching ratings candidates from ${league.name}...`);
+        // console.log(`[API] Fetching ratings candidates from ${league.name}...`);
 
         // Récupérer buteurs et passeurs pour avoir un bon pool de candidats
         const [scorersResponse, assistsResponse] = await Promise.all([
@@ -2791,7 +2791,7 @@ export async function getTopRatingsEurope(season?: number): Promise<EuropeanPlay
       }
     }
 
-    console.log(`[API] Found ${candidateIds.size} candidate players, fetching full stats for ratings...`);
+    // console.log(`[API] Found ${candidateIds.size} candidate players, fetching full stats for ratings...`);
 
     // Étape 2: Pour chaque joueur, récupérer ses stats COMPLÈTES via getPlayerInfo
     const playersWithRealRatings: EuropeanPlayerStats[] = [];
@@ -2837,7 +2837,7 @@ export async function getTopRatingsEurope(season?: number): Promise<EuropeanPlay
 
         processed++;
         if (processed % 10 === 0) {
-          console.log(`[API] Processed ${processed}/${candidateIds.size} players for ratings...`);
+          // console.log(`[API] Processed ${processed}/${candidateIds.size} players for ratings...`);
         }
 
         // Petit délai entre les requêtes
@@ -2851,13 +2851,13 @@ export async function getTopRatingsEurope(season?: number): Promise<EuropeanPlay
     playersWithRealRatings.sort((a, b) => (b.rating || 0) - (a.rating || 0));
 
     // Log top 5 pour debug
-    console.log('[API] Top 5 meilleures notes (TOUTES compétitions confondues):');
+    // console.log('[API] Top 5 meilleures notes (TOUTES compétitions confondues):');
     playersWithRealRatings.slice(0, 5).forEach((p, i) => {
-      console.log(`  ${i + 1}. ${p.player.name} (${p.team.name}) - Note: ${p.rating?.toFixed(2)}, ${p.playedMatches} matchs`);
+      // console.log(`  ${i + 1}. ${p.player.name} (${p.team.name}) - Note: ${p.rating?.toFixed(2)}, ${p.playedMatches} matchs`);
     });
 
     const topRated = playersWithRealRatings.slice(0, 50);
-    console.log('[API] getTopRatingsEurope (REAL ratings) - final:', topRated.length);
+    // console.log('[API] getTopRatingsEurope (REAL ratings) - final:', topRated.length);
     setEuropeanCache(cacheKey, topRated);
     return topRated;
   } catch (error) {

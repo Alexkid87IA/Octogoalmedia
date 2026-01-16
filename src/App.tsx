@@ -34,6 +34,7 @@ const EuropeanRankingsPage = lazy(() => import('./pages/EuropeanRankingsPage'));
 const JoueursPage = lazy(() => import('./pages/JoueursPage'));
 const FormatsPage = lazy(() => import('./pages/FormatsPage'));
 const BettingPage = lazy(() => import('./pages/BettingPage'));
+const SearchPage = lazy(() => import('./pages/SearchPage'));
 
 // Composant de chargement optimisé
 const PageLoader = () => (
@@ -161,6 +162,9 @@ const AppContent = () => {
                 <Route path="/business-ideas" element={<Navigate to="/" replace />} />
                 <Route path="/guides" element={<Navigate to="/" replace />} />
                 <Route path="/guides/*" element={<Navigate to="/" replace />} />
+
+                {/* Route Recherche */}
+                <Route path="/recherche" element={<SearchPage />} />
 
                 {/* Route de test */}
                 <Route path="/test" element={<TestPage />} />

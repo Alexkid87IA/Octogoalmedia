@@ -32,9 +32,9 @@ export const DebateSection = () => {
             pour: result.opinions.find((o) => o.position === "Pour")?.votes || 0,
             contre: result.opinions.find((o) => o.position === "Contre")?.votes || 0
           });
-          console.log("Débat récupéré depuis Sanity CMS");
+          // console.log("Débat récupéré depuis Sanity CMS");
         } else {
-          console.log("Aucun débat trouvé dans Sanity");
+          // console.log("Aucun débat trouvé dans Sanity");
         }
       } catch (err) {
         console.error("Erreur lors du chargement du débat:", err);

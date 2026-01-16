@@ -57,7 +57,7 @@ export const VSPollSection: React.FC = () => {
     localStorage.setItem(`vs-poll-${poll._id}`, option);
 
     // TODO: Envoyer le vote au serveur (Sanity ou autre backend)
-    console.log(`Vote enregistré pour ${option}`);
+    // console.log(`Vote enregistré pour ${option}`);
   };
 
   // Ne rien afficher si pas de poll

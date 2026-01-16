@@ -36,9 +36,9 @@ const OddsWidget: React.FC<OddsWidgetProps> = ({
       try {
         setIsLoading(true);
         setError(null);
-        console.log('[OddsWidget] Searching odds for:', { homeTeam, awayTeam, competitionId });
+        // console.log('[OddsWidget] Searching odds for:', { homeTeam, awayTeam, competitionId });
         const matchOdds = await findMatchOdds(homeTeam, awayTeam, competitionId);
-        console.log('[OddsWidget] Found odds:', matchOdds);
+        // console.log('[OddsWidget] Found odds:', matchOdds);
         setOdds(matchOdds);
       } catch (err) {
         console.error('[OddsWidget] Error:', err);
