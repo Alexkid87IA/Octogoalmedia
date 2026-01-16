@@ -1,13 +1,32 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-const API_KEY = 'da33787ca20dc37d8986e538ef30f941';
+// API key from environment variable (set in Vercel dashboard)
+const API_KEY = process.env.API_FOOTBALL_KEY;
 const API_HOST = 'https://v3.football.api-sports.io';
 
+// Allowed origins for CORS
+const ALLOWED_ORIGINS = [
+  'https://octogoal.media',
+  'https://www.octogoal.media',
+  'https://octogoalmedia.vercel.app',
+  'http://localhost:5173',
+  'http://localhost:3000',
+];
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // CORS headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  // Check API key configuration
+  if (!API_KEY) {
+    console.error('[Vercel API] API_FOOTBALL_KEY environment variable is not set');
+    return res.status(500).json({ error: 'API configuration error' });
+  }
+
+  // CORS headers - restrict to allowed origins
+  const origin = req.headers.origin || '';
+  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
 
   // Handle OPTIONS preflight
   if (req.method === 'OPTIONS') {
