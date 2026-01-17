@@ -115,6 +115,329 @@ export const EventIcon = ({ type, detail }: { type: string; detail: string }) =>
   }
 };
 
+// =============================================
+// TIMELINE ENRICHIE DES ÉVÉNEMENTS
+// =============================================
+
+interface MatchEvent {
+  type: string;
+  detail?: string;
+  team?: { id: number };
+  player?: { id?: number; name?: string };
+  assist?: { name?: string };
+  time?: { elapsed?: number; extra?: number };
+  comments?: string;
+}
+
+interface TimelineProps {
+  events: MatchEvent[];
+  homeTeam: { id: number; name: string; crest: string };
+  awayTeam: { id: number; name: string; crest: string };
+  score: {
+    fullTime: { home: number | null; away: number | null };
+    halfTime: { home: number | null; away: number | null };
+  };
+  status: string;
+  minute?: number;
+}
+
+/** Obtenir le label de l'événement */
+const getEventLabel = (type: string, detail?: string): string => {
+  switch (type) {
+    case 'Goal':
+      if (detail?.includes('Own Goal')) return 'But contre son camp';
+      if (detail?.includes('Penalty')) return 'Penalty converti';
+      if (detail?.includes('Missed Penalty')) return 'Penalty manqué';
+      return 'But';
+    case 'Card':
+      if (detail === 'Red Card') return 'Carton rouge';
+      if (detail === 'Second Yellow card') return 'Second jaune';
+      return 'Carton jaune';
+    case 'subst':
+      return 'Remplacement';
+    case 'Var':
+      if (detail?.includes('Goal Disallowed')) return 'But annulé (VAR)';
+      if (detail?.includes('Goal confirmed')) return 'But confirmé (VAR)';
+      if (detail?.includes('Penalty confirmed')) return 'Penalty accordé (VAR)';
+      if (detail?.includes('Penalty cancelled')) return 'Penalty annulé (VAR)';
+      return 'Décision VAR';
+    default:
+      return detail || 'Événement';
+  }
+};
+
+/** Obtenir la couleur de fond selon le type d'événement */
+const getEventBgColor = (type: string, detail?: string): string => {
+  switch (type) {
+    case 'Goal':
+      if (detail?.includes('Own Goal')) return 'bg-orange-500/10 border-orange-500/30';
+      if (detail?.includes('Missed Penalty')) return 'bg-gray-500/10 border-gray-500/30';
+      return 'bg-green-500/10 border-green-500/30';
+    case 'Card':
+      if (detail === 'Red Card' || detail === 'Second Yellow card') return 'bg-red-500/10 border-red-500/30';
+      return 'bg-yellow-500/10 border-yellow-500/30';
+    case 'subst':
+      return 'bg-blue-500/10 border-blue-500/30';
+    case 'Var':
+      return 'bg-purple-500/10 border-purple-500/30';
+    default:
+      return 'bg-white/5 border-white/10';
+  }
+};
+
+/** Obtenir l'icône enrichie de l'événement */
+const EnhancedEventIcon = ({ type, detail }: { type: string; detail?: string }) => {
+  const baseClasses = "w-10 h-10 rounded-full flex items-center justify-center text-lg";
+
+  switch (type) {
+    case 'Goal':
+      if (detail?.includes('Own Goal')) {
+        return <div className={`${baseClasses} bg-orange-500/20 ring-2 ring-orange-500/50`}>⚽</div>;
+      }
+      if (detail?.includes('Penalty')) {
+        return <div className={`${baseClasses} bg-green-500/20 ring-2 ring-green-500/50`}>🎯</div>;
+      }
+      if (detail?.includes('Missed Penalty')) {
+        return <div className={`${baseClasses} bg-gray-500/20 ring-2 ring-gray-500/50`}>❌</div>;
+      }
+      return <div className={`${baseClasses} bg-green-500/20 ring-2 ring-green-500/50 animate-pulse`}>⚽</div>;
+    case 'Card':
+      if (detail === 'Red Card') {
+        return <div className={`${baseClasses} bg-red-500/20 ring-2 ring-red-500/50`}>🟥</div>;
+      }
+      if (detail === 'Second Yellow card') {
+        return <div className={`${baseClasses} bg-red-500/20 ring-2 ring-red-500/50`}><span className="text-sm">🟨🟥</span></div>;
+      }
+      return <div className={`${baseClasses} bg-yellow-500/20 ring-2 ring-yellow-500/50`}>🟨</div>;
+    case 'subst':
+      return <div className={`${baseClasses} bg-blue-500/20 ring-2 ring-blue-500/50`}>🔄</div>;
+    case 'Var':
+      return (
+        <div className={`${baseClasses} bg-purple-500/20 ring-2 ring-purple-500/50`}>
+          <span className="text-xs font-black text-purple-400">VAR</span>
+        </div>
+      );
+    default:
+      return <div className={`${baseClasses} bg-white/10 ring-2 ring-white/20`}>📋</div>;
+  }
+};
+
+/** Marqueur de période (Coup d'envoi, Mi-temps, Fin) */
+const PeriodMarker = ({ label, time, score }: { label: string; time?: string; score?: string }) => (
+  <div className="flex items-center gap-4 py-4 my-2">
+    <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+    <div className="flex items-center gap-3 px-4 py-2 bg-white/5 rounded-full border border-white/10">
+      <span className="text-gray-400 text-xs font-medium uppercase tracking-wider">{label}</span>
+      {score && <span className="text-white font-bold text-sm">{score}</span>}
+      {time && <span className="text-gray-500 text-xs">{time}</span>}
+    </div>
+    <div className="flex-1 h-px bg-gradient-to-l from-transparent via-white/20 to-transparent" />
+  </div>
+);
+
+/** Timeline enrichie des événements du match */
+export const MatchTimeline = ({ events, homeTeam, awayTeam, score, status, minute }: TimelineProps) => {
+  if (!events || events.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-800/50 flex items-center justify-center">
+          <span className="text-3xl">⏱️</span>
+        </div>
+        <p className="text-gray-400 mb-1">Aucun événement pour l'instant</p>
+        <p className="text-gray-600 text-sm">Les temps forts apparaîtront ici</p>
+      </div>
+    );
+  }
+
+  // Trier les événements par ordre chronologique décroissant
+  const sortedEvents = [...events].sort((a, b) => {
+    const timeA = (a.time?.elapsed || 0) + (a.time?.extra || 0) / 100;
+    const timeB = (b.time?.elapsed || 0) + (b.time?.extra || 0) / 100;
+    return timeB - timeA;
+  });
+
+  // Calculer le score cumulatif pour chaque but
+  const goalsChronological = events
+    .filter((e) => e.type === 'Goal' && !e.detail?.includes('Missed'))
+    .sort((a, b) => {
+      const timeA = (a.time?.elapsed || 0) + (a.time?.extra || 0) / 100;
+      const timeB = (b.time?.elapsed || 0) + (b.time?.extra || 0) / 100;
+      return timeA - timeB;
+    });
+
+  let homeScore = 0;
+  let awayScore = 0;
+  const scoreAtGoal = new Map<MatchEvent, { home: number; away: number }>();
+
+  goalsChronological.forEach((goal) => {
+    const isOwnGoal = goal.detail?.includes('Own Goal');
+    if (isOwnGoal) {
+      // Own goal : marquer pour l'équipe adverse
+      if (goal.team?.id === homeTeam.id) awayScore++;
+      else homeScore++;
+    } else {
+      if (goal.team?.id === homeTeam.id) homeScore++;
+      else awayScore++;
+    }
+    scoreAtGoal.set(goal, { home: homeScore, away: awayScore });
+  });
+
+  // Vérifier s'il y a des événements en 2ème période
+  const hasSecondHalf = sortedEvents.some((e) => (e.time?.elapsed || 0) > 45);
+  const hasExtraTime = sortedEvents.some((e) => (e.time?.elapsed || 0) > 90);
+  const isLive = status === 'IN_PLAY' || status === 'PAUSED' || status === 'HALFTIME';
+  const isFinished = status === 'FINISHED';
+
+  return (
+    <div className="relative">
+      {/* Ligne verticale de la timeline */}
+      <div className="absolute left-5 top-0 bottom-0 w-0.5 bg-gradient-to-b from-pink-500/50 via-gray-700 to-gray-800" />
+
+      {/* Badge live en haut si match en cours */}
+      {isLive && minute && (
+        <div className="flex items-center gap-3 mb-6 ml-12">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-red-500/20 border border-red-500/50 rounded-full animate-pulse">
+            <div className="w-2 h-2 bg-red-500 rounded-full" />
+            <span className="text-red-400 font-bold text-sm">{minute}'</span>
+            <span className="text-red-400/70 text-xs">EN DIRECT</span>
+          </div>
+        </div>
+      )}
+
+      {/* Marqueur Fin du match */}
+      {isFinished && (
+        <PeriodMarker
+          label="Fin du match"
+          score={`${score.fullTime.home} - ${score.fullTime.away}`}
+        />
+      )}
+
+      {/* Liste des événements */}
+      <div className="space-y-3">
+        {sortedEvents.map((event, idx) => {
+          const isHome = event.team?.id === homeTeam.id;
+          const team = isHome ? homeTeam : awayTeam;
+          const isGoal = event.type === 'Goal' && !event.detail?.includes('Missed');
+          const currentScore = isGoal ? scoreAtGoal.get(event) : null;
+          const eventTime = event.time?.elapsed || 0;
+          const extraTime = event.time?.extra || 0;
+
+          // Afficher le marqueur mi-temps si on passe de 2ème à 1ère période
+          const prevEvent = sortedEvents[idx - 1];
+          const showHalfTimeMarker = hasSecondHalf &&
+            prevEvent &&
+            (prevEvent.time?.elapsed || 0) > 45 &&
+            eventTime <= 45;
+
+          // Afficher le marqueur 90' si on passe des prolongations au temps réglementaire
+          const showFullTimeMarker = hasExtraTime &&
+            prevEvent &&
+            (prevEvent.time?.elapsed || 0) > 90 &&
+            eventTime <= 90;
+
+          return (
+            <div key={idx}>
+              {/* Marqueur 90' */}
+              {showFullTimeMarker && (
+                <PeriodMarker label="Fin du temps réglementaire" time="90'" />
+              )}
+
+              {/* Marqueur mi-temps */}
+              {showHalfTimeMarker && (
+                <PeriodMarker
+                  label="Mi-temps"
+                  score={score.halfTime.home !== null ? `${score.halfTime.home} - ${score.halfTime.away}` : undefined}
+                />
+              )}
+
+              {/* Événement */}
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: idx * 0.03 }}
+                className={`relative flex items-start gap-4 p-4 ml-1 rounded-xl border ${getEventBgColor(event.type, event.detail)} transition-all hover:scale-[1.01]`}
+              >
+                {/* Icône avec connecteur à la timeline */}
+                <div className="relative flex-shrink-0 -ml-6">
+                  <EnhancedEventIcon type={event.type} detail={event.detail} />
+                </div>
+
+                {/* Contenu principal */}
+                <div className="flex-1 min-w-0">
+                  {/* Header: Temps + Label */}
+                  <div className="flex items-center gap-3 mb-1">
+                    <span className={`font-bold text-lg ${isGoal ? 'text-green-400' : 'text-pink-400'}`}>
+                      {eventTime}'
+                      {extraTime > 0 && <span className="text-sm">+{extraTime}</span>}
+                    </span>
+                    <span className="text-gray-400 text-sm font-medium">
+                      {getEventLabel(event.type, event.detail)}
+                    </span>
+                    {/* Logo équipe */}
+                    <img src={team.crest} alt="" className="w-5 h-5 object-contain ml-auto" />
+                  </div>
+
+                  {/* Nom du joueur */}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {event.player?.id ? (
+                      <Link
+                        to={`/player/${event.player.id}`}
+                        className="text-white font-semibold hover:text-pink-400 transition-colors"
+                      >
+                        {event.player.name}
+                      </Link>
+                    ) : (
+                      <span className="text-white font-semibold">
+                        {event.player?.name || 'Joueur inconnu'}
+                      </span>
+                    )}
+
+                    {/* Passeur pour les buts */}
+                    {event.type === 'Goal' && event.assist?.name && !event.detail?.includes('Penalty') && (
+                      <span className="text-gray-500 text-sm">
+                        ← Passe de <span className="text-gray-400">{event.assist.name}</span>
+                      </span>
+                    )}
+
+                    {/* Joueur sortant pour les remplacements */}
+                    {event.type === 'subst' && event.assist?.name && (
+                      <span className="text-red-400 text-sm flex items-center gap-1">
+                        <span className="text-gray-600">|</span>
+                        <span>↓</span> {event.assist.name}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Détails additionnels */}
+                  {event.detail && event.type === 'Var' && (
+                    <p className="text-purple-400/80 text-xs mt-1">{event.detail}</p>
+                  )}
+                </div>
+
+                {/* Score au moment du but */}
+                {isGoal && currentScore && (
+                  <div className="flex-shrink-0 flex flex-col items-center">
+                    <div className="px-3 py-2 bg-black/40 rounded-lg border border-white/10">
+                      <div className="flex items-center gap-2 text-xl font-black">
+                        <span className={isHome ? 'text-pink-400' : 'text-white'}>{currentScore.home}</span>
+                        <span className="text-gray-600">-</span>
+                        <span className={!isHome ? 'text-blue-400' : 'text-white'}>{currentScore.away}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Marqueur Coup d'envoi en bas */}
+      <PeriodMarker label="Coup d'envoi" time="0'" />
+    </div>
+  );
+};
+
 /** Indicateur de forme (W/D/L) */
 export const FormBadge = ({ result }: { result: 'W' | 'D' | 'L' }) => {
   const styles = {
@@ -484,6 +807,168 @@ export interface MatchOdds {
 // =============================================
 // COMPOSANTS PREVIEW ET SIDEBAR ADDITIONNELS
 // =============================================
+
+// =============================================
+// JOUEURS À SUIVRE (VS)
+// =============================================
+
+interface PlayerToWatch {
+  id: number;
+  name: string;
+  photo?: string;
+  position?: string;
+  goals?: number;
+  assists?: number;
+  rating?: number;
+  appearances?: number;
+}
+
+interface PlayersToWatchProps {
+  homePlayer: PlayerToWatch | null;
+  awayPlayer: PlayerToWatch | null;
+  homeTeam: { name: string; crest: string };
+  awayTeam: { name: string; crest: string };
+}
+
+/** Composant Joueurs à suivre en mode VS */
+export const PlayersToWatch = ({ homePlayer, awayPlayer, homeTeam, awayTeam }: PlayersToWatchProps) => {
+  if (!homePlayer && !awayPlayer) return null;
+
+  const PlayerCard = ({
+    player,
+    team,
+    side
+  }: {
+    player: PlayerToWatch | null;
+    team: { name: string; crest: string };
+    side: 'home' | 'away'
+  }) => {
+    if (!player) {
+      return (
+        <div className="flex-1 text-center py-6">
+          <div className="w-20 h-20 mx-auto rounded-full bg-gray-800/50 flex items-center justify-center mb-3">
+            <span className="text-3xl text-gray-600">?</span>
+          </div>
+          <p className="text-gray-500 text-sm">Données non disponibles</p>
+        </div>
+      );
+    }
+
+    const gradientColor = side === 'home' ? 'from-pink-500 to-pink-600' : 'from-blue-500 to-blue-600';
+    const textColor = side === 'home' ? 'text-pink-400' : 'text-blue-400';
+    const bgColor = side === 'home' ? 'bg-pink-500/10 border-pink-500/30' : 'bg-blue-500/10 border-blue-500/30';
+
+    return (
+      <Link
+        to={`/player/${player.id}`}
+        className="flex-1 group"
+      >
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className={`relative text-center py-4 px-3 rounded-2xl border ${bgColor} transition-all hover:scale-[1.02]`}
+        >
+          {/* Badge position */}
+          {player.position && (
+            <div className={`absolute top-3 ${side === 'home' ? 'left-3' : 'right-3'} px-2 py-0.5 bg-black/40 rounded text-[10px] text-gray-400 uppercase`}>
+              {player.position}
+            </div>
+          )}
+
+          {/* Photo joueur */}
+          <div className="relative mx-auto w-24 h-24 mb-3">
+            {player.photo ? (
+              <img
+                src={player.photo}
+                alt={player.name}
+                className="w-full h-full object-cover rounded-full border-2 border-white/20 group-hover:border-white/40 transition-colors"
+              />
+            ) : (
+              <div className={`w-full h-full rounded-full bg-gradient-to-br ${gradientColor} flex items-center justify-center`}>
+                <span className="text-white text-2xl font-bold">
+                  {player.name.charAt(0)}
+                </span>
+              </div>
+            )}
+            {/* Badge note si disponible */}
+            {player.rating && player.rating > 0 && (
+              <div className="absolute -bottom-1 -right-1 px-2 py-0.5 bg-yellow-500 rounded-full text-black text-xs font-bold">
+                {player.rating.toFixed(1)}
+              </div>
+            )}
+          </div>
+
+          {/* Nom et équipe */}
+          <h4 className={`font-bold text-white group-hover:${textColor} transition-colors truncate`}>
+            {player.name}
+          </h4>
+          <div className="flex items-center justify-center gap-1.5 mt-1 mb-3">
+            <img src={team.crest} alt="" className="w-4 h-4" />
+            <span className="text-gray-500 text-xs truncate">{team.name}</span>
+          </div>
+
+          {/* Stats */}
+          <div className="flex justify-center gap-4">
+            {(player.goals !== undefined && player.goals > 0) && (
+              <div className="text-center">
+                <p className={`text-lg font-black ${textColor}`}>{player.goals}</p>
+                <p className="text-[10px] text-gray-500 uppercase">Buts</p>
+              </div>
+            )}
+            {(player.assists !== undefined && player.assists > 0) && (
+              <div className="text-center">
+                <p className={`text-lg font-black ${textColor}`}>{player.assists}</p>
+                <p className="text-[10px] text-gray-500 uppercase">Passes D.</p>
+              </div>
+            )}
+            {(player.appearances !== undefined && player.appearances > 0) && (
+              <div className="text-center">
+                <p className="text-lg font-black text-gray-400">{player.appearances}</p>
+                <p className="text-[10px] text-gray-500 uppercase">Matchs</p>
+              </div>
+            )}
+          </div>
+        </motion.div>
+      </Link>
+    );
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.15 }}
+      className="bg-gray-900/50 rounded-2xl border border-white/10 overflow-hidden"
+    >
+      {/* Header */}
+      <div className="px-6 py-4 border-b border-white/10 bg-gradient-to-r from-pink-500/10 via-transparent to-blue-500/10">
+        <div className="flex items-center justify-center gap-3">
+          <Star className="w-5 h-5 text-yellow-500" />
+          <h3 className="text-lg font-bold text-white">Joueurs à suivre</h3>
+          <Zap className="w-5 h-5 text-yellow-500" />
+        </div>
+      </div>
+
+      {/* Players VS */}
+      <div className="p-6">
+        <div className="flex items-stretch gap-4">
+          {/* Home Player */}
+          <PlayerCard player={homePlayer} team={homeTeam} side="home" />
+
+          {/* VS Badge */}
+          <div className="flex items-center justify-center flex-shrink-0">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-500 to-orange-500 flex items-center justify-center shadow-lg shadow-yellow-500/30">
+              <span className="text-white font-black text-sm">VS</span>
+            </div>
+          </div>
+
+          {/* Away Player */}
+          <PlayerCard player={awayPlayer} team={awayTeam} side="away" />
+        </div>
+      </div>
+    </motion.div>
+  );
+};
 
 /** Composant Preview avant-match */
 export const MatchPreview = ({

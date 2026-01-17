@@ -89,12 +89,12 @@ export default function UnifiedMatchTicker() {
           setLoading(true);
         }
 
-        // 1. Récupérer les matchs LIVE et filtrer par compétitions majeures
+        // 1. Récupérer les matchs LIVE - UNIQUEMENT les grosses compétitions
         const liveData = await getLiveMatches().catch(() => []);
         const majorLiveMatches = liveData.filter((m: Match) =>
           isLiveMatch(m.status) && MAJOR_COMPETITION_IDS.includes(m.competition?.id)
         );
-        setLiveMatches(majorLiveMatches.slice(0, 10));
+        setLiveMatches(majorLiveMatches.slice(0, 15));
 
         // 2. Récupérer les matchs à venir avec cotes Winamax
         const TOP_5_LEAGUES = [61, 39, 140, 135, 78]; // L1, PL, Liga, Serie A, Bundesliga

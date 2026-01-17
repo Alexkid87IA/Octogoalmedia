@@ -13,6 +13,8 @@ export {
   MatchPreview,
   OtherMatchesSidebar,
   TopScorersWithToggle,
+  MatchTimeline,
+  PlayersToWatch,
 } from './MatchComponents';
 
 export type { Scorer, TeamStanding, Match, MatchOdds } from './MatchComponents';

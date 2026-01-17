@@ -1,5 +1,5 @@
 import { sanityClient, previewClient } from './sanityClient';
-import { SanityArticle, SanityDebate, SanityPodcast, SanityCaseStudy, SanitySuccessStory, SanityUniverse, SanityClubFeature, SanityClubPricing, SanityQuote, SanityVSPoll } from '../types/sanity';
+import { SanityArticle, SanityDebate, SanityPodcast, SanityCaseStudy, SanitySuccessStory, SanityUniverse, SanityClubFeature, SanityClubPricing, SanityQuote, SanityVSPoll, SanityPlayer } from '../types/sanity';
 
 // Cache pour les requêtes fréquentes
 interface CacheEntry<T = unknown> {
@@ -1292,6 +1292,238 @@ export const getOctogoalExtraits = async (limit = 20): Promise<any[]> => {
       return results || [];
     } catch (error) {
       console.error("Erreur lors de la récupération des extraits:", error);
+      return [];
+    }
+  });
+};
+
+// ============= FONCTIONS POUR LES JOUEURS =============
+
+// Récupérer les pépites (jeunes talents)
+export const getPepites = async (limit = 10): Promise<SanityPlayer[]> => {
+  return getWithCache(`pepites_${limit}`, async () => {
+    try {
+      const query = `*[_type == "player" && isPepite == true] | order(name asc)[0...$limit] {
+        _id,
+        name,
+        apiFootballId,
+        "slug": slug.current,
+        "photo": photo.asset->url,
+        customBio,
+        playingStyle,
+        strengths,
+        weaknesses,
+        octogoalVerdict,
+        isPepite,
+        isFeatured
+      }`;
+
+      const results = await sanityClient.fetch(query, { limit });
+      return results || [];
+    } catch (error) {
+      console.error("Erreur lors de la récupération des pépites:", error);
+      return [];
+    }
+  });
+};
+
+// Récupérer la pépite mise en avant
+export const getFeaturedPepite = async (): Promise<SanityPlayer | null> => {
+  return getWithCache('featuredPepite', async () => {
+    try {
+      // Chercher une pépite featured
+      const query = `*[_type == "player" && isPepite == true && isFeatured == true][0] {
+        _id,
+        name,
+        apiFootballId,
+        "slug": slug.current,
+        "photo": photo.asset->url,
+        customBio,
+        playingStyle,
+        strengths,
+        weaknesses,
+        funFacts,
+        famousQuotes,
+        octogoalVerdict,
+        isPepite,
+        isFeatured
+      }`;
+
+      const result = await sanityClient.fetch(query);
+
+      // Si pas de featured, prendre la première pépite
+      if (!result) {
+        const fallbackQuery = `*[_type == "player" && isPepite == true][0] {
+          _id,
+          name,
+          apiFootballId,
+          "slug": slug.current,
+          "photo": photo.asset->url,
+          customBio,
+          playingStyle,
+          strengths,
+          weaknesses,
+          funFacts,
+          famousQuotes,
+          octogoalVerdict,
+          isPepite,
+          isFeatured
+        }`;
+        return await sanityClient.fetch(fallbackQuery);
+      }
+
+      return result;
+    } catch (error) {
+      console.error("Erreur lors de la récupération de la pépite featured:", error);
+      return null;
+    }
+  });
+};
+
+// Récupérer un joueur par son ID
+export const getPlayerById = async (playerId: string): Promise<SanityPlayer | null> => {
+  return getWithCache(`player_${playerId}`, async () => {
+    try {
+      const query = `*[_type == "player" && _id == $playerId][0] {
+        _id,
+        name,
+        apiFootballId,
+        "slug": slug.current,
+        "photo": photo.asset->url,
+        customBio,
+        playingStyle,
+        strengths,
+        weaknesses,
+        funFacts,
+        famousQuotes,
+        octogoalVerdict,
+        isPepite,
+        isLegend,
+        isFeatured,
+        relatedArticles[]->{
+          _id,
+          title,
+          "slug": slug.current,
+          mainImage {
+            asset->{
+              url
+            }
+          },
+          publishedAt
+        },
+        tags[]->{
+          _id,
+          title,
+          "slug": slug.current
+        }
+      }`;
+
+      return await sanityClient.fetch(query, { playerId });
+    } catch (error) {
+      console.error(`Erreur lors de la récupération du joueur ${playerId}:`, error);
+      return null;
+    }
+  });
+};
+
+// Récupérer un joueur par son slug
+export const getPlayerBySlug = async (slug: string): Promise<SanityPlayer | null> => {
+  return getWithCache(`player_slug_${slug}`, async () => {
+    try {
+      const query = `*[_type == "player" && slug.current == $slug][0] {
+        _id,
+        name,
+        apiFootballId,
+        "slug": slug.current,
+        "photo": photo.asset->url,
+        customBio,
+        playingStyle,
+        strengths,
+        weaknesses,
+        funFacts,
+        famousQuotes,
+        octogoalVerdict,
+        isPepite,
+        isLegend,
+        isFeatured,
+        relatedArticles[]->{
+          _id,
+          title,
+          "slug": slug.current,
+          mainImage {
+            asset->{
+              url
+            }
+          },
+          publishedAt
+        },
+        tags[]->{
+          _id,
+          title,
+          "slug": slug.current
+        }
+      }`;
+
+      return await sanityClient.fetch(query, { slug });
+    } catch (error) {
+      console.error(`Erreur lors de la récupération du joueur ${slug}:`, error);
+      return null;
+    }
+  });
+};
+
+// Récupérer un joueur par son ID API-Football
+export const getPlayerByApiFootballId = async (apiFootballId: number): Promise<SanityPlayer | null> => {
+  return getWithCache(`player_api_${apiFootballId}`, async () => {
+    try {
+      const query = `*[_type == "player" && apiFootballId == $apiFootballId][0] {
+        _id,
+        name,
+        apiFootballId,
+        "slug": slug.current,
+        "photo": photo.asset->url,
+        customBio,
+        playingStyle,
+        strengths,
+        weaknesses,
+        funFacts,
+        famousQuotes,
+        octogoalVerdict,
+        isPepite,
+        isLegend,
+        isFeatured
+      }`;
+
+      return await sanityClient.fetch(query, { apiFootballId });
+    } catch (error) {
+      console.error(`Erreur lors de la récupération du joueur API ${apiFootballId}:`, error);
+      return null;
+    }
+  });
+};
+
+// Récupérer les légendes
+export const getLegends = async (limit = 10): Promise<SanityPlayer[]> => {
+  return getWithCache(`legends_${limit}`, async () => {
+    try {
+      const query = `*[_type == "player" && isLegend == true] | order(name asc)[0...$limit] {
+        _id,
+        name,
+        apiFootballId,
+        "slug": slug.current,
+        "photo": photo.asset->url,
+        customBio,
+        playingStyle,
+        strengths,
+        octogoalVerdict,
+        isLegend,
+        isFeatured
+      }`;
+
+      const results = await sanityClient.fetch(query, { limit });
+      return results || [];
+    } catch (error) {
+      console.error("Erreur lors de la récupération des légendes:", error);
       return [];
     }
   });

@@ -108,11 +108,30 @@ export const QuickStandingsSection = () => {
   };
 
   const goToPrevious = () => {
-    setCurrentLeagueIndex(prev => prev === 0 ? LEAGUE_CONFIG.length - 1 : prev - 1);
+    const newIndex = currentLeagueIndex === 0 ? LEAGUE_CONFIG.length - 1 : currentLeagueIndex - 1;
+    setCurrentLeagueIndex(newIndex);
+    scrollToLeague(newIndex);
   };
 
   const goToNext = () => {
-    setCurrentLeagueIndex(prev => prev === LEAGUE_CONFIG.length - 1 ? 0 : prev + 1);
+    const newIndex = currentLeagueIndex === LEAGUE_CONFIG.length - 1 ? 0 : currentLeagueIndex + 1;
+    setCurrentLeagueIndex(newIndex);
+    scrollToLeague(newIndex);
+  };
+
+  // Scroll le carrousel pour afficher la ligue sélectionnée
+  const scrollToLeague = (index: number) => {
+    if (carouselRef.current) {
+      const buttons = carouselRef.current.querySelectorAll('button');
+      const targetButton = buttons[index];
+      if (targetButton) {
+        targetButton.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+          inline: 'center'
+        });
+      }
+    }
   };
 
   const currentStandings = standings[currentLeague.key as keyof typeof LEAGUES] || [];
@@ -147,15 +166,17 @@ export const QuickStandingsSection = () => {
                   {LEAGUE_CONFIG.map((league, index) => (
                     <button
                       key={league.key}
-                      onClick={() => setCurrentLeagueIndex(index)}
+                      onClick={() => {
+                        setCurrentLeagueIndex(index);
+                        scrollToLeague(index);
+                      }}
                       className={`
-                        flex items-center gap-2 px-4 py-2 whitespace-nowrap transition-all border backdrop-blur-sm
+                        flex items-center gap-2 px-4 py-2 whitespace-nowrap transition-all rounded-xl
                         ${index === currentLeagueIndex
-                          ? `bg-gradient-to-r ${league.color}/20 border-pink-500/50 text-white shadow-lg shadow-pink-500/20`
-                          : 'bg-white/[0.03] border-white/10 text-gray-400 hover:bg-white/[0.08] hover:text-white hover:border-white/20'
+                          ? `bg-gradient-to-r ${league.color}/20 ring-1 ring-pink-500/50 text-white shadow-lg shadow-pink-500/20`
+                          : 'bg-white/[0.05] text-gray-400 hover:bg-white/[0.10] hover:text-white'
                         }
                       `}
-                      style={{ clipPath: octagonClipSubtle }}
                     >
                       <span className="text-lg">{league.flag}</span>
                       <span className="text-sm font-medium hidden sm:inline">{league.name}</span>

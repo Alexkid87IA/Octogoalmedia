@@ -7,7 +7,7 @@ import {
   LEAGUE_INFO,
   getTopCompetitionIds,
 } from '../config/competitions';
-import { getCached, setCache, setCacheWithTimestamp } from './apiFootball.cache';
+import { getCached, setCache, setCacheWithTimestamp, clearCache as clearApiCache, getPendingRequest, setPendingRequest, deletePendingRequest, CACHE_DURATIONS } from './apiFootball.cache';
 import {
   transformMatch,
   transformStanding,
@@ -175,62 +175,70 @@ export async function getStandings(leagueCode: string) {
   const cacheKey = `standings_${normalizedCode}`;
   const cached = getCached(cacheKey);
   if (cached) {
-    // console.log(`[API] getStandings(${normalizedCode}) - from cache:`, cached.length);
     return cached;
   }
 
-  try {
-    // console.log(`[API] getStandings(${normalizedCode}) - fetching for season ${CURRENT_SEASON}...`);
-    const response = await apiFetch(
-      `/standings?league=${normalizedCode}&season=${CURRENT_SEASON}`
-    );
-
-    if (!response.ok) {
-      console.error(`[API] getStandings(${normalizedCode}) - HTTP error:`, response.status, response.statusText);
-      return [];
-    }
-
-    const data = await response.json();
-    // console.log(`[API] getStandings(${normalizedCode}) - API response received, results:`, data.results || 0);
-
-    // Vérifier les erreurs API
-    if (data.errors && Object.keys(data.errors).length > 0) {
-      console.error(`[API] getStandings(${normalizedCode}) - API errors:`, JSON.stringify(data.errors));
-      return [];
-    }
-
-    // API-Football structure: { response: [{ league: { standings: [[...teams]] } }] }
-    const standings = data.response?.[0]?.league?.standings?.[0] || [];
-    // console.log(`[API] getStandings(${normalizedCode}) - raw standings:`, standings.length);
-
-    // Transformer pour compatibilité avec l'ancien format
-    const result = standings.map((team: RawStandingTeam) => ({
-      position: team.rank,
-      team: {
-        id: team.team.id,
-        name: team.team.name,
-        shortName: team.team.name,
-        tla: team.team.name.substring(0, 3).toUpperCase(),
-        crest: team.team.logo,
-      },
-      playedGames: team.all.played,
-      won: team.all.win,
-      draw: team.all.draw,
-      lost: team.all.lose,
-      points: team.points,
-      goalsFor: team.all.goals.for,
-      goalsAgainst: team.all.goals.against,
-      goalDifference: team.goalsDiff,
-      form: team.form,
-    }));
-
-    // console.log(`[API] getStandings(${normalizedCode}) - transformed:`, result.length, 'teams');
-    setCache(cacheKey, result);
-    return result;
-  } catch (error) {
-    console.error(`[API] getStandings(${normalizedCode}) - exception:`, error);
-    return [];
+  // Vérifier si une requête est déjà en cours
+  const pending = getPendingRequest<unknown[]>(cacheKey);
+  if (pending) {
+    return pending;
   }
+
+  const fetchPromise = (async () => {
+    try {
+      const response = await apiFetch(
+        `/standings?league=${normalizedCode}&season=${CURRENT_SEASON}`
+      );
+
+      if (!response.ok) {
+        console.error(`[API] getStandings(${normalizedCode}) - HTTP error:`, response.status);
+        setCache(cacheKey, [], 2 * 60 * 1000); // Cache erreur 2 min
+        return [];
+      }
+
+      const data = await response.json();
+
+      if (data.errors && Object.keys(data.errors).length > 0) {
+        console.error(`[API] getStandings(${normalizedCode}) - API errors:`, JSON.stringify(data.errors));
+        setCache(cacheKey, [], 2 * 60 * 1000); // Cache erreur 2 min
+        return [];
+      }
+
+      const standings = data.response?.[0]?.league?.standings?.[0] || [];
+
+      const result = standings.map((team: RawStandingTeam) => ({
+        position: team.rank,
+        team: {
+          id: team.team.id,
+          name: team.team.name,
+          shortName: team.team.name,
+          tla: team.team.name.substring(0, 3).toUpperCase(),
+          crest: team.team.logo,
+        },
+        playedGames: team.all.played,
+        won: team.all.win,
+        draw: team.all.draw,
+        lost: team.all.lose,
+        points: team.points,
+        goalsFor: team.all.goals.for,
+        goalsAgainst: team.all.goals.against,
+        goalDifference: team.goalsDiff,
+        form: team.form,
+      }));
+
+      setCache(cacheKey, result, CACHE_DURATIONS.STANDINGS); // 2h
+      return result;
+    } catch (error) {
+      console.error(`[API] getStandings(${normalizedCode}) - exception:`, error);
+      setCache(cacheKey, [], CACHE_DURATIONS.ERROR_MEDIUM);
+      return [];
+    } finally {
+      deletePendingRequest(cacheKey);
+    }
+  })();
+
+  setPendingRequest(cacheKey, fetchPromise);
+  return fetchPromise;
 }
 
 /**
@@ -545,8 +553,13 @@ export async function getTodayFixtures(leagueIds?: number[]) {
     return cached;
   }
 
-  try {
-    const today = new Date().toISOString().split('T')[0];
+  // Déduplication des requêtes
+  const pending = getPendingRequest<unknown[]>(cacheKey);
+  if (pending) return pending;
+
+  const fetchPromise = (async () => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
     // console.log('[API] getTodayFixtures - fetching for date:', today, 'leagues:', ids);
 
     // API-Football n'accepte qu'une seule ligue par requête
@@ -584,12 +597,18 @@ export async function getTodayFixtures(leagueIds?: number[]) {
       .map(transformMatch)
       .sort((a, b) => new Date(a.utcDate).getTime() - new Date(b.utcDate).getTime());
 
-    setCache(cacheKey, result);
-    return result;
-  } catch (error) {
-    console.error('Erreur getTodayFixtures:', error);
-    return [];
-  }
+      setCache(cacheKey, result);
+      return result;
+    } catch (error) {
+      console.error('Erreur getTodayFixtures:', error);
+      return [];
+    } finally {
+      deletePendingRequest(cacheKey);
+    }
+  })();
+
+  setPendingRequest(cacheKey, fetchPromise);
+  return fetchPromise;
 }
 
 /**
@@ -744,41 +763,52 @@ export async function getTopScorers(leagueCode: string) {
   const cached = getCached(cacheKey);
   if (cached) return cached;
 
-  try {
-    const response = await apiFetch(
-      `/players/topscorers?league=${normalizedCode}&season=${CURRENT_SEASON}`
-    );
+  // Déduplication des requêtes
+  const pending = getPendingRequest<unknown[]>(cacheKey);
+  if (pending) return pending;
 
-    if (!response.ok) return [];
+  const fetchPromise = (async () => {
+    try {
+      const response = await apiFetch(
+        `/players/topscorers?league=${normalizedCode}&season=${CURRENT_SEASON}`
+      );
 
-    const data = await response.json();
+      if (!response.ok) return [];
 
-    // Transformer pour compatibilité
-    const result = (data.response || []).map((item: ApiTopScorer) => ({
-      player: {
-        id: item.player.id,
-        name: item.player.name,
-        firstName: item.player.firstname,
-        lastName: item.player.lastname,
-        nationality: item.player.nationality,
-        photo: item.player.photo,
-      },
-      team: {
-        id: item.statistics[0]?.team?.id,
-        name: item.statistics[0]?.team?.name,
-        crest: item.statistics[0]?.team?.logo,
-      },
-      goals: item.statistics[0]?.goals?.total || 0,
-      assists: item.statistics[0]?.goals?.assists || 0,
-      playedMatches: item.statistics[0]?.games?.appearences || 0,
-    }));
+      const data = await response.json();
 
-    setCache(cacheKey, result);
-    return result;
-  } catch (error) {
-    console.error('Erreur getTopScorers:', error);
-    return [];
-  }
+      // Transformer pour compatibilité
+      const result = (data.response || []).map((item: ApiTopScorer) => ({
+        player: {
+          id: item.player.id,
+          name: item.player.name,
+          firstName: item.player.firstname,
+          lastName: item.player.lastname,
+          nationality: item.player.nationality,
+          photo: item.player.photo,
+        },
+        team: {
+          id: item.statistics[0]?.team?.id,
+          name: item.statistics[0]?.team?.name,
+          crest: item.statistics[0]?.team?.logo,
+        },
+        goals: item.statistics[0]?.goals?.total || 0,
+        assists: item.statistics[0]?.goals?.assists || 0,
+        playedMatches: item.statistics[0]?.games?.appearences || 0,
+      }));
+
+      setCache(cacheKey, result, CACHE_DURATIONS.TOP_SCORERS); // 2h
+      return result;
+    } catch (error) {
+      console.error('Erreur getTopScorers:', error);
+      return [];
+    } finally {
+      deletePendingRequest(cacheKey);
+    }
+  })();
+
+  setPendingRequest(cacheKey, fetchPromise);
+  return fetchPromise;
 }
 
 /**
@@ -790,9 +820,14 @@ export async function getTopAssists(leagueCode: string) {
   const cached = getCached(cacheKey);
   if (cached) return cached;
 
-  try {
-    const response = await apiFetch(
-      `/players/topassists?league=${normalizedCode}&season=${CURRENT_SEASON}`
+  // Déduplication des requêtes
+  const pending = getPendingRequest<unknown[]>(cacheKey);
+  if (pending) return pending;
+
+  const fetchPromise = (async () => {
+    try {
+      const response = await apiFetch(
+        `/players/topassists?league=${normalizedCode}&season=${CURRENT_SEASON}`
     );
 
     if (!response.ok) return [];
@@ -819,12 +854,18 @@ export async function getTopAssists(leagueCode: string) {
       playedMatches: item.statistics[0]?.games?.appearences || 0,
     }));
 
-    setCache(cacheKey, result);
-    return result;
-  } catch (error) {
-    console.error('Erreur getTopAssists:', error);
-    return [];
-  }
+      setCache(cacheKey, result, CACHE_DURATIONS.TOP_SCORERS); // 2h
+      return result;
+    } catch (error) {
+      console.error('Erreur getTopAssists:', error);
+      return [];
+    } finally {
+      deletePendingRequest(cacheKey);
+    }
+  })();
+
+  setPendingRequest(cacheKey, fetchPromise);
+  return fetchPromise;
 }
 
 /**
@@ -863,9 +904,9 @@ export async function getAllRounds(leagueCode: string, customSeason?: number) {
 
       if (result.length > 0) {
         // console.log(`[API] getAllRounds - found ${result.length} rounds for season ${season}`);
-        setCache(cacheKey, result);
+        setCache(cacheKey, result, CACHE_DURATIONS.ROUNDS); // 24h
         // Stocker aussi la saison qui fonctionne pour cette ligue
-        setCache(`working_season_${normalizedCode}`, season);
+        setCache(`working_season_${normalizedCode}`, season, CACHE_DURATIONS.ROUNDS);
         return result;
       }
     } catch (error) {
@@ -1062,9 +1103,14 @@ export async function getTeamDetails(teamId: number) {
   const cached = getCached(cacheKey);
   if (cached) return cached;
 
-  try {
-    // Récupérer les infos de base de l'équipe
-    const teamResponse = await apiFetch(`/teams?id=${teamId}`);
+  // Déduplication des requêtes
+  const pending = getPendingRequest<unknown>(cacheKey);
+  if (pending) return pending;
+
+  const fetchPromise = (async () => {
+    try {
+      // Récupérer les infos de base de l'équipe
+      const teamResponse = await apiFetch(`/teams?id=${teamId}`);
     if (!teamResponse.ok) return null;
 
     const teamData = await teamResponse.json();
@@ -1074,8 +1120,11 @@ export async function getTeamDetails(teamId: number) {
 
     // Récupérer l'effectif
     const squadResponse = await apiFetch(`/players/squads?team=${teamId}`);
-    const squadData = await squadResponse.json();
-    const squad = squadData.response?.[0]?.players || [];
+    let squad: Array<{ id: number; name: string; position?: string; photo?: string; number?: number }> = [];
+    if (squadResponse.ok) {
+      const squadData = await squadResponse.json();
+      squad = squadData.response?.[0]?.players || [];
+    }
 
     const result = {
       id: team.team.id,
@@ -1100,12 +1149,18 @@ export async function getTeamDetails(teamId: number) {
       runningCompetitions: [],
     };
 
-    setCache(cacheKey, result);
-    return result;
-  } catch (error) {
-    console.error('Erreur getTeamDetails:', error);
-    return null;
-  }
+      setCache(cacheKey, result, CACHE_DURATIONS.TEAM_DETAILS); // 24h
+      return result;
+    } catch (error) {
+      console.error('Erreur getTeamDetails:', error);
+      return null;
+    } finally {
+      deletePendingRequest(cacheKey);
+    }
+  })();
+
+  setPendingRequest(cacheKey, fetchPromise);
+  return fetchPromise;
 }
 
 /**
@@ -1223,7 +1278,7 @@ export async function getTeamStatistics(teamId: number, leagueId: number) {
       },
     };
 
-    setCache(cacheKey, result);
+    setCache(cacheKey, result, CACHE_DURATIONS.TEAM_STATS); // 1h
     return result;
   } catch (error) {
     console.error('Erreur getTeamStatistics:', error);
@@ -1321,31 +1376,98 @@ export async function getTeamMatches(teamId: number, status?: 'SCHEDULED' | 'FIN
 
 /**
  * Récupère les prochains matchs d'une équipe
+ * Utilise le paramètre 'next' de l'API pour une meilleure fiabilité
  */
 export async function getTeamNextMatches(teamId: number, limit: number = 5) {
-  try {
-    const matches = await getTeamMatches(teamId, 'SCHEDULED');
-    return matches.slice(0, limit);
-  } catch (error) {
-    console.error('Erreur getTeamNextMatches:', error);
-    return [];
-  }
+  const cacheKey = `team_next_${teamId}_${limit}`;
+  const cached = getCached(cacheKey);
+  if (cached) return cached;
+
+  // Déduplication des requêtes
+  const pending = getPendingRequest<unknown[]>(cacheKey);
+  if (pending) return pending;
+
+  const fetchPromise = (async () => {
+    try {
+      const url = `/fixtures?team=${teamId}&next=${limit}`;
+      const response = await apiFetch(url);
+
+      if (!response.ok) {
+        console.error(`[API] getTeamNextMatches - HTTP error:`, response.status);
+        setCache(cacheKey, [], 2 * 60 * 1000); // Cache erreur 2 min
+        return [];
+      }
+
+      const data = await response.json();
+
+      if (data.errors && Object.keys(data.errors).length > 0) {
+        console.error(`[API] getTeamNextMatches - API errors:`, JSON.stringify(data.errors, null, 2));
+        setCache(cacheKey, [], 2 * 60 * 1000); // Cache erreur 2 min
+        return [];
+      }
+
+      const matches = (data.response || []).map(transformMatch);
+      setCache(cacheKey, matches, CACHE_DURATIONS.NEXT_MATCHES); // 1h
+      return matches;
+    } catch (error) {
+      console.error('Erreur getTeamNextMatches:', error);
+      setCache(cacheKey, [], CACHE_DURATIONS.ERROR_MEDIUM);
+      return [];
+    } finally {
+      deletePendingRequest(cacheKey);
+    }
+  })();
+
+  setPendingRequest(cacheKey, fetchPromise);
+  return fetchPromise;
 }
 
 /**
  * Récupère les derniers résultats d'une équipe
+ * Utilise le paramètre 'last' de l'API pour une meilleure fiabilité
  */
 export async function getTeamLastResults(teamId: number, limit: number = 5) {
-  try {
-    const matches = await getTeamMatches(teamId, 'FINISHED');
-    const sorted = matches.sort((a: TransformedMatch, b: TransformedMatch) =>
-      new Date(b.utcDate).getTime() - new Date(a.utcDate).getTime()
-    );
-    return sorted.slice(0, limit);
-  } catch (error) {
-    console.error('Erreur getTeamLastResults:', error);
-    return [];
-  }
+  const cacheKey = `team_last_${teamId}_${limit}`;
+  const cached = getCached(cacheKey);
+  if (cached) return cached;
+
+  // Déduplication des requêtes
+  const pending = getPendingRequest<unknown[]>(cacheKey);
+  if (pending) return pending;
+
+  const fetchPromise = (async () => {
+    try {
+      const url = `/fixtures?team=${teamId}&last=${limit}`;
+      const response = await apiFetch(url);
+
+      if (!response.ok) {
+        console.error(`[API] getTeamLastResults - HTTP error:`, response.status);
+        setCache(cacheKey, [], 2 * 60 * 1000);
+        return [];
+      }
+
+      const data = await response.json();
+
+      if (data.errors && Object.keys(data.errors).length > 0) {
+        console.error(`[API] getTeamLastResults - API errors:`, JSON.stringify(data.errors, null, 2));
+        setCache(cacheKey, [], 2 * 60 * 1000);
+        return [];
+      }
+
+      const matches = (data.response || []).map(transformMatch);
+      setCache(cacheKey, matches, CACHE_DURATIONS.LAST_RESULTS); // 1h
+      return matches;
+    } catch (error) {
+      console.error('Erreur getTeamLastResults:', error);
+      setCache(cacheKey, [], CACHE_DURATIONS.ERROR_MEDIUM);
+      return [];
+    } finally {
+      deletePendingRequest(cacheKey);
+    }
+  })();
+
+  setPendingRequest(cacheKey, fetchPromise);
+  return fetchPromise;
 }
 
 // =============================================
@@ -1357,42 +1479,52 @@ export async function getTeamLastResults(teamId: number, limit: number = 5) {
  */
 export async function getLiveMatches() {
   const cacheKey = 'live_matches';
-  // Cache plus court pour les matchs en direct (30 secondes)
   const cached = getCached(cacheKey);
   if (cached) {
-    // console.log('[API] getLiveMatches - from cache:', cached.length);
     return cached;
   }
 
-  try {
-    // console.log('[API] getLiveMatches - fetching /fixtures?live=all');
-    const response = await apiFetch(`/fixtures?live=all`);
-
-    if (!response.ok) {
-      console.error('[API] getLiveMatches - response not ok:', response.status);
-      return [];
-    }
-
-    const data = await response.json();
-
-    // Vérifier les erreurs API
-    if (data.errors && Object.keys(data.errors).length > 0) {
-      console.error('[API] getLiveMatches - API errors:', JSON.stringify(data.errors));
-      return [];
-    }
-
-    // console.log('[API] getLiveMatches - raw response:', data.results, 'matches');
-
-    const result = (data.response || []).map(transformMatch);
-
-    // Cache plus court pour les matchs live
-    cache[cacheKey] = { data: result, timestamp: Date.now() };
-
-    return result;
-  } catch (error) {
-    console.error('Erreur getLiveMatches:', error);
-    return [];
+  // Vérifier si une requête est déjà en cours
+  const pending = getPendingRequest<unknown[]>(cacheKey);
+  if (pending) {
+    return pending;
   }
+
+  const fetchPromise = (async () => {
+    try {
+      const response = await apiFetch(`/fixtures?live=all`);
+
+      if (!response.ok) {
+        console.error('[API] getLiveMatches - response not ok:', response.status);
+        setCache(cacheKey, [], 30 * 1000); // Cache erreur 30s
+        return [];
+      }
+
+      const data = await response.json();
+
+      if (data.errors && Object.keys(data.errors).length > 0) {
+        console.error('[API] getLiveMatches - API errors:', JSON.stringify(data.errors));
+        setCache(cacheKey, [], 30 * 1000); // Cache erreur 30s
+        return [];
+      }
+
+      const result = (data.response || []).map(transformMatch);
+
+      // Cache court pour les matchs live
+      setCache(cacheKey, result, CACHE_DURATIONS.LIVE_MATCHES);
+
+      return result;
+    } catch (error) {
+      console.error('Erreur getLiveMatches:', error);
+      setCache(cacheKey, [], 30 * 1000); // Cache erreur 30s
+      return [];
+    } finally {
+      deletePendingRequest(cacheKey);
+    }
+  })();
+
+  setPendingRequest(cacheKey, fetchPromise);
+  return fetchPromise;
 }
 
 // =============================================
@@ -1414,7 +1546,12 @@ export async function getMatchDetails(fixtureId: number) {
     return cached;
   }
 
-  try {
+  // Déduplication des requêtes
+  const pending = getPendingRequest<unknown>(cacheKey);
+  if (pending) return pending;
+
+  const fetchPromise = (async () => {
+    try {
     // console.log(`[API] getMatchDetails - fetching fixture ${fixtureId}`);
     const response = await apiFetch(`/fixtures?id=${fixtureId}`);
 
@@ -1443,11 +1580,17 @@ export async function getMatchDetails(fixtureId: number) {
       // console.log(`[API] getMatchDetails(${fixtureId}) - NOT cached (live match, status: ${result.status})`);
     }
 
-    return result;
-  } catch (error) {
-    console.error('Erreur getMatchDetails:', error);
-    return null;
-  }
+      return result;
+    } catch (error) {
+      console.error('Erreur getMatchDetails:', error);
+      return null;
+    } finally {
+      deletePendingRequest(cacheKey);
+    }
+  })();
+
+  setPendingRequest(cacheKey, fetchPromise);
+  return fetchPromise;
 }
 
 /**
@@ -1463,9 +1606,14 @@ export async function getMatchEvents(fixtureId: number, isLive: boolean = false)
     return cached;
   }
 
-  try {
-    // console.log(`[API] getMatchEvents - fetching events for fixture ${fixtureId}`);
-    const response = await apiFetch(`/fixtures/events?fixture=${fixtureId}`);
+  // Déduplication des requêtes
+  const pending = getPendingRequest<unknown[]>(cacheKey);
+  if (pending) return pending;
+
+  const fetchPromise = (async () => {
+    try {
+      // console.log(`[API] getMatchEvents - fetching events for fixture ${fixtureId}`);
+      const response = await apiFetch(`/fixtures/events?fixture=${fixtureId}`);
 
     if (!response.ok) {
       console.error(`[API] getMatchEvents - HTTP error:`, response.status);
@@ -1500,15 +1648,21 @@ export async function getMatchEvents(fixtureId: number, isLive: boolean = false)
       comments: event.comments,
     }));
 
-    // Ne mettre en cache que si ce n'est pas un match live
-    if (!isLive) {
-      setCache(cacheKey, events);
+      // Ne mettre en cache que si ce n'est pas un match live
+      if (!isLive) {
+        setCache(cacheKey, events);
+      }
+      return events;
+    } catch (error) {
+      console.error('Erreur getMatchEvents:', error);
+      return [];
+    } finally {
+      deletePendingRequest(cacheKey);
     }
-    return events;
-  } catch (error) {
-    console.error('Erreur getMatchEvents:', error);
-    return [];
-  }
+  })();
+
+  setPendingRequest(cacheKey, fetchPromise);
+  return fetchPromise;
 }
 
 /**
@@ -1524,7 +1678,12 @@ export async function getMatchStats(fixtureId: number, isLive: boolean = false) 
     return cached;
   }
 
-  try {
+  // Déduplication des requêtes
+  const pending = getPendingRequest<unknown>(cacheKey);
+  if (pending) return pending;
+
+  const fetchPromise = (async () => {
+    try {
     // console.log(`[API] getMatchStats - fetching stats for fixture ${fixtureId}`);
     const response = await apiFetch(`/fixtures/statistics?fixture=${fixtureId}`);
 
@@ -1635,15 +1794,21 @@ export async function getMatchStats(fixtureId: number, isLive: boolean = false) 
       },
     };
 
-    // Ne mettre en cache que si ce n'est pas un match live
-    if (!isLive) {
-      setCache(cacheKey, result);
+      // Ne mettre en cache que si ce n'est pas un match live
+      if (!isLive) {
+        setCache(cacheKey, result);
+      }
+      return result;
+    } catch (error) {
+      console.error('Erreur getMatchStats:', error);
+      return null;
+    } finally {
+      deletePendingRequest(cacheKey);
     }
-    return result;
-  } catch (error) {
-    console.error('Erreur getMatchStats:', error);
-    return null;
-  }
+  })();
+
+  setPendingRequest(cacheKey, fetchPromise);
+  return fetchPromise;
 }
 
 /**
@@ -1659,7 +1824,12 @@ export async function getMatchLineups(fixtureId: number, isLive: boolean = false
     return cached;
   }
 
-  try {
+  // Déduplication des requêtes
+  const pending = getPendingRequest<unknown>(cacheKey);
+  if (pending) return pending;
+
+  const fetchPromise = (async () => {
+    try {
     // console.log(`[API] getMatchLineups - fetching lineups for fixture ${fixtureId}`);
     const response = await apiFetch(`/fixtures/lineups?fixture=${fixtureId}`);
 
@@ -1726,20 +1896,26 @@ export async function getMatchLineups(fixtureId: number, isLive: boolean = false
       })),
     });
 
-    const result = {
-      home: transformLineup(data.response[0]),
-      away: transformLineup(data.response[1]),
-    };
+      const result = {
+        home: transformLineup(data.response[0]),
+        away: transformLineup(data.response[1]),
+      };
 
-    // Ne mettre en cache que si ce n'est pas un match live
-    if (!isLive) {
-      setCache(cacheKey, result);
+      // Ne mettre en cache que si ce n'est pas un match live
+      if (!isLive) {
+        setCache(cacheKey, result);
+      }
+      return result;
+    } catch (error) {
+      console.error('Erreur getMatchLineups:', error);
+      return null;
+    } finally {
+      deletePendingRequest(cacheKey);
     }
-    return result;
-  } catch (error) {
-    console.error('Erreur getMatchLineups:', error);
-    return null;
-  }
+  })();
+
+  setPendingRequest(cacheKey, fetchPromise);
+  return fetchPromise;
 }
 
 /**
@@ -1813,7 +1989,7 @@ export async function getMatchPlayerStats(fixtureId: number, isLive: boolean = f
         name: p.player.name,
         photo: p.player.photo,
         position: p.statistics?.[0]?.games?.position,
-        rating: p.statistics?.[0]?.games?.rating ? parseFloat(p.statistics[0].games.rating) : null,
+        rating: p.statistics?.[0]?.games?.rating ? parseFloat(p.statistics[0]!.games!.rating!) : null,
         minutes: p.statistics?.[0]?.games?.minutes,
         // Offensive
         goals: p.statistics?.[0]?.goals?.total || 0,
@@ -1822,7 +1998,7 @@ export async function getMatchPlayerStats(fixtureId: number, isLive: boolean = f
         shotsOnTarget: p.statistics?.[0]?.shots?.on || 0,
         // Passing
         passes: p.statistics?.[0]?.passes?.total || 0,
-        passAccuracy: p.statistics?.[0]?.passes?.accuracy ? parseInt(p.statistics[0].passes.accuracy) : 0,
+        passAccuracy: p.statistics?.[0]?.passes?.accuracy ? parseInt(p.statistics[0]!.passes!.accuracy!) : 0,
         keyPasses: p.statistics?.[0]?.passes?.key || 0,
         // Dribbles
         dribbles: p.statistics?.[0]?.dribbles?.attempts || 0,
@@ -1996,7 +2172,12 @@ export async function getPlayerInfo(playerId: number) {
   const cached = getCached(cacheKey);
   if (cached) return cached;
 
-  try {
+  // Déduplication des requêtes
+  const pending = getPendingRequest<unknown>(cacheKey);
+  if (pending) return pending;
+
+  const fetchPromise = (async () => {
+    try {
     // console.log(`[API] getPlayerInfo - fetching player ${playerId}`);
     const response = await apiFetch(`/players?id=${playerId}&season=${CURRENT_SEASON}`);
 
@@ -2115,12 +2296,18 @@ export async function getPlayerInfo(playerId: number) {
       })),
     };
 
-    setCache(cacheKey, result);
-    return result;
-  } catch (error) {
-    console.error('Erreur getPlayerInfo:', error);
-    return null;
-  }
+      setCache(cacheKey, result, CACHE_DURATIONS.PLAYER_INFO); // 24h
+      return result;
+    } catch (error) {
+      console.error('Erreur getPlayerInfo:', error);
+      return null;
+    } finally {
+      deletePendingRequest(cacheKey);
+    }
+  })();
+
+  setPendingRequest(cacheKey, fetchPromise);
+  return fetchPromise;
 }
 
 /**
@@ -2166,7 +2353,7 @@ export async function getPlayerTransfers(playerId: number) {
       },
     }));
 
-    setCache(cacheKey, result);
+    setCache(cacheKey, result, CACHE_DURATIONS.PLAYER_INFO); // 24h
     return result;
   } catch (error) {
     console.error('Erreur getPlayerTransfers:', error);
@@ -2203,7 +2390,7 @@ export async function getPlayerTrophies(playerId: number) {
       place: t.place,
     }));
 
-    setCache(cacheKey, result);
+    setCache(cacheKey, result, CACHE_DURATIONS.PLAYER_INFO); // 24h
     return result;
   } catch (error) {
     console.error('Erreur getPlayerTrophies:', error);
@@ -2275,7 +2462,7 @@ export function getTeamForm(matches: BasicMatch[], teamId: number): string[] {
  * Vide le cache (utile pour forcer un rafraîchissement)
  */
 export function clearCache(): void {
-  Object.keys(cache).forEach(key => delete cache[key]);
+  clearApiCache();
   // console.log('Cache vidé');
 }
 
@@ -2292,6 +2479,9 @@ interface EuropeanCacheEntry<T = unknown> {
 }
 
 const europeanCache: Record<string, EuropeanCacheEntry> = {};
+
+// Déduplication des requêtes européennes
+const pendingEuropeanRequests: Map<string, Promise<EuropeanPlayerStats[]>> = new Map();
 
 function getEuropeanCached<T = unknown>(key: string): T | null {
   const entry = europeanCache[key];
@@ -2450,7 +2640,15 @@ export async function getTopScorersEurope(season?: number): Promise<EuropeanPlay
     return cached;
   }
 
-  try {
+  // Vérifier si une requête est déjà en cours (évite les appels concurrents)
+  const pendingRequest = pendingEuropeanRequests.get(cacheKey);
+  if (pendingRequest) {
+    // console.log('[API] getTopScorersEurope - waiting for pending request...');
+    return pendingRequest;
+  }
+
+  const fetchPromise = (async (): Promise<EuropeanPlayerStats[]> => {
+    try {
     // console.log('[API] getTopScorersEurope - fetching with REAL totals (all competitions)');
 
     // Étape 1: Récupérer les candidats depuis les championnats principaux
@@ -2479,7 +2677,7 @@ export async function getTopScorersEurope(season?: number): Promise<EuropeanPlay
           }
         }
 
-        await delay(200);
+        await delay(50);
       } catch (error) {
         console.error(`[API] Error fetching from ${league.name}:`, error);
       }
@@ -2488,53 +2686,64 @@ export async function getTopScorersEurope(season?: number): Promise<EuropeanPlay
     // console.log(`[API] Found ${candidateIds.size} candidate players, fetching full stats...`);
 
     // Étape 2: Pour chaque joueur, récupérer ses stats COMPLÈTES via getPlayerInfo
+    // OPTIMISATION: Parallélisation par batch de 10 au lieu d'appels séquentiels
     const playersWithRealStats: EuropeanPlayerStats[] = [];
-    let processed = 0;
+    const playerIds = Array.from(candidateIds);
+    const BATCH_SIZE = 10;
 
-    for (const playerId of candidateIds) {
-      try {
-        const playerInfo = await getPlayerInfo(playerId);
-        if (playerInfo && playerInfo.statistics && playerInfo.statistics.length > 0) {
-          const aggregated = aggregateAllPlayerStats(playerInfo.statistics);
-          const basicInfo = playerBasicInfo.get(playerId);
+    for (let i = 0; i < playerIds.length; i += BATCH_SIZE) {
+      const batch = playerIds.slice(i, i + BATCH_SIZE);
 
-          playersWithRealStats.push({
-            player: {
-              id: playerInfo.id,
-              name: playerInfo.name,
-              firstName: playerInfo.firstname,
-              lastName: playerInfo.lastname,
-              nationality: playerInfo.nationality,
-              photo: playerInfo.photo,
-            },
-            team: {
-              id: basicInfo?.team?.id || playerInfo.statistics[0]?.team?.id,
-              name: basicInfo?.team?.name || playerInfo.statistics[0]?.team?.name,
-              crest: basicInfo?.team?.logo || playerInfo.statistics[0]?.team?.logo,
-            },
-            league: basicInfo?.league || {
-              id: playerInfo.statistics[0]?.league?.id,
-              name: playerInfo.statistics[0]?.league?.name,
-              country: playerInfo.statistics[0]?.league?.country,
-              flag: '⚽',
-            },
-            goals: aggregated.goals,
-            assists: aggregated.assists,
-            total: aggregated.goals + aggregated.assists,
-            playedMatches: aggregated.matches,
-            rating: aggregated.rating || undefined,
-          });
-        }
+      // Fetch batch en parallèle
+      const batchResults = await Promise.all(
+        batch.map(async (playerId) => {
+          try {
+            const playerInfo = await getPlayerInfo(playerId);
+            if (playerInfo && playerInfo.statistics && playerInfo.statistics.length > 0) {
+              const aggregated = aggregateAllPlayerStats(playerInfo.statistics);
+              const basicInfo = playerBasicInfo.get(playerId);
 
-        processed++;
-        if (processed % 10 === 0) {
-          // console.log(`[API] Processed ${processed}/${candidateIds.size} players...`);
-        }
+              return {
+                player: {
+                  id: playerInfo.id,
+                  name: playerInfo.name,
+                  firstName: playerInfo.firstname,
+                  lastName: playerInfo.lastname,
+                  nationality: playerInfo.nationality,
+                  photo: playerInfo.photo,
+                },
+                team: {
+                  id: basicInfo?.team?.id || playerInfo.statistics[0]?.team?.id,
+                  name: basicInfo?.team?.name || playerInfo.statistics[0]?.team?.name,
+                  crest: basicInfo?.team?.logo || playerInfo.statistics[0]?.team?.logo,
+                },
+                league: basicInfo?.league || {
+                  id: playerInfo.statistics[0]?.league?.id,
+                  name: playerInfo.statistics[0]?.league?.name,
+                  country: playerInfo.statistics[0]?.league?.country,
+                  flag: '⚽',
+                },
+                goals: aggregated.goals,
+                assists: aggregated.assists,
+                total: aggregated.goals + aggregated.assists,
+                playedMatches: aggregated.matches,
+                rating: aggregated.rating || undefined,
+              } as EuropeanPlayerStats;
+            }
+            return null;
+          } catch (error) {
+            console.error(`[API] Error fetching full stats for player ${playerId}:`, error);
+            return null;
+          }
+        })
+      );
 
-        // Petit délai entre les requêtes
+      // Ajouter les résultats valides
+      playersWithRealStats.push(...batchResults.filter((p): p is EuropeanPlayerStats => p !== null));
+
+      // Petit délai entre les batches pour éviter le rate limiting
+      if (i + BATCH_SIZE < playerIds.length) {
         await delay(100);
-      } catch (error) {
-        console.error(`[API] Error fetching full stats for player ${playerId}:`, error);
       }
     }
 
@@ -2548,13 +2757,19 @@ export async function getTopScorersEurope(season?: number): Promise<EuropeanPlay
     });
 
     const topScorers = playersWithRealStats.slice(0, 50);
-    // console.log('[API] getTopScorersEurope (REAL totals) - final:', topScorers.length);
-    setEuropeanCache(cacheKey, topScorers);
-    return topScorers;
-  } catch (error) {
-    console.error('Erreur getTopScorersEurope:', error);
-    return [];
-  }
+      // console.log('[API] getTopScorersEurope (REAL totals) - final:', topScorers.length);
+      setEuropeanCache(cacheKey, topScorers);
+      return topScorers;
+    } catch (error) {
+      console.error('Erreur getTopScorersEurope:', error);
+      return [];
+    } finally {
+      pendingEuropeanRequests.delete(cacheKey);
+    }
+  })();
+
+  pendingEuropeanRequests.set(cacheKey, fetchPromise);
+  return fetchPromise;
 }
 
 /**
@@ -2570,7 +2785,14 @@ export async function getTopAssistsEurope(season?: number): Promise<EuropeanPlay
     return cached;
   }
 
-  try {
+  // Vérifier si une requête est déjà en cours
+  const pendingRequest = pendingEuropeanRequests.get(cacheKey);
+  if (pendingRequest) {
+    return pendingRequest;
+  }
+
+  const fetchPromise = (async (): Promise<EuropeanPlayerStats[]> => {
+    try {
     // console.log('[API] getTopAssistsEurope - fetching with REAL totals (all competitions)');
 
     // Étape 1: Récupérer les candidats depuis les championnats principaux
@@ -2599,7 +2821,7 @@ export async function getTopAssistsEurope(season?: number): Promise<EuropeanPlay
           }
         }
 
-        await delay(200);
+        await delay(50);
       } catch (error) {
         console.error(`[API] Error fetching assists from ${league.name}:`, error);
       }
@@ -2608,52 +2830,61 @@ export async function getTopAssistsEurope(season?: number): Promise<EuropeanPlay
     // console.log(`[API] Found ${candidateIds.size} assist candidates, fetching full stats...`);
 
     // Étape 2: Pour chaque joueur, récupérer ses stats COMPLÈTES
+    // OPTIMISATION: Parallélisation par batch de 10
     const playersWithRealStats: EuropeanPlayerStats[] = [];
-    let processed = 0;
+    const playerIds = Array.from(candidateIds);
+    const BATCH_SIZE = 10;
 
-    for (const playerId of candidateIds) {
-      try {
-        const playerInfo = await getPlayerInfo(playerId);
-        if (playerInfo && playerInfo.statistics && playerInfo.statistics.length > 0) {
-          const aggregated = aggregateAllPlayerStats(playerInfo.statistics);
-          const basicInfo = playerBasicInfo.get(playerId);
+    for (let i = 0; i < playerIds.length; i += BATCH_SIZE) {
+      const batch = playerIds.slice(i, i + BATCH_SIZE);
 
-          playersWithRealStats.push({
-            player: {
-              id: playerInfo.id,
-              name: playerInfo.name,
-              firstName: playerInfo.firstname,
-              lastName: playerInfo.lastname,
-              nationality: playerInfo.nationality,
-              photo: playerInfo.photo,
-            },
-            team: {
-              id: basicInfo?.team?.id || playerInfo.statistics[0]?.team?.id,
-              name: basicInfo?.team?.name || playerInfo.statistics[0]?.team?.name,
-              crest: basicInfo?.team?.logo || playerInfo.statistics[0]?.team?.logo,
-            },
-            league: basicInfo?.league || {
-              id: playerInfo.statistics[0]?.league?.id,
-              name: playerInfo.statistics[0]?.league?.name,
-              country: playerInfo.statistics[0]?.league?.country,
-              flag: '⚽',
-            },
-            goals: aggregated.goals,
-            assists: aggregated.assists,
-            total: aggregated.goals + aggregated.assists,
-            playedMatches: aggregated.matches,
-            rating: aggregated.rating || undefined,
-          });
-        }
+      const batchResults = await Promise.all(
+        batch.map(async (playerId) => {
+          try {
+            const playerInfo = await getPlayerInfo(playerId);
+            if (playerInfo && playerInfo.statistics && playerInfo.statistics.length > 0) {
+              const aggregated = aggregateAllPlayerStats(playerInfo.statistics);
+              const basicInfo = playerBasicInfo.get(playerId);
 
-        processed++;
-        if (processed % 10 === 0) {
-          // console.log(`[API] Processed ${processed}/${candidateIds.size} assist players...`);
-        }
+              return {
+                player: {
+                  id: playerInfo.id,
+                  name: playerInfo.name,
+                  firstName: playerInfo.firstname,
+                  lastName: playerInfo.lastname,
+                  nationality: playerInfo.nationality,
+                  photo: playerInfo.photo,
+                },
+                team: {
+                  id: basicInfo?.team?.id || playerInfo.statistics[0]?.team?.id,
+                  name: basicInfo?.team?.name || playerInfo.statistics[0]?.team?.name,
+                  crest: basicInfo?.team?.logo || playerInfo.statistics[0]?.team?.logo,
+                },
+                league: basicInfo?.league || {
+                  id: playerInfo.statistics[0]?.league?.id,
+                  name: playerInfo.statistics[0]?.league?.name,
+                  country: playerInfo.statistics[0]?.league?.country,
+                  flag: '⚽',
+                },
+                goals: aggregated.goals,
+                assists: aggregated.assists,
+                total: aggregated.goals + aggregated.assists,
+                playedMatches: aggregated.matches,
+                rating: aggregated.rating || undefined,
+              } as EuropeanPlayerStats;
+            }
+            return null;
+          } catch (error) {
+            console.error(`[API] Error fetching full stats for assist player ${playerId}:`, error);
+            return null;
+          }
+        })
+      );
 
+      playersWithRealStats.push(...batchResults.filter((p): p is EuropeanPlayerStats => p !== null));
+
+      if (i + BATCH_SIZE < playerIds.length) {
         await delay(100);
-      } catch (error) {
-        console.error(`[API] Error fetching full stats for assist player ${playerId}:`, error);
       }
     }
 
@@ -2666,14 +2897,20 @@ export async function getTopAssistsEurope(season?: number): Promise<EuropeanPlay
       // console.log(`  ${i + 1}. ${p.player.name} (${p.team.name}) - ${p.assists} assists, ${p.goals} buts`);
     });
 
-    const topAssists = playersWithRealStats.slice(0, 50);
-    // console.log('[API] getTopAssistsEurope (REAL totals) - final:', topAssists.length);
-    setEuropeanCache(cacheKey, topAssists);
-    return topAssists;
-  } catch (error) {
-    console.error('Erreur getTopAssistsEurope:', error);
-    return [];
-  }
+      const topAssists = playersWithRealStats.slice(0, 50);
+      // console.log('[API] getTopAssistsEurope (REAL totals) - final:', topAssists.length);
+      setEuropeanCache(cacheKey, topAssists);
+      return topAssists;
+    } catch (error) {
+      console.error('Erreur getTopAssistsEurope:', error);
+      return [];
+    } finally {
+      pendingEuropeanRequests.delete(cacheKey);
+    }
+  })();
+
+  pendingEuropeanRequests.set(cacheKey, fetchPromise);
+  return fetchPromise;
 }
 
 /**
@@ -2689,7 +2926,14 @@ export async function getTopContributorsEurope(season?: number): Promise<Europea
     return cached;
   }
 
-  try {
+  // Vérifier si une requête est déjà en cours
+  const pendingRequest = pendingEuropeanRequests.get(cacheKey);
+  if (pendingRequest) {
+    return pendingRequest;
+  }
+
+  const fetchPromise = (async (): Promise<EuropeanPlayerStats[]> => {
+    try {
     // console.log('[API] getTopContributorsEurope - fetching for season:', targetSeason);
 
     // Récupérer à la fois buteurs et passeurs
@@ -2725,15 +2969,21 @@ export async function getTopContributorsEurope(season?: number): Promise<Europea
     const allContributors = Array.from(playersMap.values());
     allContributors.sort((a, b) => b.total - a.total);
 
-    const topContributors = allContributors.slice(0, 50);
+      const topContributors = allContributors.slice(0, 50);
 
-    // console.log('[API] getTopContributorsEurope - total unique players:', topContributors.length);
-    setEuropeanCache(cacheKey, topContributors);
-    return topContributors;
-  } catch (error) {
-    console.error('Erreur getTopContributorsEurope:', error);
-    return [];
-  }
+      // console.log('[API] getTopContributorsEurope - total unique players:', topContributors.length);
+      setEuropeanCache(cacheKey, topContributors);
+      return topContributors;
+    } catch (error) {
+      console.error('Erreur getTopContributorsEurope:', error);
+      return [];
+    } finally {
+      pendingEuropeanRequests.delete(cacheKey);
+    }
+  })();
+
+  pendingEuropeanRequests.set(cacheKey, fetchPromise);
+  return fetchPromise;
 }
 
 /**
@@ -2750,7 +3000,14 @@ export async function getTopRatingsEurope(season?: number): Promise<EuropeanPlay
     return cached;
   }
 
-  try {
+  // Vérifier si une requête est déjà en cours
+  const pendingRequest = pendingEuropeanRequests.get(cacheKey);
+  if (pendingRequest) {
+    return pendingRequest;
+  }
+
+  const fetchPromise = (async (): Promise<EuropeanPlayerStats[]> => {
+    try {
     // console.log('[API] getTopRatingsEurope - fetching with REAL ratings (all competitions)');
 
     // Étape 1: Récupérer les candidats depuis les championnats principaux (buteurs + passeurs)
@@ -2784,7 +3041,7 @@ export async function getTopRatingsEurope(season?: number): Promise<EuropeanPlay
           }
         }
 
-        await delay(200);
+        await delay(50);
       } catch (error) {
         console.error(`[API] Error fetching from ${league.name}:`, error);
       }
@@ -2793,56 +3050,64 @@ export async function getTopRatingsEurope(season?: number): Promise<EuropeanPlay
     // console.log(`[API] Found ${candidateIds.size} candidate players, fetching full stats for ratings...`);
 
     // Étape 2: Pour chaque joueur, récupérer ses stats COMPLÈTES via getPlayerInfo
+    // OPTIMISATION: Parallélisation par batch de 10
     const playersWithRealRatings: EuropeanPlayerStats[] = [];
-    let processed = 0;
+    const playerIds = Array.from(candidateIds);
+    const BATCH_SIZE = 10;
 
-    for (const playerId of candidateIds) {
-      try {
-        const playerInfo = await getPlayerInfo(playerId);
-        if (playerInfo && playerInfo.statistics && playerInfo.statistics.length > 0) {
-          const aggregated = aggregateAllPlayerStats(playerInfo.statistics);
-          const basicInfo = playerBasicInfo.get(playerId);
+    for (let i = 0; i < playerIds.length; i += BATCH_SIZE) {
+      const batch = playerIds.slice(i, i + BATCH_SIZE);
 
-          // Ne garder que les joueurs avec une note valide et au moins 5 matchs
-          if (aggregated.rating && aggregated.matches >= 5) {
-            playersWithRealRatings.push({
-              player: {
-                id: playerInfo.id,
-                name: playerInfo.name,
-                firstName: playerInfo.firstname,
-                lastName: playerInfo.lastname,
-                nationality: playerInfo.nationality,
-                photo: playerInfo.photo,
-              },
-              team: {
-                id: basicInfo?.team?.id || playerInfo.statistics[0]?.team?.id,
-                name: basicInfo?.team?.name || playerInfo.statistics[0]?.team?.name,
-                crest: basicInfo?.team?.logo || playerInfo.statistics[0]?.team?.logo,
-              },
-              league: basicInfo?.league || {
-                id: playerInfo.statistics[0]?.league?.id,
-                name: playerInfo.statistics[0]?.league?.name,
-                country: playerInfo.statistics[0]?.league?.country,
-                flag: '⚽',
-              },
-              goals: aggregated.goals,
-              assists: aggregated.assists,
-              total: aggregated.goals + aggregated.assists,
-              playedMatches: aggregated.matches,
-              rating: aggregated.rating,
-            });
+      const batchResults = await Promise.all(
+        batch.map(async (playerId) => {
+          try {
+            const playerInfo = await getPlayerInfo(playerId);
+            if (playerInfo && playerInfo.statistics && playerInfo.statistics.length > 0) {
+              const aggregated = aggregateAllPlayerStats(playerInfo.statistics);
+              const basicInfo = playerBasicInfo.get(playerId);
+
+              // Ne garder que les joueurs avec une note valide et au moins 5 matchs
+              if (aggregated.rating && aggregated.matches >= 5) {
+                return {
+                  player: {
+                    id: playerInfo.id,
+                    name: playerInfo.name,
+                    firstName: playerInfo.firstname,
+                    lastName: playerInfo.lastname,
+                    nationality: playerInfo.nationality,
+                    photo: playerInfo.photo,
+                  },
+                  team: {
+                    id: basicInfo?.team?.id || playerInfo.statistics[0]?.team?.id,
+                    name: basicInfo?.team?.name || playerInfo.statistics[0]?.team?.name,
+                    crest: basicInfo?.team?.logo || playerInfo.statistics[0]?.team?.logo,
+                  },
+                  league: basicInfo?.league || {
+                    id: playerInfo.statistics[0]?.league?.id,
+                    name: playerInfo.statistics[0]?.league?.name,
+                    country: playerInfo.statistics[0]?.league?.country,
+                    flag: '⚽',
+                  },
+                  goals: aggregated.goals,
+                  assists: aggregated.assists,
+                  total: aggregated.goals + aggregated.assists,
+                  playedMatches: aggregated.matches,
+                  rating: aggregated.rating,
+                } as EuropeanPlayerStats;
+              }
+            }
+            return null;
+          } catch (error) {
+            console.error(`[API] Error fetching full stats for player ${playerId}:`, error);
+            return null;
           }
-        }
+        })
+      );
 
-        processed++;
-        if (processed % 10 === 0) {
-          // console.log(`[API] Processed ${processed}/${candidateIds.size} players for ratings...`);
-        }
+      playersWithRealRatings.push(...batchResults.filter((p): p is EuropeanPlayerStats => p !== null));
 
-        // Petit délai entre les requêtes
+      if (i + BATCH_SIZE < playerIds.length) {
         await delay(100);
-      } catch (error) {
-        console.error(`[API] Error fetching full stats for player ${playerId}:`, error);
       }
     }
 
@@ -2855,14 +3120,20 @@ export async function getTopRatingsEurope(season?: number): Promise<EuropeanPlay
       // console.log(`  ${i + 1}. ${p.player.name} (${p.team.name}) - Note: ${p.rating?.toFixed(2)}, ${p.playedMatches} matchs`);
     });
 
-    const topRated = playersWithRealRatings.slice(0, 50);
-    // console.log('[API] getTopRatingsEurope (REAL ratings) - final:', topRated.length);
-    setEuropeanCache(cacheKey, topRated);
-    return topRated;
-  } catch (error) {
-    console.error('Erreur getTopRatingsEurope:', error);
-    return [];
-  }
+      const topRated = playersWithRealRatings.slice(0, 50);
+      // console.log('[API] getTopRatingsEurope (REAL ratings) - final:', topRated.length);
+      setEuropeanCache(cacheKey, topRated);
+      return topRated;
+    } catch (error) {
+      console.error('Erreur getTopRatingsEurope:', error);
+      return [];
+    } finally {
+      pendingEuropeanRequests.delete(cacheKey);
+    }
+  })();
+
+  pendingEuropeanRequests.set(cacheKey, fetchPromise);
+  return fetchPromise;
 }
 
 /**

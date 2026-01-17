@@ -274,51 +274,65 @@ export const ResponsiveNavbar = () => {
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 8 }}
                             transition={{ duration: 0.2 }}
-                            className="absolute top-full left-0 mt-3 w-[420px] z-50"
+                            className="absolute top-full left-0 mt-3 z-50"
+                            style={{ width: `${Math.min(item.columns.length * 200, 600)}px` }}
                           >
                             <div className="relative">
-                              {/* Dropdown glow */}
-                              <div className="absolute -inset-1 bg-gradient-to-br from-pink-500/20 via-purple-500/20 to-blue-500/20 rounded-3xl blur-2xl opacity-60" />
+                              {/* Glow effect */}
+                              <div className="absolute -inset-1 bg-gradient-to-br from-pink-500/20 via-purple-500/20 to-fuchsia-500/20 rounded-3xl blur-2xl opacity-60" />
 
-                              <div className="relative bg-[#0a0a0f]/95 backdrop-blur-2xl rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
-                                {/* Fond solide avec léger gradient */}
-                                <div className="absolute inset-0 bg-gradient-to-br from-gray-900/50 via-transparent to-transparent" />
-                                <div className="absolute inset-0 bg-gradient-to-br from-pink-500/[0.02] via-transparent to-blue-500/[0.02]" />
+                              {/* Main container - FOND SOLIDE */}
+                              <div className="relative bg-[#0c0c14] rounded-2xl border border-white/15 shadow-2xl shadow-black/80 overflow-hidden">
+                                <div className="absolute inset-0 bg-gradient-to-br from-pink-500/[0.05] via-transparent to-purple-500/[0.05]" />
 
-                                {/* Header */}
-                                <div className="relative px-5 py-4 border-b border-white/10 flex items-center justify-between">
-                                  <span className="text-sm font-semibold text-white">{item.label}</span>
-                                  <Link
-                                    to={item.path}
-                                    onClick={() => setActiveDropdown(null)}
-                                    className="text-xs text-pink-400 hover:text-pink-300 transition-colors"
-                                  >
-                                    Tout voir →
-                                  </Link>
-                                </div>
+                                <div className="relative p-3">
+                                  {/* Grid layout for columns */}
+                                  <div className={`grid gap-2`} style={{ gridTemplateColumns: `repeat(${item.columns.length}, 1fr)` }}>
+                                    {item.columns.map((col) => (
+                                      <div key={col.title} className="space-y-1">
+                                        {/* Column title */}
+                                        <div className="px-4 py-2">
+                                          <span className="text-[10px] font-bold text-pink-400/80 uppercase tracking-widest">
+                                            {col.title}
+                                          </span>
+                                        </div>
 
-                                {/* Columns */}
-                                <div className="relative p-4 grid grid-cols-3 gap-4">
-                                  {item.columns.map((col) => (
-                                    <div key={col.title}>
-                                      <h4 className="text-[10px] font-bold text-pink-400/70 uppercase tracking-wider mb-3 px-2">
-                                        {col.title}
-                                      </h4>
-                                      <div className="space-y-1">
-                                        {col.links.map((link) => (
+                                        {/* Links */}
+                                        {col.links.map((link, idx) => (
                                           <Link
                                             key={link.path}
                                             to={link.path}
                                             onClick={() => setActiveDropdown(null)}
-                                            className="group/link relative block px-3 py-2 text-[13px] text-neutral-400 hover:text-white rounded-lg transition-all duration-300 hover:bg-white/[0.06]"
+                                            className="group/drop relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-500 hover:bg-gradient-to-br hover:from-white/[0.08] hover:to-white/[0.03]"
+                                            style={{ animationDelay: `${idx * 40}ms` }}
                                           >
-                                            <div className="absolute inset-0 bg-gradient-to-br from-pink-500/10 via-transparent to-transparent rounded-lg opacity-0 group-hover/link:opacity-100 transition-all duration-500" />
-                                            <span className="relative z-10">{link.label}</span>
+                                            {/* Hover glow */}
+                                            <div className="absolute inset-0 bg-gradient-to-br from-pink-500/10 via-purple-500/5 to-transparent rounded-xl opacity-0 group-hover/drop:opacity-100 transition-all duration-700 blur-xl" />
+
+                                            {/* Icon container */}
+                                            <div className="relative flex-shrink-0">
+                                              <div className="absolute inset-0 bg-gradient-to-br from-pink-500/30 to-purple-500/30 rounded-lg blur-lg opacity-0 group-hover/drop:opacity-100 transition-all duration-700" />
+                                              <div className="relative w-9 h-9 bg-gradient-to-br from-white/[0.08] to-white/[0.03] rounded-lg flex items-center justify-center border border-white/[0.08] group-hover/drop:border-pink-500/30 transition-all duration-500">
+                                                <ChevronRight className="w-4 h-4 text-neutral-500 group-hover/drop:text-pink-400 transition-all duration-500 group-hover/drop:scale-110" strokeWidth={1.5} />
+                                              </div>
+                                            </div>
+
+                                            {/* Text content */}
+                                            <div className="flex-1 relative min-w-0">
+                                              <span className="text-[13px] font-semibold text-neutral-300 group-hover/drop:text-white transition-colors duration-500">
+                                                {link.label}
+                                              </span>
+                                            </div>
+
+                                            {/* Hover indicator dot */}
+                                            <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover/drop:opacity-100 translate-x-0 group-hover/drop:translate-x-1 transition-all duration-500">
+                                              <div className="w-1.5 h-1.5 bg-gradient-to-br from-pink-400 to-purple-400 rounded-full shadow-lg shadow-pink-400/50" />
+                                            </div>
                                           </Link>
                                         ))}
                                       </div>
-                                    </div>
-                                  ))}
+                                    ))}
+                                  </div>
                                 </div>
                               </div>
                             </div>
@@ -369,6 +383,21 @@ export const ResponsiveNavbar = () => {
 
                   <Play className="relative z-10 w-3 h-3 text-violet-400 transition-all duration-500 group-hover:scale-110 group-hover:text-violet-300" strokeWidth={2.5} fill="currentColor" />
                   <span className="relative z-10 text-[11px] font-bold text-white group-hover:text-violet-100 transition-all duration-500">Émissions</span>
+                </div>
+              </Link>
+
+              {/* Pépites - Jeunes talents */}
+              <Link
+                to={highlightedItems.pepites.path}
+                className="group relative overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-amber-500/30 via-orange-500/20 to-yellow-500/30 rounded-lg blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500 scale-75 group-hover:scale-100" />
+
+                <div className="relative flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-br from-white/[0.10] to-white/[0.05] border border-white/20 rounded-lg backdrop-blur-xl group-hover:border-amber-400/50 transition-all duration-500 shadow-lg group-hover:shadow-amber-500/20">
+                  <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500" />
+
+                  <span className="relative z-10 text-sm transition-all duration-500 group-hover:scale-110">✨</span>
+                  <span className="relative z-10 text-[11px] font-bold text-white group-hover:text-amber-100 transition-all duration-500">Pépites</span>
                 </div>
               </Link>
 
@@ -602,6 +631,25 @@ export const ResponsiveNavbar = () => {
                         <span className="text-xs text-neutral-300">Vidéos & Podcasts</span>
                       </div>
                       <div className="absolute bottom-0 inset-x-0 h-1 bg-gradient-to-r from-violet-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
+                    </Link>
+
+                    {/* Pépites CTA */}
+                    <Link
+                      to={highlightedItems.pepites.path}
+                      onClick={() => setIsOpen(false)}
+                      className="group relative overflow-hidden rounded-2xl col-span-2"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-br from-amber-500/30 via-orange-500/20 to-yellow-500/30" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                      <div className="relative p-4 flex items-center gap-4">
+                        <span className="text-3xl">✨</span>
+                        <div>
+                          <span className="block text-base font-bold text-white">Pépites</span>
+                          <span className="text-xs text-neutral-300">Jeunes talents à suivre</span>
+                        </div>
+                        <ArrowRight className="ml-auto w-5 h-5 text-amber-400 group-hover:translate-x-1 transition-transform" />
+                      </div>
+                      <div className="absolute bottom-0 inset-x-0 h-1 bg-gradient-to-r from-amber-500 to-orange-500 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
                     </Link>
                   </motion.div>
 

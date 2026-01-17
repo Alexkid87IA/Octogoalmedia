@@ -9,6 +9,8 @@ import vsPoll from './vsPoll'
 import seo from './seo'
 import category from './category'
 import subcategory from './subcategory'
+import player from './player'
+import article from './article'
 
 // Export de tous les schémas
 export const schemaTypes = [
@@ -18,6 +20,7 @@ export const schemaTypes = [
   subcategory,
 
   // Schémas de contenu
+  article,
   universe,
   clubFeature,
   clubPricing,
@@ -25,4 +28,7 @@ export const schemaTypes = [
   emission,
   extrait,
   vsPoll,
+
+  // Schémas joueurs
+  player,
 ]

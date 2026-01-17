@@ -1,6 +1,6 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react';
+import { Play, ChevronLeft, ChevronRight, ExternalLink, X, Maximize2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface Extrait {
@@ -34,14 +34,98 @@ const getYoutubeShortId = (url: string): string | null => {
   return classicMatch ? classicMatch[1] : null;
 };
 
+// Composant Modal pour la vidéo
+const VideoModal: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  videoId: string | null;
+  title: string;
+}> = ({ isOpen, onClose, videoId, title }) => {
+  // Fermer avec Escape
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'hidden';
+    }
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen, onClose]);
+
+  if (!isOpen || !videoId) return null;
+
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-50 flex items-center justify-center p-4"
+        onClick={onClose}
+      >
+        {/* Backdrop */}
+        <div className="absolute inset-0 bg-black/90 backdrop-blur-sm" />
+
+        {/* Modal content */}
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.9, opacity: 0 }}
+          transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+          className="relative z-10 w-full max-w-md"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Close button */}
+          <button
+            onClick={onClose}
+            className="absolute -top-12 right-0 p-2 text-white/70 hover:text-white transition-colors"
+          >
+            <X className="w-8 h-8" />
+          </button>
+
+          {/* Video container - Shorts aspect ratio */}
+          <div className="relative aspect-[9/16] bg-black rounded-2xl overflow-hidden shadow-2xl">
+            <iframe
+              src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1`}
+              title={title}
+              className="absolute inset-0 w-full h-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+
+          {/* Title */}
+          <p className="text-white text-center mt-4 font-medium">{title}</p>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  );
+};
+
 // Composant ShortCard
-const ShortCard: React.FC<{ extrait: Extrait; index: number }> = ({ extrait, index }) => {
+const ShortCard: React.FC<{
+  extrait: Extrait;
+  index: number;
+  onExpandVideo: (videoId: string, title: string) => void;
+}> = ({ extrait, index, onExpandVideo }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
   const videoId = getYoutubeShortId(extrait.youtubeShortUrl || '');
 
-  const handleClick = () => {
-    if (extrait.youtubeShortUrl) {
-      window.open(extrait.youtubeShortUrl, '_blank');
+  const handlePlay = () => {
+    if (videoId) {
+      setIsPlaying(true);
+    }
+  };
+
+  const handleExpand = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (videoId) {
+      onExpandVideo(videoId, extrait.title);
     }
   };
 
@@ -51,70 +135,90 @@ const ShortCard: React.FC<{ extrait: Extrait; index: number }> = ({ extrait, ind
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05 }}
       className="flex-shrink-0 snap-start"
-      style={{ width: 'calc(25% - 12px)' }} // 4 cards visibles avec gap
+      style={{ width: 'calc(25% - 12px)' }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div
-        onClick={handleClick}
-        className="relative aspect-[9/16] rounded-2xl overflow-hidden cursor-pointer group shadow-lg shadow-black/30 hover:shadow-xl hover:shadow-pink-500/10 transition-all duration-300"
-      >
-        {/* Thumbnail */}
-        {extrait.thumbnail ? (
-          <img
-            src={extrait.thumbnail}
-            alt={extrait.title}
-            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-            loading="lazy"
-          />
-        ) : videoId ? (
-          <img
-            src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`}
-            alt={extrait.title}
-            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-            loading="lazy"
-          />
+      <div className="relative aspect-[9/16] rounded-2xl overflow-hidden shadow-lg shadow-black/30 hover:shadow-xl hover:shadow-pink-500/10 transition-all duration-300">
+        {isPlaying && videoId ? (
+          <>
+            {/* Video embed inline */}
+            <iframe
+              src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&playsinline=1`}
+              title={extrait.title}
+              className="absolute inset-0 w-full h-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+            {/* Bouton agrandir */}
+            <button
+              onClick={handleExpand}
+              className="absolute top-3 right-3 p-2 bg-black/60 backdrop-blur-sm rounded-lg text-white hover:bg-pink-500/80 transition-all z-10"
+              title="Agrandir"
+            >
+              <Maximize2 className="w-4 h-4" />
+            </button>
+          </>
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-pink-900/50 to-blue-900/50" />
-        )}
+          <>
+            {/* Thumbnail */}
+            <div onClick={handlePlay} className="cursor-pointer group h-full">
+              {extrait.thumbnail ? (
+                <img
+                  src={extrait.thumbnail}
+                  alt={extrait.title}
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  loading="lazy"
+                />
+              ) : videoId ? (
+                <img
+                  src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`}
+                  alt={extrait.title}
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  loading="lazy"
+                />
+              ) : (
+                <div className="absolute inset-0 bg-gradient-to-br from-pink-900/50 to-blue-900/50" />
+              )}
 
-        {/* Overlay gradient */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent opacity-70 group-hover:opacity-90 transition-opacity" />
+              {/* Overlay gradient */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent opacity-70 group-hover:opacity-90 transition-opacity" />
 
-        {/* Bouton Play */}
-        <AnimatePresence>
-          <motion.div
-            initial={{ opacity: 0.8, scale: 1 }}
-            animate={{ opacity: isHovered ? 1 : 0.8, scale: isHovered ? 1.1 : 1 }}
-            className="absolute inset-0 flex items-center justify-center"
-          >
-            <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border-2 border-white/30 group-hover:bg-pink-500/80 group-hover:border-pink-400 transition-all">
-              <Play className="w-6 h-6 text-white ml-0.5" fill="currentColor" />
+              {/* Bouton Play */}
+              <motion.div
+                initial={{ opacity: 0.8, scale: 1 }}
+                animate={{ opacity: isHovered ? 1 : 0.8, scale: isHovered ? 1.1 : 1 }}
+                className="absolute inset-0 flex items-center justify-center"
+              >
+                <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border-2 border-white/30 group-hover:bg-pink-500/80 group-hover:border-pink-400 transition-all">
+                  <Play className="w-6 h-6 text-white ml-0.5" fill="currentColor" />
+                </div>
+              </motion.div>
+
+              {/* Durée */}
+              {extrait.duration && (
+                <div className="absolute top-3 right-3 px-2 py-1 bg-black/60 backdrop-blur-sm text-white text-xs font-medium rounded">
+                  {extrait.duration}
+                </div>
+              )}
+
+              {/* Titre en bas */}
+              <div className="absolute bottom-0 left-0 right-0 p-4">
+                <h4 className="text-white font-semibold text-sm line-clamp-2 mb-1">
+                  {extrait.title}
+                </h4>
+                {extrait.emission && (
+                  <p className="text-gray-400 text-xs">
+                    Ep. #{extrait.emission.episodeNumber}
+                  </p>
+                )}
+              </div>
+
+              {/* Hover effect border */}
+              <div className="absolute inset-0 border-2 border-transparent group-hover:border-pink-500/50 rounded-2xl transition-colors pointer-events-none" />
             </div>
-          </motion.div>
-        </AnimatePresence>
-
-        {/* Durée */}
-        {extrait.duration && (
-          <div className="absolute top-3 right-3 px-2 py-1 bg-black/60 backdrop-blur-sm text-white text-xs font-medium rounded">
-            {extrait.duration}
-          </div>
+          </>
         )}
-
-        {/* Titre en bas */}
-        <div className="absolute bottom-0 left-0 right-0 p-4">
-          <h4 className="text-white font-semibold text-sm line-clamp-2 mb-1">
-            {extrait.title}
-          </h4>
-          {extrait.emission && (
-            <p className="text-gray-400 text-xs">
-              Ep. #{extrait.emission.episodeNumber}
-            </p>
-          )}
-        </div>
-
-        {/* Hover effect border */}
-        <div className="absolute inset-0 border-2 border-transparent group-hover:border-pink-500/50 rounded-2xl transition-colors" />
       </div>
     </motion.div>
   );
@@ -129,6 +233,20 @@ export const ShortsCarousel: React.FC<ShortsCarouselProps> = ({
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
   const [currentPage, setCurrentPage] = useState(0);
+
+  // Modal state
+  const [modalOpen, setModalOpen] = useState(false);
+  const [currentVideo, setCurrentVideo] = useState<{ videoId: string; title: string } | null>(null);
+
+  const handlePlayVideo = useCallback((videoId: string, videoTitle: string) => {
+    setCurrentVideo({ videoId, title: videoTitle });
+    setModalOpen(true);
+  }, []);
+
+  const handleCloseModal = useCallback(() => {
+    setModalOpen(false);
+    setCurrentVideo(null);
+  }, []);
 
   // Calculer le nombre de pages
   const itemsPerPage = 4;
@@ -226,7 +344,7 @@ export const ShortsCarousel: React.FC<ShortsCarouselProps> = ({
           }}
         >
           {extraits.map((extrait, index) => (
-            <ShortCard key={extrait._id} extrait={extrait} index={index} />
+            <ShortCard key={extrait._id} extrait={extrait} index={index} onExpandVideo={handlePlayVideo} />
           ))}
         </div>
 
@@ -262,6 +380,14 @@ export const ShortsCarousel: React.FC<ShortsCarouselProps> = ({
           display: none;
         }
       `}</style>
+
+      {/* Modal vidéo */}
+      <VideoModal
+        isOpen={modalOpen}
+        onClose={handleCloseModal}
+        videoId={currentVideo?.videoId || null}
+        title={currentVideo?.title || ''}
+      />
     </section>
   );
 };

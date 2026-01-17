@@ -582,12 +582,25 @@ export function getMajorCompetitionIds(): number[] {
   // Coupes d'Europe
   const europeanCups = [2, 3, 848]; // UCL, UEL, UECL
 
+  // Coupes nationales majeures
+  const nationalCups = [
+    66,   // Coupe de France
+    65,   // Coupe de la Ligue (Trophée des Champions)
+    45,   // FA Cup
+    48,   // EFL Cup (Carabao)
+    81,   // DFB Pokal
+    143,  // Copa del Rey
+    137,  // Coppa Italia
+    529,  // Super Coupe d'Espagne
+    528,  // Community Shield
+  ];
+
   // Compétitions internationales actives
   const internationalActive = Object.values(COMPETITIONS)
     .filter(c => c.category === 'international' && c.isActive)
     .map(c => c.id);
 
-  return [...internationalActive, ...europeanCups, ...top5];
+  return [...internationalActive, ...europeanCups, ...nationalCups, ...top5];
 }
 
 /**

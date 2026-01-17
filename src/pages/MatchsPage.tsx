@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Radio, Calendar, Clock, ChevronDown, RefreshCw, Trophy } from 'lucide-react';
 import { getLiveMatches, getFixturesByDate } from '../services/apiFootball';
 import OddsBadge from '../components/football/OddsBadge';
+import CalendarWidget from '../components/football/CalendarWidget';
 import {
   COMPETITIONS,
   getAllActiveCompetitions,
@@ -24,9 +25,14 @@ interface Match {
   minute?: number;
   homeTeam: { id: number; name: string; crest: string };
   awayTeam: { id: number; name: string; crest: string };
-  score: { fullTime: { home: number | null; away: number | null } };
+  score: {
+    fullTime: { home: number | null; away: number | null };
+    penalty?: { home: number | null; away: number | null } | null;
+  };
   competition: { id: number; name: string; emblem: string };
   venue?: string;
+  hasPenalties?: boolean;
+  winner?: 'home' | 'away' | null;
 }
 
 // =============================================
@@ -154,7 +160,13 @@ const MatchCard = ({ match }: { match: Match }) => {
               </div>
               {isLive && <LiveBadge minute={match.minute} />}
               {isFinished && (
-                <span className="text-xs text-gray-500 mt-1">Terminé</span>
+                <span className="text-xs text-gray-500 mt-1">
+                  {match.hasPenalties && match.score.penalty ? (
+                    <span className="text-amber-400">TAB {match.score.penalty.home}-{match.score.penalty.away}</span>
+                  ) : (
+                    'Terminé'
+                  )}
+                </span>
               )}
             </>
           ) : (
@@ -286,9 +298,15 @@ export default function MatchsPage() {
   const [collapsedCompetitions, setCollapsedCompetitions] = useState<Set<number>>(new Set());
   const [filter, setFilter] = useState<'all' | 'live' | 'upcoming'>('all');
 
+  // Calendrier - jours live
+  const [liveDays, setLiveDays] = useState<Set<string>>(new Set());
+
   const refreshTimerRef = useRef<number | null>(null);
   const days = getNavigableDays();
   const todayIndex = days.findIndex(d => d.dateStr === getDateString(new Date()));
+
+  // matchDays = tous les jours de la navigation (calculé après days)
+  const matchDays = new Set(days.map(d => d.dateStr));
 
   // Fetch des matchs
   const fetchMatches = useCallback(async () => {
@@ -339,6 +357,20 @@ export default function MatchsPage() {
       }
     };
   }, [fetchMatches]);
+
+  // Mettre à jour les indicateurs du calendrier avec les matchs live
+  // Pas de requête API supplémentaire
+  useEffect(() => {
+    const daysWithLive = new Set<string>();
+
+    // Marquer les jours avec matchs live
+    liveMatches.forEach((match: Match) => {
+      const matchDate = match.utcDate.split('T')[0];
+      daysWithLive.add(matchDate);
+    });
+
+    setLiveDays(daysWithLive);
+  }, [liveMatches]);
 
   // Scroll vers "Aujourd'hui" au chargement
   useEffect(() => {
@@ -447,12 +479,27 @@ export default function MatchsPage() {
       {/* Header */}
       <header className="relative pt-24 pb-6">
         <div className="max-w-5xl mx-auto px-4">
-          {/* Titre */}
-          <div className="text-center mb-6">
-            <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
-              Match Center
-            </h1>
-            <p className="text-gray-400">Tous les matchs en temps réel</p>
+          {/* Titre + Calendrier */}
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+            <div className="text-center md:text-left">
+              <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
+                Match Center
+              </h1>
+              <p className="text-gray-400">Tous les matchs en temps réel</p>
+            </div>
+
+            {/* Widget Calendrier */}
+            <div className="flex justify-center md:justify-end">
+              <CalendarWidget
+                selectedDate={selectedDay}
+                onDateSelect={(date) => {
+                  setSelectedDay(date);
+                  setFilter('all');
+                }}
+                matchDays={matchDays}
+                liveDays={liveDays}
+              />
+            </div>
           </div>
 
           {/* Compteurs cliquables */}

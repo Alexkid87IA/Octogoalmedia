@@ -21,8 +21,9 @@ export default defineConfig(({ mode }) => {
       }
     },
     server: {
+      port: 5173,
       proxy: {
-        '^/api/football/.*': {
+        '/api/football': {
           target: 'https://v3.football.api-sports.io',
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api\/football/, ''),
@@ -31,6 +32,7 @@ export default defineConfig(({ mode }) => {
               // Utiliser la variable d'environnement
               const apiKey = env.VITE_API_FOOTBALL_KEY || ''
               proxyReq.setHeader('x-apisports-key', apiKey)
+              console.log('[Vite Proxy] Request:', proxyReq.path)
             })
           }
         },

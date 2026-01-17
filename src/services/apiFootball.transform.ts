@@ -17,12 +17,15 @@ interface ApiFixture {
     round: string;
   };
   teams: {
-    home: { id: number; name: string; logo: string };
-    away: { id: number; name: string; logo: string };
+    home: { id: number; name: string; logo: string; winner?: boolean };
+    away: { id: number; name: string; logo: string; winner?: boolean };
   };
   goals: { home: number | null; away: number | null };
   score: {
     halftime: { home: number | null; away: number | null };
+    fulltime?: { home: number | null; away: number | null };
+    extratime?: { home: number | null; away: number | null };
+    penalty?: { home: number | null; away: number | null };
   };
 }
 
@@ -134,7 +137,19 @@ export function transformMatch(fixture: ApiFixture) {
         home: fixture.score.halftime.home,
         away: fixture.score.halftime.away,
       },
+      extraTime: fixture.score.extratime ? {
+        home: fixture.score.extratime.home,
+        away: fixture.score.extratime.away,
+      } : null,
+      penalty: fixture.score.penalty ? {
+        home: fixture.score.penalty.home,
+        away: fixture.score.penalty.away,
+      } : null,
     },
+    // Indique si le match s'est terminé aux penalties (status = PEN)
+    hasPenalties: fixture.fixture.status.short === 'PEN',
+    // Indique le vainqueur (utile pour les matchs aux penalties)
+    winner: fixture.teams.home.winner ? 'home' : fixture.teams.away.winner ? 'away' : null,
     competition: {
       id: fixture.league.id,
       name: fixture.league.name,

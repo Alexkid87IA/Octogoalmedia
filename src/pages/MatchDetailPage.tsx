@@ -29,6 +29,7 @@ import {
   getHeadToHead,
   getStandings,
   getTopScorers,
+  getTopAssists,
   getTeamLastResults,
   getMatchesByMatchday,
   getMatchesByRound,
@@ -43,7 +44,6 @@ import { getAllArticles } from '../utils/sanityAPI';
 import { SanityArticle } from '../types/sanity';
 import {
   StatBar,
-  EventIcon,
   FormBadge,
   FeaturedArticleSidebar,
   FlashInfoSidebar,
@@ -52,6 +52,8 @@ import {
   TeamFormSidebar,
   MatchPreview,
   OtherMatchesSidebar,
+  MatchTimeline,
+  PlayersToWatch,
   type TeamStanding,
   type Scorer,
   type Match,
@@ -102,6 +104,26 @@ export default function MatchDetailPage() {
   // États sidebar
   const [standings, setStandings] = useState<TeamStanding[]>([]);
   const [scorers, setScorers] = useState<Scorer[]>([]);
+  const [homePlayerToWatch, setHomePlayerToWatch] = useState<{
+    id: number;
+    name: string;
+    photo?: string;
+    position?: string;
+    goals?: number;
+    assists?: number;
+    rating?: number;
+    appearances?: number;
+  } | null>(null);
+  const [awayPlayerToWatch, setAwayPlayerToWatch] = useState<{
+    id: number;
+    name: string;
+    photo?: string;
+    position?: string;
+    goals?: number;
+    assists?: number;
+    rating?: number;
+    appearances?: number;
+  } | null>(null);
   const [homeForm, setHomeForm] = useState<('W' | 'D' | 'L')[]>([]);
   const [awayForm, setAwayForm] = useState<('W' | 'D' | 'L')[]>([]);
   const [matchdayMatches, setMatchdayMatches] = useState<Match[]>([]);
@@ -188,11 +210,96 @@ export default function MatchDetailPage() {
           Promise.all([
             getStandings(String(competitionId)).catch(() => []),
             getTopScorers(String(competitionId)).catch(() => []),
+            getTopAssists(String(competitionId)).catch(() => []),
             otherMatchesPromise,
-          ]).then(([standingsData, scorersData, matchdayData]) => {
+          ]).then(([standingsData, scorersData, assistsData, matchdayData]) => {
             setStandings(standingsData || []);
             setScorers(scorersData || []);
             setMatchdayMatches(matchdayData || []);
+
+            // Fusionner buteurs et passeurs pour avoir plus de joueurs
+            if (homeTeamId && awayTeamId) {
+              const allPlayers = new Map<number, {
+                id: number;
+                name: string;
+                photo?: string;
+                teamId: number;
+                goals: number;
+                assists: number;
+                appearances: number;
+              }>();
+
+              // Ajouter les buteurs
+              (scorersData || []).forEach((s: Scorer) => {
+                if (s.player?.id && s.team?.id) {
+                  allPlayers.set(s.player.id, {
+                    id: s.player.id,
+                    name: s.player.name,
+                    photo: (s.player as { id: number; name: string; photo?: string }).photo,
+                    teamId: s.team.id,
+                    goals: s.goals || 0,
+                    assists: s.assists || 0,
+                    appearances: s.playedMatches || 0,
+                  });
+                }
+              });
+
+              // Ajouter/fusionner les passeurs
+              (assistsData || []).forEach((s: Scorer) => {
+                if (s.player?.id && s.team?.id) {
+                  const existing = allPlayers.get(s.player.id);
+                  if (existing) {
+                    // Fusionner les stats (prendre le max)
+                    existing.assists = Math.max(existing.assists, s.assists || 0);
+                    existing.goals = Math.max(existing.goals, s.goals || 0);
+                  } else {
+                    allPlayers.set(s.player.id, {
+                      id: s.player.id,
+                      name: s.player.name,
+                      photo: (s.player as { id: number; name: string; photo?: string }).photo,
+                      teamId: s.team.id,
+                      goals: s.goals || 0,
+                      assists: s.assists || 0,
+                      appearances: s.playedMatches || 0,
+                    });
+                  }
+                }
+              });
+
+              // Trouver le meilleur joueur de chaque équipe
+              const findBestPlayer = (teamId: number) => {
+                const teamPlayers = Array.from(allPlayers.values()).filter(p => p.teamId === teamId);
+                if (teamPlayers.length === 0) return null;
+
+                return teamPlayers.reduce((a, b) =>
+                  (a.goals + a.assists) >= (b.goals + b.assists) ? a : b
+                );
+              };
+
+              const homeBest = findBestPlayer(homeTeamId);
+              if (homeBest) {
+                setHomePlayerToWatch({
+                  id: homeBest.id,
+                  name: homeBest.name,
+                  photo: homeBest.photo,
+                  goals: homeBest.goals,
+                  assists: homeBest.assists,
+                  appearances: homeBest.appearances,
+                });
+              }
+
+              const awayBest = findBestPlayer(awayTeamId);
+              if (awayBest) {
+                setAwayPlayerToWatch({
+                  id: awayBest.id,
+                  name: awayBest.name,
+                  photo: awayBest.photo,
+                  goals: awayBest.goals,
+                  assists: awayBest.assists,
+                  appearances: awayBest.appearances,
+                });
+              }
+            }
           });
         }
 
@@ -380,6 +487,13 @@ export default function MatchDetailPage() {
                       {match.score.halfTime.home !== null && (
                         <div className="mt-1 text-gray-500 text-xs md:text-sm">
                           MT: {match.score.halfTime.home} - {match.score.halfTime.away}
+                        </div>
+                      )}
+                      {match.hasPenalties && match.score.penalty && (
+                        <div className="mt-2 px-3 py-1 bg-amber-500/20 rounded-full inline-block">
+                          <span className="text-amber-400 text-xs md:text-sm font-bold">
+                            TAB: {match.score.penalty.home} - {match.score.penalty.away}
+                          </span>
                         </div>
                       )}
                     </>
@@ -615,137 +729,49 @@ export default function MatchDetailPage() {
           {/* Contenu principal (2/3) */}
           <div className="lg:col-span-2">
             {isUpcoming ? (
-              <MatchPreview
-                match={match}
-                h2h={h2h}
-                homeForm={homeForm}
-                awayForm={awayForm}
-                standings={standings}
-                headerOdds={headerOdds}
-                formatDateFR={formatDateFR}
-              />
+              <div className="space-y-6">
+                <MatchPreview
+                  match={match}
+                  h2h={h2h}
+                  homeForm={homeForm}
+                  awayForm={awayForm}
+                  standings={standings}
+                  headerOdds={headerOdds}
+                  formatDateFR={formatDateFR}
+                />
+
+                {/* Joueurs à suivre */}
+                <PlayersToWatch
+                  homePlayer={homePlayerToWatch}
+                  awayPlayer={awayPlayerToWatch}
+                  homeTeam={match.homeTeam}
+                  awayTeam={match.awayTeam}
+                />
+              </div>
             ) : (
               <AnimatePresence mode="wait">
                 {/* Events Tab */}
                 {activeTab === 'events' && (
                   <motion.div key="events" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
                     <div className="bg-gray-900/50 rounded-2xl border border-white/10 p-4 md:p-6">
-                      <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                      <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
                         <Clock className="w-5 h-5 text-pink-500" />
-                        Temps forts
+                        Temps forts du match
+                        {events.length > 0 && (
+                          <span className="ml-auto px-2 py-0.5 bg-pink-500/20 text-pink-400 text-xs font-bold rounded-full">
+                            {events.length} événements
+                          </span>
+                        )}
                       </h3>
 
-                      {events.length === 0 ? (
-                        <div className="text-center py-8">
-                          <Clock className="w-10 h-10 text-gray-600 mx-auto mb-3" />
-                          <p className="text-gray-400">Aucun événement</p>
-                        </div>
-                      ) : (
-                        <div className="space-y-1">
-                          {(() => {
-                            const sortedEvents = [...events].sort((a, b) => {
-                              const timeA = (a.time?.elapsed || 0) + (a.time?.extra || 0) / 100;
-                              const timeB = (b.time?.elapsed || 0) + (b.time?.extra || 0) / 100;
-                              return timeB - timeA;
-                            });
-
-                            const goalsChronological = events
-                              .filter((e) => e.type === 'Goal')
-                              .sort((a, b) => {
-                                const timeA = (a.time?.elapsed || 0) + (a.time?.extra || 0) / 100;
-                                const timeB = (b.time?.elapsed || 0) + (b.time?.extra || 0) / 100;
-                                return timeA - timeB;
-                              });
-
-                            let homeScore = 0;
-                            let awayScore = 0;
-                            const scoreAtGoal = new Map<typeof goalsChronological[number], { home: number; away: number }>();
-
-                            goalsChronological.forEach((goal) => {
-                              if (goal.team?.id === match.homeTeam.id) homeScore++;
-                              else awayScore++;
-                              scoreAtGoal.set(goal, { home: homeScore, away: awayScore });
-                            });
-
-                            const hasHalfTime = sortedEvents.some((e) => (e.time?.elapsed || 0) > 45);
-
-                            return sortedEvents.map((event, idx) => {
-                              const isHome = event.team?.id === match.homeTeam.id;
-                              const isGoal = event.type === 'Goal';
-                              const currentScore = isGoal ? scoreAtGoal.get(event) : null;
-                              const showHalfTime =
-                                hasHalfTime &&
-                                idx > 0 &&
-                                (sortedEvents[idx - 1].time?.elapsed || 0) > 45 &&
-                                (event.time?.elapsed || 0) <= 45;
-
-                              return (
-                                <div key={idx}>
-                                  {showHalfTime && (
-                                    <div className="flex items-center gap-4 py-3 my-2">
-                                      <div className="flex-1 h-px bg-white/20" />
-                                      <span className="text-gray-500 text-xs font-medium px-3 py-1 bg-white/5 rounded">
-                                        MI-TEMPS{' '}
-                                        {match.score.halfTime.home !== null
-                                          ? `${match.score.halfTime.home} - ${match.score.halfTime.away}`
-                                          : ''}
-                                      </span>
-                                      <div className="flex-1 h-px bg-white/20" />
-                                    </div>
-                                  )}
-
-                                  <div
-                                    className={`flex items-center gap-2 md:gap-3 p-2 md:p-3 rounded-lg transition-colors ${
-                                      isGoal ? 'bg-green-500/10 border border-green-500/20' : 'bg-white/5 hover:bg-white/10'
-                                    } ${isHome ? '' : 'flex-row-reverse'}`}
-                                  >
-                                    <div className="w-10 md:w-12 text-center flex-shrink-0">
-                                      <span className={`font-bold text-sm ${isGoal ? 'text-green-400' : 'text-pink-400'}`}>
-                                        {event.time?.elapsed}'
-                                      </span>
-                                      {(event.time?.extra ?? 0) > 0 && (
-                                        <span className="text-gray-500 text-xs">+{event.time?.extra}</span>
-                                      )}
-                                    </div>
-                                    <EventIcon type={event.type} detail={event.detail || ''} />
-                                    <div className={`flex-1 min-w-0 ${isHome ? '' : 'text-right'}`}>
-                                      <div className="flex items-center gap-2 flex-wrap">
-                                        {event.assist?.name && event.type === 'Goal' && (
-                                          <span className={`text-gray-500 text-xs ${isHome ? '' : 'order-last'}`}>
-                                            (P. {event.assist.name.split(' ').pop()})
-                                          </span>
-                                        )}
-                                        {event.player?.id ? (
-                                          <Link
-                                            to={`/player/${event.player.id}`}
-                                            className={`text-white font-medium text-sm hover:text-pink-400 truncate ${isHome ? '' : 'ml-auto'}`}
-                                          >
-                                            {event.player.name}
-                                          </Link>
-                                        ) : (
-                                          <span className="text-white font-medium text-sm truncate">
-                                            {event.player?.name || 'Événement'}
-                                          </span>
-                                        )}
-                                      </div>
-                                      {event.type === 'subst' && event.assist?.name && (
-                                        <p className="text-red-400 text-xs">↓ {event.assist.name}</p>
-                                      )}
-                                    </div>
-                                    {isGoal && currentScore && (
-                                      <div className="flex items-center gap-1 px-2 py-1 bg-black/30 rounded text-sm font-bold flex-shrink-0">
-                                        <span className="text-white">{currentScore.home}</span>
-                                        <span className="text-gray-500">-</span>
-                                        <span className="text-white">{currentScore.away}</span>
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                              );
-                            });
-                          })()}
-                        </div>
-                      )}
+                      <MatchTimeline
+                        events={events}
+                        homeTeam={match.homeTeam}
+                        awayTeam={match.awayTeam}
+                        score={match.score}
+                        status={match.status}
+                        minute={match.minute}
+                      />
                     </div>
 
                     {/* Stats Joueurs */}

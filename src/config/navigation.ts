@@ -35,6 +35,12 @@ export const highlightedItems = {
     icon: 'play',
     description: 'Nos vidéos',
   },
+  pepites: {
+    label: 'Pépites',
+    path: '/rubrique/joueurs/pepites',
+    icon: 'sparkles',
+    description: 'Jeunes talents',
+  },
 };
 
 // ============================================
@@ -116,6 +122,19 @@ export const mainNavItems: NavItem[] = [
     hasDropdown: true,
     columns: [
       {
+        title: 'Éditorial',
+        links: [
+          { label: 'Pépites', path: '/rubrique/joueurs/pepites' },
+          { label: 'Légendes', path: '/rubrique/joueurs/joueurs-legendaires' },
+          { label: 'Portraits', path: '/rubrique/joueurs/portraits' },
+          { label: 'Fiches joueurs', path: '/rubrique/joueurs/fiches-joueurs' },
+          { label: 'Tops joueurs', path: '/rubrique/joueurs/tops-joueurs' },
+          { label: 'Joueurs sous-cotés', path: '/rubrique/joueurs/joueurs-sous-cotes' },
+          { label: 'Joueurs surcotés', path: '/rubrique/joueurs/joueurs-surcotes' },
+          { label: 'Grandes carrières', path: '/rubrique/joueurs/carrieres' },
+        ],
+      },
+      {
         title: 'Classements Europe',
         links: [
           { label: 'Meilleurs buteurs', path: '/classements/europe?tab=scorers' },
@@ -131,15 +150,6 @@ export const mainNavItems: NavItem[] = [
           { label: 'Milieux', path: '/joueurs?position=midfielder' },
           { label: 'Défenseurs', path: '/joueurs?position=defender' },
           { label: 'Gardiens', path: '/joueurs?position=goalkeeper' },
-        ],
-      },
-      {
-        title: 'Par ligue',
-        links: [
-          { label: 'Ligue 1', path: '/joueurs?league=61' },
-          { label: 'Premier League', path: '/joueurs?league=39' },
-          { label: 'La Liga', path: '/joueurs?league=140' },
-          { label: 'Serie A', path: '/joueurs?league=135' },
         ],
       },
     ],

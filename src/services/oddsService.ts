@@ -75,10 +75,13 @@ function saveToLocalStorage(sport: SportKey, data: MatchOdds[]): void {
 
 const memoryCache: Map<string, { data: MatchOdds[]; expiresAt: number }> = new Map();
 
+// Requêtes en cours pour éviter les appels concurrents
+const pendingRequests: Map<string, Promise<MatchOdds[]>> = new Map();
+
 function getFromMemory(sport: SportKey): MatchOdds[] | null {
   const cached = memoryCache.get(sport);
   if (cached && Date.now() < cached.expiresAt) {
-    console.log(`[OddsService] Cache mémoire HIT pour ${sport}`);
+    // console.log(`[OddsService] Cache mémoire HIT pour ${sport}`);
     return cached.data;
   }
   return null;
@@ -98,6 +101,7 @@ function saveToMemory(sport: SportKey, data: MatchOdds[]): void {
 /**
  * Récupère les cotes Winamax pour une compétition
  * Utilise le cache localStorage en priorité (1h)
+ * Déduplication des requêtes concurrentes
  */
 export async function getOddsBySport(sport: SportKey): Promise<MatchOdds[]> {
   // 1. Vérifier cache localStorage
@@ -108,49 +112,66 @@ export async function getOddsBySport(sport: SportKey): Promise<MatchOdds[]> {
   const memoryCached = getFromMemory(sport);
   if (memoryCached) return memoryCached;
 
-  // 3. Fetch depuis l'API (consomme 1 requête du quota)
-  try {
-    console.log(`[OddsService] Fetching ${sport} depuis l'API (consomme 1 requête)...`);
-
-    // Timeout de 5 secondes
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-    const response = await fetch(`${BASE_URL}?sport=${sport}`, { signal: controller.signal });
-    clearTimeout(timeoutId);
-
-    if (!response.ok) {
-      console.error(`[OddsService] Erreur HTTP ${response.status}`);
-      return [];
-    }
-
-    const result = await response.json();
-
-    if (!result.success || !result.data) {
-      console.warn(`[OddsService] Pas de données pour ${sport}`);
-      return [];
-    }
-
-    // Logger le quota
-    if (result.quota) {
-      console.log(`[OddsService] Quota: ${result.quota.used} utilisées, ${result.quota.remaining} restantes`);
-    }
-
-    console.log(`[OddsService] ${result.count} matchs avec cotes Winamax`);
-
-    // Sauvegarder dans les deux caches
-    saveToLocalStorage(sport, result.data);
-    saveToMemory(sport, result.data);
-
-    return result.data;
-  } catch (error) {
-    if (error instanceof Error && error.name === 'AbortError') {
-      console.error(`[OddsService] Timeout fetch ${sport} (5s)`);
-    } else {
-      console.error(`[OddsService] Erreur fetch ${sport}:`, error);
-    }
-    return [];
+  // 3. Vérifier si une requête est déjà en cours pour ce sport
+  const pending = pendingRequests.get(sport);
+  if (pending) {
+    // console.log(`[OddsService] Requête déjà en cours pour ${sport}, attente...`);
+    return pending;
   }
+
+  // 4. Fetch depuis l'API (consomme 1 requête du quota)
+  const fetchPromise = (async (): Promise<MatchOdds[]> => {
+    try {
+      console.log(`[OddsService] Fetching ${sport} depuis l'API (consomme 1 requête)...`);
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+      const response = await fetch(`${BASE_URL}?sport=${sport}`, { signal: controller.signal });
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        console.error(`[OddsService] Erreur HTTP ${response.status}`);
+        // Cache les erreurs pendant 5 minutes pour éviter de réessayer trop vite
+        saveToMemory(sport, []);
+        return [];
+      }
+
+      const result = await response.json();
+
+      if (!result.success || !result.data || result.data.length === 0) {
+        // console.warn(`[OddsService] Pas de données pour ${sport}`);
+        // Cache les réponses vides pendant 5 minutes
+        memoryCache.set(sport, { data: [], expiresAt: Date.now() + 5 * 60 * 1000 });
+        return [];
+      }
+
+      if (result.quota) {
+        console.log(`[OddsService] Quota: ${result.quota.used} utilisées, ${result.quota.remaining} restantes`);
+      }
+
+      console.log(`[OddsService] ${result.count} matchs avec cotes Winamax`);
+
+      saveToLocalStorage(sport, result.data);
+      saveToMemory(sport, result.data);
+
+      return result.data;
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.error(`[OddsService] Timeout fetch ${sport} (5s)`);
+      } else {
+        console.error(`[OddsService] Erreur fetch ${sport}:`, error);
+      }
+      // Cache les erreurs pendant 2 minutes
+      memoryCache.set(sport, { data: [], expiresAt: Date.now() + 2 * 60 * 1000 });
+      return [];
+    } finally {
+      pendingRequests.delete(sport);
+    }
+  })();
+
+  pendingRequests.set(sport, fetchPromise);
+  return fetchPromise;
 }
 
 /**
