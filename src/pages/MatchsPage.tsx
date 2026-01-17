@@ -698,8 +698,8 @@ export default function MatchsPage() {
         {/* Contenu */}
         {!loading && !error && (
           <>
-            {/* Matchs Live (toujours en haut si filter !== 'live') */}
-            {filter !== 'live' && liveMatches.length > 0 && (
+            {/* Matchs Live (seulement quand filter === 'all') */}
+            {filter === 'all' && liveMatches.length > 0 && (
               <div className="mb-8">
                 <div className="flex items-center gap-3 mb-4">
                   <span className="relative flex h-3 w-3">
@@ -729,7 +729,23 @@ export default function MatchsPage() {
               </div>
             )}
 
-            {filter !== 'live' && groupedMatches.length === 0 && (
+            {filter === 'finished' && groupedMatches.length === 0 && (
+              <div className="text-center py-16">
+                <Trophy className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                <h3 className="text-xl font-bold text-white mb-2">Aucun match terminé</h3>
+                <p className="text-gray-500">Il n'y a pas encore de match terminé pour cette date</p>
+              </div>
+            )}
+
+            {filter === 'upcoming' && groupedMatches.length === 0 && (
+              <div className="text-center py-16">
+                <Clock className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                <h3 className="text-xl font-bold text-white mb-2">Aucun match à venir</h3>
+                <p className="text-gray-500">Il n'y a pas de match programmé pour cette date</p>
+              </div>
+            )}
+
+            {filter === 'all' && groupedMatches.length === 0 && liveMatches.length === 0 && (
               <div className="text-center py-16">
                 <Calendar className="w-16 h-16 text-gray-600 mx-auto mb-4" />
                 <h3 className="text-xl font-bold text-white mb-2">Aucun match</h3>
@@ -752,15 +768,23 @@ export default function MatchsPage() {
               </>
             )}
 
-            {/* Liste des matchs (non-live) */}
+            {/* Liste des matchs selon le filtre */}
             {filter !== 'live' && groupedMatches.length > 0 && (
               <>
+                {filter === 'finished' && (
+                  <h2 className="text-lg font-semibold text-green-400 mb-4 flex items-center gap-2">
+                    <Trophy className="w-5 h-5" />
+                    Matchs terminés
+                  </h2>
+                )}
                 {filter === 'upcoming' && (
-                  <h2 className="text-lg font-semibold text-gray-400 mb-4">
+                  <h2 className="text-lg font-semibold text-blue-400 mb-4 flex items-center gap-2">
+                    <Clock className="w-5 h-5" />
                     Matchs à venir
                   </h2>
                 )}
                 {groupedMatches.map(group => {
+                  // Pour "Tous", on exclut les matchs live (déjà affichés au-dessus)
                   const displayMatches = filter === 'all'
                     ? group.matches.filter(m => m.status !== 'IN_PLAY' && m.status !== 'PAUSED')
                     : group.matches;
