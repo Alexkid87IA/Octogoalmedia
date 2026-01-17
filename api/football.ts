@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 // API key from environment variable (set in Vercel dashboard)
-const API_KEY = process.env.API_FOOTBALL_KEY;
+const API_KEY = process.env.FOOTBALL_API_KEY;
 const API_HOST = 'https://v3.football.api-sports.io';
 
 // Allowed origins for CORS
@@ -10,6 +10,7 @@ const ALLOWED_ORIGINS = [
   'https://www.octogoal.media',
   'https://octogoalmedia.vercel.app',
   'http://localhost:5173',
+  'http://localhost:5172',
   'http://localhost:3000',
 ];
 
