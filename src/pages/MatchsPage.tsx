@@ -296,7 +296,7 @@ export default function MatchsPage() {
   const [selectedDay, setSelectedDay] = useState(getDateString(new Date()));
   const [selectedCompetitions, setSelectedCompetitions] = useState<number[]>(allCompetitionIds);
   const [collapsedCompetitions, setCollapsedCompetitions] = useState<Set<number>>(new Set());
-  const [filter, setFilter] = useState<'all' | 'live' | 'upcoming'>('all');
+  const [filter, setFilter] = useState<'all' | 'live' | 'upcoming' | 'finished'>('all');
 
   // Calendrier - jours live
   const [liveDays, setLiveDays] = useState<Set<string>>(new Set());
@@ -454,6 +454,9 @@ export default function MatchsPage() {
     if (filter === 'upcoming') {
       return matches.filter(m => m.status === 'SCHEDULED' || m.status === 'TIMED');
     }
+    if (filter === 'finished') {
+      return matches.filter(m => m.status === 'FINISHED');
+    }
     return matches;
   };
 
@@ -503,60 +506,67 @@ export default function MatchsPage() {
           </div>
 
           {/* Compteurs cliquables */}
-          <div className="flex justify-center gap-3 mb-6 flex-wrap">
-            {/* Live - seulement pour aujourd'hui ou jours futurs */}
-            {!isViewingPastDay && (
-              <button
-                onClick={() => setFilter(filter === 'live' ? 'all' : 'live')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all ${
-                  filter === 'live'
-                    ? 'bg-red-500 text-white'
-                    : 'bg-gray-800/50 text-gray-300 hover:bg-gray-800'
-                }`}
-              >
-                <Radio className="w-4 h-4" />
-                <span>{liveCount} Live</span>
-              </button>
-            )}
+          <div className="flex justify-center gap-2 mb-6 flex-wrap">
+            {/* Live */}
+            <button
+              onClick={() => setFilter(filter === 'live' ? 'all' : 'live')}
+              className={`flex items-center gap-2 px-3 py-2 rounded-xl font-medium transition-all ${
+                filter === 'live'
+                  ? 'bg-red-500 text-white'
+                  : liveCount > 0
+                    ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
+                    : 'bg-gray-800/50 text-gray-500'
+              }`}
+              disabled={liveCount === 0}
+            >
+              <Radio className="w-4 h-4" />
+              <span>{liveCount} Live</span>
+            </button>
 
+            {/* Tous */}
             <button
               onClick={() => setFilter('all')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all ${
+              className={`flex items-center gap-2 px-3 py-2 rounded-xl font-medium transition-all ${
                 filter === 'all'
-                  ? isViewingPastDay ? 'bg-violet-500 text-white' : 'bg-pink-500 text-white'
+                  ? 'bg-pink-500 text-white'
                   : 'bg-gray-800/50 text-gray-300 hover:bg-gray-800'
               }`}
             >
               <Calendar className="w-4 h-4" />
-              <span>{todayCount} {isViewingPastDay ? 'Résultats' : 'Matchs'}</span>
+              <span>{todayCount} Tous</span>
             </button>
 
-            {/* Terminé - pour les jours passés */}
-            {isViewingPastDay ? (
-              <button
-                onClick={() => setFilter('all')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all ${
-                  filter === 'all'
-                    ? 'bg-gray-600 text-white'
-                    : 'bg-gray-800/50 text-gray-300 hover:bg-gray-800'
-                }`}
-              >
-                <Trophy className="w-4 h-4" />
-                <span>{finishedCount} Terminés</span>
-              </button>
-            ) : (
-              <button
-                onClick={() => setFilter(filter === 'upcoming' ? 'all' : 'upcoming')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all ${
-                  filter === 'upcoming'
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-800/50 text-gray-300 hover:bg-gray-800'
-                }`}
-              >
-                <Clock className="w-4 h-4" />
-                <span>{upcomingCount} À venir</span>
-              </button>
-            )}
+            {/* Terminés */}
+            <button
+              onClick={() => setFilter(filter === 'finished' ? 'all' : 'finished')}
+              className={`flex items-center gap-2 px-3 py-2 rounded-xl font-medium transition-all ${
+                filter === 'finished'
+                  ? 'bg-green-500 text-white'
+                  : finishedCount > 0
+                    ? 'bg-gray-800/50 text-gray-300 hover:bg-gray-800'
+                    : 'bg-gray-800/50 text-gray-500'
+              }`}
+              disabled={finishedCount === 0}
+            >
+              <Trophy className="w-4 h-4" />
+              <span>{finishedCount} Terminés</span>
+            </button>
+
+            {/* À venir */}
+            <button
+              onClick={() => setFilter(filter === 'upcoming' ? 'all' : 'upcoming')}
+              className={`flex items-center gap-2 px-3 py-2 rounded-xl font-medium transition-all ${
+                filter === 'upcoming'
+                  ? 'bg-blue-500 text-white'
+                  : upcomingCount > 0
+                    ? 'bg-gray-800/50 text-gray-300 hover:bg-gray-800'
+                    : 'bg-gray-800/50 text-gray-500'
+              }`}
+              disabled={upcomingCount === 0}
+            >
+              <Clock className="w-4 h-4" />
+              <span>{upcomingCount} À venir</span>
+            </button>
           </div>
         </div>
       </header>
