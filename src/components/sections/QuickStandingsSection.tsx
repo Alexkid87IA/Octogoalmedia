@@ -138,7 +138,7 @@ export const QuickStandingsSection = () => {
   const isCurrentLoading = loadingLeague === currentLeague.key || (isLoading && currentStandings.length === 0);
 
   return (
-    <section className="py-8 overflow-hidden">
+    <section className="py-12 sm:py-16 lg:py-20 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-8 items-center">
           {/* Colonne gauche : Titre, carousel et description */}
@@ -152,7 +152,8 @@ export const QuickStandingsSection = () => {
               <div className="flex items-center gap-3 mb-4">
                 <button
                   onClick={goToPrevious}
-                  className="p-2 bg-white/[0.05] hover:bg-white/[0.1] backdrop-blur-sm rounded-xl border border-white/10 hover:border-white/20 transition-all"
+                  className="p-2 bg-white/[0.05] hover:bg-white/[0.1] backdrop-blur-sm border border-white/10 hover:border-white/20 transition-all"
+                  style={{ clipPath: 'polygon(15% 0%, 85% 0%, 100% 15%, 100% 85%, 85% 100%, 15% 100%, 0% 85%, 0% 15%)' }}
                 >
                   <ChevronLeft className="w-5 h-5 text-white" />
                 </button>
@@ -171,12 +172,13 @@ export const QuickStandingsSection = () => {
                         scrollToLeague(index);
                       }}
                       className={`
-                        flex items-center gap-2 px-4 py-2 whitespace-nowrap transition-all rounded-xl
+                        flex items-center gap-2 px-4 py-2 whitespace-nowrap transition-all
                         ${index === currentLeagueIndex
                           ? `bg-gradient-to-r ${league.color}/20 ring-1 ring-pink-500/50 text-white shadow-lg shadow-pink-500/20`
                           : 'bg-white/[0.05] text-gray-400 hover:bg-white/[0.10] hover:text-white'
                         }
                       `}
+                      style={{ clipPath: 'polygon(8% 0%, 92% 0%, 100% 8%, 100% 92%, 92% 100%, 8% 100%, 0% 92%, 0% 8%)' }}
                     >
                       <span className="text-lg">{league.flag}</span>
                       <span className="text-sm font-medium hidden sm:inline">{league.name}</span>
@@ -186,7 +188,8 @@ export const QuickStandingsSection = () => {
 
                 <button
                   onClick={goToNext}
-                  className="p-2 bg-white/[0.05] hover:bg-white/[0.1] backdrop-blur-sm rounded-xl border border-white/10 hover:border-white/20 transition-all"
+                  className="p-2 bg-white/[0.05] hover:bg-white/[0.1] backdrop-blur-sm border border-white/10 hover:border-white/20 transition-all"
+                  style={{ clipPath: 'polygon(15% 0%, 85% 0%, 100% 15%, 100% 85%, 85% 100%, 15% 100%, 0% 85%, 0% 15%)' }}
                 >
                   <ChevronRight className="w-5 h-5 text-white" />
                 </button>
@@ -202,7 +205,7 @@ export const QuickStandingsSection = () => {
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.3 }}
               >
-                <h2 className="text-2xl md:text-3xl lg:text-4xl font-black mb-4">
+                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black mb-4">
                   <span className="text-white">Classement </span>
                   <span className={`text-transparent bg-clip-text bg-gradient-to-r ${currentLeague.color}`}>
                     {currentLeague.name}
@@ -217,7 +220,7 @@ export const QuickStandingsSection = () => {
 
             <Link
               to="/classements"
-              className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-pink-500 to-pink-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-pink-500/30 transition-all group"
+              className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-pink-500 to-blue-500 text-white font-semibold hover:shadow-lg hover:shadow-pink-500/30 transition-all group"
               style={{ clipPath: octagonClipSubtle }}
             >
               <span>Voir tous les classements</span>

@@ -41,6 +41,12 @@ export const highlightedItems = {
     icon: 'sparkles',
     description: 'Jeunes talents',
   },
+  octogain: {
+    label: 'OctoGain',
+    path: '/octogain',
+    icon: 'gift',
+    description: 'Codes promo paris',
+  },
 };
 
 // ============================================

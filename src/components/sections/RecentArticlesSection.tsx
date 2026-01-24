@@ -121,19 +121,22 @@ export const RecentArticlesSection = ({ articles = [] }) => {
   };
 
   return (
-    <section className="relative py-8 sm:py-12 lg:py-16 overflow-hidden bg-black">
+    <section className="relative py-12 sm:py-16 lg:py-20 overflow-hidden bg-black">
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div className="flex items-start sm:items-center gap-3">
             {/* Live Badge */}
-            <div className="flex items-center gap-1.5 px-2 py-1 bg-gradient-to-r from-pink-500 to-blue-500 rounded-full flex-shrink-0">
+            <div
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-pink-500 to-blue-500 flex-shrink-0"
+              style={{ clipPath: 'polygon(8% 0%, 92% 0%, 100% 8%, 100% 92%, 92% 100%, 8% 100%, 0% 92%, 0% 8%)' }}
+            >
               <Flame className="w-3 h-3 text-white" />
               <span className="text-[10px] font-bold text-white uppercase">Hot</span>
             </div>
             
             <div>
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white">
                 Dernières actus
               </h2>
               <p className="text-[11px] sm:text-xs text-gray-500 mt-0.5">
@@ -154,44 +157,53 @@ export const RecentArticlesSection = ({ articles = [] }) => {
 
         {/* Tabs avec glassmorphism */}
         <div className="relative mb-6">
-          <div className="flex gap-2 p-1 bg-white/[0.02] backdrop-blur-sm rounded-xl border border-white/10 overflow-x-auto no-scrollbar">
+          <div
+            className="flex gap-2 p-1.5 bg-white/[0.02] backdrop-blur-sm border border-white/10 overflow-x-auto no-scrollbar"
+            style={{ clipPath: 'polygon(2% 0%, 98% 0%, 100% 2%, 100% 98%, 98% 100%, 2% 100%, 0% 98%, 0% 2%)' }}
+          >
             <button
               onClick={() => setActiveTab('flash')}
-              className={`px-4 py-2 rounded-lg font-medium transition-all whitespace-nowrap text-sm ${
+              className={`px-4 py-2 font-medium transition-all whitespace-nowrap text-sm ${
                 activeTab === 'flash'
                   ? 'bg-gradient-to-r from-pink-500 to-blue-500 text-white shadow-lg shadow-pink-500/20'
                   : 'text-gray-400 hover:text-white hover:bg-white/[0.05]'
               }`}
+              style={{ clipPath: 'polygon(8% 0%, 92% 0%, 100% 8%, 100% 92%, 92% 100%, 8% 100%, 0% 92%, 0% 8%)' }}
             >
-              ⚡ Flash
+              Flash
             </button>
             <button
               onClick={() => setActiveTab('plus-lus')}
-              className={`px-4 py-2 rounded-lg font-medium transition-all whitespace-nowrap text-sm ${
+              className={`px-4 py-2 font-medium transition-all whitespace-nowrap text-sm ${
                 activeTab === 'plus-lus'
                   ? 'bg-gradient-to-r from-pink-500 to-blue-500 text-white shadow-lg shadow-pink-500/20'
                   : 'text-gray-400 hover:text-white hover:bg-white/[0.05]'
               }`}
+              style={{ clipPath: 'polygon(8% 0%, 92% 0%, 100% 8%, 100% 92%, 92% 100%, 8% 100%, 0% 92%, 0% 8%)' }}
             >
-              🔥 Les + lus
+              Les + lus
             </button>
             <button
               onClick={() => setActiveTab('plus-commentes')}
-              className={`px-4 py-2 rounded-lg font-medium transition-all whitespace-nowrap text-sm ${
+              className={`px-4 py-2 font-medium transition-all whitespace-nowrap text-sm ${
                 activeTab === 'plus-commentes'
                   ? 'bg-gradient-to-r from-pink-500 to-blue-500 text-white shadow-lg shadow-pink-500/20'
                   : 'text-gray-400 hover:text-white hover:bg-white/[0.05]'
               }`}
+              style={{ clipPath: 'polygon(8% 0%, 92% 0%, 100% 8%, 100% 92%, 92% 100%, 8% 100%, 0% 92%, 0% 8%)' }}
             >
-              💬 Les + commentés
+              Les + commentés
             </button>
           </div>
         </div>
 
         {/* Articles List avec glassmorphism container */}
-        <div className="relative bg-white/[0.02] backdrop-blur-xl rounded-2xl border border-white/10 p-2 sm:p-4">
+        <div
+          className="relative bg-white/[0.02] backdrop-blur-xl border border-white/10 p-2 sm:p-4"
+          style={{ clipPath: 'polygon(2% 0%, 98% 0%, 100% 2%, 100% 98%, 98% 100%, 2% 100%, 0% 98%, 0% 2%)' }}
+        >
           {/* Reflet glassmorphism */}
-          <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] via-transparent to-transparent pointer-events-none rounded-2xl" />
+          <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] via-transparent to-transparent pointer-events-none" />
           <div className="hidden lg:block absolute left-8 top-0 bottom-0 w-0.5 bg-gradient-to-b from-pink-500/50 to-blue-500/50" />
           
           <div className="space-y-0">
@@ -224,10 +236,13 @@ export const RecentArticlesSection = ({ articles = [] }) => {
                       </span>
                       
                       {article.categories?.[0] && (
-                        <span className={`
-                          px-2 py-0.5 text-[10px] font-bold uppercase rounded
-                          ${categoryStyle.bg} ${categoryStyle.text}
-                        `}>
+                        <span
+                          className={`
+                            px-2.5 py-1 text-[10px] font-bold uppercase
+                            ${categoryStyle.bg} ${categoryStyle.text}
+                          `}
+                          style={{ clipPath: 'polygon(8% 0%, 92% 0%, 100% 8%, 100% 92%, 92% 100%, 8% 100%, 0% 92%, 0% 8%)' }}
+                        >
                           {article.categories[0].title}
                         </span>
                       )}
@@ -267,9 +282,10 @@ export const RecentArticlesSection = ({ articles = [] }) => {
                     </div>
 
                     <div className="flex justify-end mt-3">
-                      <a 
+                      <a
                         href={`/article/${article.slug?.current}`}
-                        className="inline-flex items-center gap-1 px-4 py-1.5 bg-gradient-to-r from-pink-500 to-blue-500 hover:from-pink-600 hover:to-blue-600 rounded-full text-white text-xs font-medium transition-colors"
+                        className="inline-flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-pink-500 to-blue-500 hover:from-pink-600 hover:to-blue-600 text-white text-xs font-semibold transition-all hover:shadow-lg hover:shadow-pink-500/20"
+                        style={{ clipPath: 'polygon(8% 0%, 92% 0%, 100% 8%, 100% 92%, 92% 100%, 8% 100%, 0% 92%, 0% 8%)' }}
                         onClick={(e) => e.stopPropagation()}
                       >
                         <span>Lire plus</span>
@@ -291,9 +307,10 @@ export const RecentArticlesSection = ({ articles = [] }) => {
               <span>{recentArticles.length} actus chaudes aujourd'hui</span>
             </div>
 
-            <a 
-              href="/articles" 
-              className="group inline-flex items-center justify-center sm:justify-start gap-2 px-4 py-2 bg-gradient-to-r from-pink-500/10 to-blue-500/10 hover:from-pink-500/20 hover:to-blue-500/20 border border-pink-500/20 rounded-lg text-white font-medium text-sm transition-all"
+            <a
+              href="/articles"
+              className="group inline-flex items-center justify-center sm:justify-start gap-2 px-6 py-3 bg-gradient-to-r from-pink-500 to-blue-500 hover:shadow-lg hover:shadow-pink-500/30 text-white font-semibold text-sm transition-all"
+              style={{ clipPath: 'polygon(8% 0%, 92% 0%, 100% 8%, 100% 92%, 92% 100%, 8% 100%, 0% 92%, 0% 8%)' }}
             >
               <span>Voir toutes les actus</span>
               <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />

@@ -412,7 +412,7 @@ export const HeroSection = () => {
               <span className="text-sm font-medium text-white">Tendances</span>
             </div>
 
-            <h2 className="text-3xl md:text-4xl font-black mb-4">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black mb-4">
               <span className="text-white">Articles </span>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-blue-400">
                 populaires

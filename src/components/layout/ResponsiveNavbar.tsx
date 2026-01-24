@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { ChevronDown, ChevronRight, X, Menu, Play, Circle, Zap, Search, Home, Trophy, Users, Newspaper, Radio, ArrowRight } from 'lucide-react';
+import { ChevronDown, ChevronRight, X, Menu, Play, Circle, Zap, Search, Home, Trophy, Users, Newspaper, Radio, ArrowRight, Gift } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { mainNavItems, highlightedItems, ctaConfig, socialLinks } from '../../config/navigation';
@@ -401,6 +401,21 @@ export const ResponsiveNavbar = () => {
                 </div>
               </Link>
 
+              {/* OctoGain - Codes promo */}
+              <Link
+                to={highlightedItems.octogain.path}
+                className="group relative overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-green-500/30 via-emerald-500/20 to-teal-500/30 rounded-lg blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500 scale-75 group-hover:scale-100" />
+
+                <div className="relative flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-br from-white/[0.10] to-white/[0.05] border border-white/20 rounded-lg backdrop-blur-xl group-hover:border-green-400/50 transition-all duration-500 shadow-lg group-hover:shadow-green-500/20">
+                  <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 via-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500" />
+
+                  <Gift className="relative z-10 w-3 h-3 text-green-400 transition-all duration-500 group-hover:scale-110 group-hover:text-green-300" strokeWidth={2.5} />
+                  <span className="relative z-10 text-[11px] font-bold text-white group-hover:text-green-100 transition-all duration-500">OctoGain</span>
+                </div>
+              </Link>
+
               {/* Match Center */}
               <Link
                 to={highlightedItems.matchCenter.path}
@@ -637,19 +652,32 @@ export const ResponsiveNavbar = () => {
                     <Link
                       to={highlightedItems.pepites.path}
                       onClick={() => setIsOpen(false)}
-                      className="group relative overflow-hidden rounded-2xl col-span-2"
+                      className="group relative overflow-hidden rounded-2xl"
                     >
                       <div className="absolute inset-0 bg-gradient-to-br from-amber-500/30 via-orange-500/20 to-yellow-500/30" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                      <div className="relative p-4 flex items-center gap-4">
-                        <span className="text-3xl">✨</span>
-                        <div>
-                          <span className="block text-base font-bold text-white">Pépites</span>
-                          <span className="text-xs text-neutral-300">Jeunes talents à suivre</span>
-                        </div>
-                        <ArrowRight className="ml-auto w-5 h-5 text-amber-400 group-hover:translate-x-1 transition-transform" />
+                      <div className="relative p-4 pt-12">
+                        <span className="text-2xl mb-2 block">✨</span>
+                        <span className="block text-base font-bold text-white">Pépites</span>
+                        <span className="text-xs text-neutral-300">Jeunes talents</span>
                       </div>
                       <div className="absolute bottom-0 inset-x-0 h-1 bg-gradient-to-r from-amber-500 to-orange-500 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
+                    </Link>
+
+                    {/* OctoGain CTA */}
+                    <Link
+                      to={highlightedItems.octogain.path}
+                      onClick={() => setIsOpen(false)}
+                      className="group relative overflow-hidden rounded-2xl"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-br from-green-500/30 via-emerald-500/20 to-teal-500/30" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                      <div className="relative p-4 pt-12">
+                        <Gift className="w-6 h-6 text-green-300 mb-2" strokeWidth={2} />
+                        <span className="block text-base font-bold text-white">OctoGain</span>
+                        <span className="text-xs text-neutral-300">Codes promo</span>
+                      </div>
+                      <div className="absolute bottom-0 inset-x-0 h-1 bg-gradient-to-r from-green-500 to-emerald-500 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
                     </Link>
                   </motion.div>
 

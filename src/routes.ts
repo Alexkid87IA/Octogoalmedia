@@ -7,21 +7,24 @@ export const staticRoutes = [
   '/about',
   '/coaching',
   '/club',
-  
+
   // Guides
   '/guides',
   '/guides/digital-detox',
-  
+
   // Articles & Business
   '/articles',
   '/business-ideas',
   '/success-stories',
-  
+
   // Émissions & Podcasts
   '/emissions',
   '/emission',
   '/podcast',
-  
+
+  // OctoGain - Codes promo paris
+  '/octogain',
+
   // Autres
   '/recommendations',
   '/create-with-roger',

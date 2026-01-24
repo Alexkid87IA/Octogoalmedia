@@ -6,6 +6,8 @@ import { ResponsiveNavbar } from './components/layout/ResponsiveNavbar';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { Analytics } from './components/common/Analytics';
 import { DataProvider } from './context/DataContext';
+import { AuthProvider } from './context/AuthContext';
+import AuthModal from './components/auth/AuthModal';
 
 // Import du background skin
 import momoSkinBg from './assets/backgrounds/momo-henni-skin.jpg';
@@ -35,6 +37,9 @@ const JoueursPage = lazy(() => import('./pages/JoueursPage'));
 const FormatsPage = lazy(() => import('./pages/FormatsPage'));
 const BettingPage = lazy(() => import('./pages/BettingPage'));
 const SearchPage = lazy(() => import('./pages/SearchPage'));
+const OctoGainPage = lazy(() => import('./pages/OctoGainPage'));
+const OctoGainWinamaxPage = lazy(() => import('./pages/OctoGainWinamaxPage'));
+const OctoGainOctoBetsPage = lazy(() => import('./pages/OctoGainOctoBetsPage'));
 
 // Composant de chargement optimisé
 const PageLoader = () => (
@@ -159,6 +164,11 @@ const AppContent = () => {
                 {/* Route Recherche */}
                 <Route path="/recherche" element={<SearchPage />} />
 
+                {/* Route OctoGain - Paris */}
+                <Route path="/octogain" element={<OctoGainPage />} />
+                <Route path="/octogain/winamax" element={<OctoGainWinamaxPage />} />
+                <Route path="/octogain/octobets" element={<OctoGainOctoBetsPage />} />
+
                 {/* Route 404 - DOIT ÊTRE EN DERNIER */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
@@ -176,7 +186,10 @@ function App() {
     <HelmetProvider>
       <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <DataProvider>
-          <AppContent />
+          <AuthProvider>
+            <AppContent />
+            <AuthModal />
+          </AuthProvider>
         </DataProvider>
       </Router>
     </HelmetProvider>

@@ -78,7 +78,7 @@ export const ClubSection = () => {
         }
       `}</style>
 
-      <section className="relative py-24 overflow-hidden bg-black">
+      <section className="relative py-12 sm:py-16 lg:py-20 overflow-hidden bg-black">
         {/* Background */}
         <div className="absolute inset-0">
           <div className="absolute inset-0 bg-gradient-to-b from-black via-neutral-950 to-black" />
@@ -105,8 +105,11 @@ export const ClubSection = () => {
             {/* Badge */}
             <div className="inline-block mb-8">
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-pink-400 to-blue-400 rounded-full blur-xl opacity-60 animate-pulse-slow" />
-                <div className="relative flex items-center gap-3 px-6 py-3 bg-black/80 backdrop-blur-xl rounded-full border border-pink-500/30">
+                <div className="absolute inset-0 bg-gradient-to-r from-pink-400 to-blue-400 blur-xl opacity-60 animate-pulse-slow" style={{ clipPath: 'polygon(8% 0%, 92% 0%, 100% 8%, 100% 92%, 92% 100%, 8% 100%, 0% 92%, 0% 8%)' }} />
+                <div
+                  className="relative flex items-center gap-3 px-6 py-3 bg-black/80 backdrop-blur-xl border border-pink-500/30"
+                  style={{ clipPath: 'polygon(8% 0%, 92% 0%, 100% 8%, 100% 92%, 92% 100%, 8% 100%, 0% 92%, 0% 8%)' }}
+                >
                   <Bell className="w-5 h-5 text-pink-400" />
                   <span className="text-sm font-bold text-gradient-octo uppercase tracking-wider">
                     Newsletter Octogoal
@@ -117,7 +120,7 @@ export const ClubSection = () => {
             </div>
 
             {/* Titre */}
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black mb-6">
               <span className="text-white">Rejoins la </span>
               <span className="relative inline-block">
                 <span className="relative z-10 text-gradient-octo">
@@ -138,11 +141,11 @@ export const ClubSection = () => {
           <div className="max-w-2xl mx-auto mb-16">
             <div className="relative">
               {/* Bordure animée */}
-              <div className="absolute -inset-[2px] rounded-2xl opacity-80">
-                <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-pink-400 via-blue-400 to-pink-400 animate-gradient-x" />
+              <div className="absolute -inset-[2px] opacity-80" style={{ clipPath: 'polygon(4% 0%, 96% 0%, 100% 4%, 100% 96%, 96% 100%, 4% 100%, 0% 96%, 0% 4%)' }}>
+                <div className="absolute inset-0 bg-gradient-to-r from-pink-400 via-blue-400 to-pink-400 animate-gradient-x" />
               </div>
-              
-              <div className="relative bg-black/90 backdrop-blur-2xl rounded-2xl p-8">
+
+              <div className="relative bg-black/90 backdrop-blur-2xl p-8" style={{ clipPath: 'polygon(4% 0%, 96% 0%, 100% 4%, 100% 96%, 96% 100%, 4% 100%, 0% 96%, 0% 4%)' }}>
                 <div className="space-y-4">
                   <div className="relative">
                     <input
@@ -150,7 +153,8 @@ export const ClubSection = () => {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="Ton meilleur email"
-                      className="w-full px-6 py-4 bg-white/5 backdrop-blur-sm border border-pink-500/30 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-pink-400 focus:bg-white/10 transition-all text-lg"
+                      className="w-full px-6 py-3 bg-white/5 backdrop-blur-sm border border-pink-500/30 text-white placeholder-gray-500 focus:outline-none focus:border-pink-400 focus:bg-white/10 transition-all text-lg"
+                      style={{ clipPath: 'polygon(4% 0%, 96% 0%, 100% 4%, 100% 96%, 96% 100%, 4% 100%, 0% 96%, 0% 4%)' }}
                       onKeyPress={(e) => {
                         if (e.key === 'Enter') {
                           handleSubscribe();
@@ -162,23 +166,24 @@ export const ClubSection = () => {
                   
                   <button
                     onClick={handleSubscribe}
-                    className="relative w-full px-8 py-4 overflow-hidden rounded-xl font-bold text-lg group cursor-pointer transition-transform hover:scale-[1.02]"
+                    className="relative w-full px-6 py-3 overflow-hidden font-bold text-lg group cursor-pointer transition-all hover:scale-[1.02] hover:shadow-lg hover:shadow-pink-500/30"
+                    style={{ clipPath: 'polygon(8% 0%, 92% 0%, 100% 8%, 100% 92%, 92% 100%, 8% 100%, 0% 92%, 0% 8%)' }}
                     disabled={isSubscribed}
                   >
                     {/* Background animé */}
                     <div className="absolute inset-0 bg-gradient-to-r from-pink-500 via-blue-500 to-pink-500 animate-gradient-x" />
-                    
+
                     <span className="relative flex items-center justify-center gap-3 text-white">
                       {isSubscribed ? (
                         <>
-                          <CheckCircle className="w-6 h-6" />
-                          <span>Bienvenue dans la team ! 🔥</span>
+                          <CheckCircle className="w-5 h-5" />
+                          <span>Bienvenue dans la team !</span>
                         </>
                       ) : (
                         <>
-                          <Bell className="w-6 h-6" />
+                          <Bell className="w-5 h-5" />
                           <span>Je m'inscris gratuitement</span>
-                          <ArrowRight className="w-6 h-6" />
+                          <ArrowRight className="w-5 h-5" />
                         </>
                       )}
                     </span>
@@ -209,11 +214,17 @@ export const ClubSection = () => {
                   key={index}
                   className="relative group transition-transform hover:-translate-y-1"
                 >
-                  <div className="relative h-full p-6 bg-white/[0.03] backdrop-blur-2xl border border-white/10 hover:border-pink-500/40 rounded-2xl transition-all shadow-xl shadow-black/20 hover:shadow-pink-500/10">
+                  <div
+                    className="relative h-full p-6 bg-white/[0.03] backdrop-blur-2xl border border-white/10 hover:border-pink-500/40 transition-all shadow-xl shadow-black/20 hover:shadow-pink-500/10"
+                    style={{ clipPath: 'polygon(4% 0%, 96% 0%, 100% 4%, 100% 96%, 96% 100%, 4% 100%, 0% 96%, 0% 4%)' }}
+                  >
                     <div className="mb-4">
-                      <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-blue-500 rounded-xl flex items-center justify-center shadow-lg">
-                        <Icon className="w-6 h-6 text-white" />
-                      </div>
+                      <div
+                      className="w-12 h-12 bg-gradient-to-br from-pink-500 to-blue-500 flex items-center justify-center shadow-lg"
+                      style={{ clipPath: 'polygon(15% 0%, 85% 0%, 100% 15%, 100% 85%, 85% 100%, 15% 100%, 0% 85%, 0% 15%)' }}
+                    >
+                      <Icon className="w-6 h-6 text-white" />
+                    </div>
                     </div>
                     
                     <h3 className="text-lg font-bold text-white mb-2">{feature.title}</h3>
